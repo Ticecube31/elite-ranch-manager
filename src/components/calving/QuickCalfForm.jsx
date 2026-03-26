@@ -24,7 +24,7 @@ export default function QuickCalfForm({ animals = [], seasons = [], pastures = [
   const [calfTagEdited, setCalfTagEdited]   = useState(false);
   const [sex, setSex]                       = useState('');
   const [location, setLocation]             = useState('');
-  const [pastureId, setPastureId]           = useState('');
+  const [bornPastureId, setBornPastureId]   = useState('');
   const [pastureQuery, setPastureQuery]     = useState('');
   const [showPasturePrompt, setShowPasturePrompt] = useState(false);
   const [addingPasture, setAddingPasture]   = useState(false);
@@ -131,7 +131,7 @@ export default function QuickCalfForm({ animals = [], seasons = [], pastures = [
       date_of_birth:        date || undefined,
       birth_year:           birthYear,
       calving_season_id,
-      pasture_id:           pastureId || undefined,
+      born_pasture_id:      bornPastureId || undefined,
       notes:                notes.trim() || undefined,
       status:               'Alive',
       is_archived:          false,
@@ -149,7 +149,7 @@ export default function QuickCalfForm({ animals = [], seasons = [], pastures = [
     setCalfTagEdited(false);
     setSex('');
     setLocation('');
-    setPastureId('');
+    setBornPastureId('');
     setPastureQuery('');
     setShowPasturePrompt(false);
     setDate(today);
@@ -349,21 +349,21 @@ export default function QuickCalfForm({ animals = [], seasons = [], pastures = [
           </div>
         </div>
 
-        {/* 4. Pasture / Location */}
+        {/* 4. Born Pasture */}
         <div>
-          <label className="block text-lg font-bold text-gray-800 mb-1">Pasture / Location</label>
-          <p className="text-sm text-gray-400 mb-2">Optional — search or create a pasture</p>
+          <label className="block text-lg font-bold text-gray-800 mb-1">Born Pasture</label>
+          <p className="text-sm text-gray-400 mb-2">Optional — where was this calf born?</p>
 
           {/* Selected pasture chip */}
-          {pastureId ? (
+          {bornPastureId ? (
             <div className="flex items-center gap-3 h-14 px-4 rounded-2xl border-2 border-green-400 bg-green-50">
               <MapPin className="w-5 h-5 text-green-600 shrink-0" />
               <span className="font-bold text-green-800 text-lg flex-1">
-                {pastures.find(p => p.id === pastureId)?.pasture_name}
+                {pastures.find(p => p.id === bornPastureId)?.pasture_name}
               </span>
               <button
                 type="button"
-                onClick={() => { setPastureId(''); setPastureQuery(''); setShowPasturePrompt(false); }}
+                onClick={() => { setBornPastureId(''); setPastureQuery(''); setShowPasturePrompt(false); }}
                 className="text-green-500 hover:text-green-700 font-bold text-sm"
               >
                 Change
@@ -376,18 +376,17 @@ export default function QuickCalfForm({ animals = [], seasons = [], pastures = [
                 onChange={e => {
                   const val = e.target.value;
                   setPastureQuery(val);
-                  setPastureId('');
+                  setBornPastureId('');
                   setShowPasturePrompt(false);
                 }}
                 onBlur={() => {
-                  // small delay so clicks on suggestions register first
                   setTimeout(() => {
-                    if (pastureQuery.trim() && !pastureId) {
+                    if (pastureQuery.trim() && !bornPastureId) {
                       const match = pastures.find(p =>
                         p.pasture_name.toLowerCase() === pastureQuery.trim().toLowerCase()
                       );
                       if (match) {
-                        setPastureId(match.id);
+                        setBornPastureId(match.id);
                         setPastureQuery('');
                       } else {
                         setShowPasturePrompt(true);
@@ -400,7 +399,7 @@ export default function QuickCalfForm({ animals = [], seasons = [], pastures = [
               />
 
               {/* Live suggestions */}
-              {pastureQuery.trim().length > 0 && !pastureId && (() => {
+              {pastureQuery.trim().length > 0 && !bornPastureId && (() => {
                 const matches = pastures.filter(p =>
                   p.pasture_name.toLowerCase().includes(pastureQuery.trim().toLowerCase())
                 );
@@ -410,7 +409,7 @@ export default function QuickCalfForm({ animals = [], seasons = [], pastures = [
                       <button
                         key={p.id}
                         type="button"
-                        onMouseDown={() => { setPastureId(p.id); setPastureQuery(''); setShowPasturePrompt(false); }}
+                        onMouseDown={() => { setBornPastureId(p.id); setPastureQuery(''); setShowPasturePrompt(false); }}
                         className="w-full flex items-center gap-3 px-4 py-3 hover:bg-green-50 active:bg-green-100 transition-colors text-left border-b border-gray-100 last:border-0"
                       >
                         <MapPin className="w-4 h-4 text-green-500 shrink-0" />
@@ -425,7 +424,7 @@ export default function QuickCalfForm({ animals = [], seasons = [], pastures = [
               })()}
 
               {/* No match prompt */}
-              {showPasturePrompt && pastureQuery.trim() && !pastureId && (
+              {showPasturePrompt && pastureQuery.trim() && !bornPastureId && (
                 <div className="mt-2 rounded-xl border border-blue-200 bg-blue-50 px-4 py-3 space-y-2">
                   <div className="flex items-start gap-2">
                     <AlertCircle className="w-5 h-5 text-blue-500 shrink-0 mt-0.5" />

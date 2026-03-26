@@ -57,6 +57,10 @@
       "type": "string",
       "description": "ID of the Pastures record where this animal currently lives \u2014 links to Pastures table"
     },
+    "born_pasture_id": {
+      "type": "string",
+      "description": "ID of the Pastures record where this animal was born \u2014 links to Pastures table"
+    },
     "notes": {
       "type": "string",
       "description": "Free-text notes \u2014 health observations, feeding notes, any field remarks"
