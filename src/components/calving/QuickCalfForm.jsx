@@ -405,7 +405,7 @@ export default function QuickCalfForm({ animals = [], seasons = [], pastures = [
 
         {/* 4. Born Pasture */}
         <div>
-          <label className="block text-lg font-bold text-gray-800 mb-1">Born Pasture</label>
+          <label className="block text-lg font-bold text-gray-800 mb-1">Location</label>
           <p className="text-sm text-gray-400 mb-2">Optional — where was this calf born?</p>
 
           {/* Selected pasture chip */}
