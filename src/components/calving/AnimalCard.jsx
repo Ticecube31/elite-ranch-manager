@@ -9,11 +9,11 @@ const statusColors = {
 };
 
 const typeIcons = {
-  Calf: '🐄',
-  Cow: '🐮',
-  Heifer: '🐮',
-  Bull: '🐂',
-  Steer: '🐂',
+  'Cow':          '🐮',
+  '1st Calf Heifer': '🐮',
+  'Calf - Heifer':'🐄',
+  'Bull':         '🐂',
+  'Calf - Steer': '🐂',
 };
 
 export default function AnimalCard({ animal, onClick }) {

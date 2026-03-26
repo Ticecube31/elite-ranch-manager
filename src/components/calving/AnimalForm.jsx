@@ -36,9 +36,9 @@ export default function AnimalForm({ animal, onSave, onCancel, existingAnimals =
 
   const allowedTypes = allowedTypesForSex(form.sex);
 
-  // Valid mothers for calf linking
+  // Valid mothers for calf linking (Cow or 1st Calf Heifer)
   const validMothers = existingAnimals.filter(
-    a => a.sex === 'Female' && ['Cow', 'Heifer'].includes(a.animal_type)
+    a => a.sex === 'Female' && ['Cow', '1st Calf Heifer'].includes(a.animal_type)
   );
 
   // Reset animal_type if sex changes and current type becomes invalid
@@ -87,14 +87,15 @@ export default function AnimalForm({ animal, onSave, onCancel, existingAnimals =
     );
     if (duplicate) { toast.error(`Animal #${form.animal_number} already exists`); return; }
 
-    // Mother required for Calf
-    if (form.animal_type === 'Calf' && !form.mother_animal_number?.trim()) {
+    // Mother required for Calf types
+    const isCalfType = ['Calf - Steer', 'Calf - Heifer'].includes(form.animal_type);
+    if (isCalfType && !form.mother_animal_number?.trim()) {
       toast.error('Mother Animal Number is required for a Calf');
       return;
     }
 
-    // Validate mother exists and is a Cow/Heifer
-    if (form.animal_type === 'Calf' && form.mother_animal_number) {
+    // Validate mother exists and is a Cow/1st Calf Heifer
+    if (isCalfType && form.mother_animal_number) {
       const mother = existingAnimals.find(
         a => a.animal_number?.toLowerCase() === form.mother_animal_number.trim().toLowerCase()
       );
@@ -102,8 +103,8 @@ export default function AnimalForm({ animal, onSave, onCancel, existingAnimals =
         toast.error(`Mother #${form.mother_animal_number} not found in Animals table`);
         return;
       }
-      if (!['Cow', 'Heifer'].includes(mother.animal_type)) {
-        toast.error(`#${form.mother_animal_number} is a ${mother.animal_type} — mother must be Cow or Heifer`);
+      if (!['Cow', '1st Calf Heifer'].includes(mother.animal_type)) {
+        toast.error(`#${form.mother_animal_number} is a ${mother.animal_type} — mother must be Cow or 1st Calf Heifer`);
         return;
       }
     }
@@ -203,14 +204,14 @@ export default function AnimalForm({ animal, onSave, onCancel, existingAnimals =
         </div>
       </div>
 
-      {/* Mother (Calf only) */}
-      {form.animal_type === 'Calf' && (
+      {/* Mother (Calf types only) */}
+      {['Calf - Steer', 'Calf - Heifer'].includes(form.animal_type) && (
         <div>
           <Label className="text-sm font-semibold">Mother's Tag Number *</Label>
           {validMothers.length > 0 ? (
             <Select value={form.mother_animal_number} onValueChange={(v) => update('mother_animal_number', v)}>
               <SelectTrigger className="h-14 text-base mt-1">
-                <SelectValue placeholder="Pick mother (Cow or Heifer)" />
+                <SelectValue placeholder="Pick mother (Cow or 1st Calf Heifer)" />
               </SelectTrigger>
               <SelectContent>
                 {validMothers.map(m => (
@@ -224,7 +225,7 @@ export default function AnimalForm({ animal, onSave, onCancel, existingAnimals =
             <Input
               value={form.mother_animal_number}
               onChange={(e) => update('mother_animal_number', e.target.value)}
-              placeholder="Mother's tag # (must be a Cow or Heifer)"
+              placeholder="Mother's tag # (must be a Cow or 1st Calf Heifer)"
               className="h-14 text-lg mt-1"
             />
           )}

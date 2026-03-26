@@ -12,22 +12,22 @@
         "Male",
         "Female"
       ],
-      "description": "Sex of the animal. Males can only be Bull, Steer, or Calf. Females can only be Cow, Heifer, or Calf."
+      "description": "Sex of the animal."
     },
     "animal_type": {
       "type": "string",
       "enum": [
         "Cow",
-        "Heifer",
-        "Calf",
-        "Steer",
-        "Bull"
+        "1st Calf Heifer",
+        "Calf - Heifer",
+        "Bull",
+        "Calf - Steer"
       ],
-      "description": "Type enforced by sex rules: Bull/Steer = Male only; Cow/Heifer = Female only; Calf = either"
+      "description": "Type enforced by sex rules: Bull/Calf - Steer = Male only; Cow/1st Calf Heifer/Calf - Heifer = Female only"
     },
     "mother_animal_number": {
       "type": "string",
-      "description": "Mother's AnimalNumber \u2014 required when animal_type = Calf. Must reference a valid Cow or Heifer."
+      "description": "Mother's AnimalNumber \u2014 for calves. Must reference a valid Cow or 1st Calf Heifer."
     },
     "date_of_birth": {
       "type": "string",
