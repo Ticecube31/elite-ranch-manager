@@ -182,9 +182,9 @@ export default function QuickCalfForm({ animals = [], seasons = [], pastures = [
               <button
                 type="button"
                 onClick={handleCancelUnknown}
-                className="text-sm text-blue-500 font-semibold"
+                className="flex items-center gap-1.5 text-sm font-bold px-3 py-1.5 rounded-full bg-blue-100 text-blue-700 border border-blue-300 hover:bg-blue-200 active:scale-95 transition-all"
               >
-                Enter Tag #
+                ← Enter Tag #
               </button>
             )}
           </div>
