@@ -31,6 +31,7 @@ export default function QuickCalfForm({ animals = [], seasons = [], pastures = [
   const [date, setDate]                     = useState(today);
   const [notes, setNotes]                   = useState('');
   const [saving, setSaving]                 = useState(false);
+  const [saved, setSaved]                   = useState(false);
 
   const motherInputRef = useRef(null);
 
@@ -123,6 +124,7 @@ export default function QuickCalfForm({ animals = [], seasons = [], pastures = [
     const resolvedMother = unknownMother ? undefined : (motherTag.trim() || undefined);
 
     setSaving(true);
+    setSaved(false);
     await onSave({
       animal_number:        calfTag.trim(),
       sex,
@@ -137,6 +139,8 @@ export default function QuickCalfForm({ animals = [], seasons = [], pastures = [
       is_archived:          false,
     });
     setSaving(false);
+    setSaved(true);
+    setTimeout(() => setSaved(false), 3000);
   };
 
   const handleClear = () => {
@@ -499,13 +503,15 @@ export default function QuickCalfForm({ animals = [], seasons = [], pastures = [
       >
         <button
           onClick={handleSubmit}
-          disabled={saving}
-          className="w-full h-16 rounded-2xl font-heading font-black text-xl text-white shadow-xl active:scale-[0.98] transition-all disabled:opacity-60 flex items-center justify-center gap-3"
-          style={{ background: `linear-gradient(135deg, ${GREEN}, ${GREEN_DARK})` }}
+          disabled={saving || saved}
+          className={`w-full h-16 rounded-2xl font-heading font-black text-xl text-white shadow-xl active:scale-[0.98] transition-all disabled:opacity-90 flex items-center justify-center gap-3 ${saved ? '' : ''}`}
+          style={{ background: saved ? '#388E3C' : `linear-gradient(135deg, ${GREEN}, ${GREEN_DARK})` }}
         >
           {saving
-            ? <Loader2 className="w-6 h-6 animate-spin" />
-            : <><span className="text-2xl">+</span> ADD CALF</>
+            ? <><Loader2 className="w-6 h-6 animate-spin" /> Saving...</>
+            : saved
+              ? <><CheckCircle2 className="w-6 h-6" /> CALF ADDED!</>
+              : <><span className="text-2xl">+</span> ADD CALF</>
           }
         </button>
         <button
