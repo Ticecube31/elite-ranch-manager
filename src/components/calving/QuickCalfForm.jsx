@@ -166,9 +166,9 @@ export default function QuickCalfForm({ animals = [], seasons = [], defaultSeaso
               <button
                 type="button"
                 onClick={handleUnknownMother}
-                className="flex items-center gap-1 text-sm text-gray-400 hover:text-gray-600 font-semibold transition-colors"
+                className="flex items-center gap-1.5 text-sm font-bold px-3 py-1.5 rounded-full bg-amber-100 text-amber-700 border border-amber-300 hover:bg-amber-200 active:scale-95 transition-all"
               >
-                <HelpCircle className="w-4 h-4" /> Unknown
+                <HelpCircle className="w-4 h-4" /> Unknown Mother
               </button>
             ) : (
               <button
