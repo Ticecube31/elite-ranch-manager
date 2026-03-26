@@ -10,6 +10,7 @@ import { toast } from 'sonner';
 import QuickCalfForm from '@/components/calving/QuickCalfForm';
 import AnimalForm from '@/components/calving/AnimalForm';
 import AllCalvesView from '@/components/calving/AllCalvesView';
+import CalvingSeasonReports from '@/components/calving/CalvingSeasonReports';
 import { logAudit } from '@/lib/auditLogger';
 import { format } from 'date-fns';
 
@@ -18,7 +19,7 @@ const GREEN_DARK = '#2E7D32';
 const GREEN_BG = '#F1F8F1';
 
 export default function CalvingSeason() {
-  const [view, setView] = useState('main');           // 'main' | 'add-calf' | 'edit-animal' | 'all-calves'
+  const [view, setView] = useState('main');           // 'main' | 'add-calf' | 'edit-animal' | 'all-calves' | 'reports'
   const [editAnimal, setEditAnimal] = useState(null);
   const [selectedSeasonId, setSelectedSeasonId] = useState('all');
   const [showSeasonPicker, setShowSeasonPicker] = useState(false);
@@ -205,6 +206,19 @@ export default function CalvingSeason() {
     );
   }
 
+  // ── REPORTS VIEW ───────────────────────────────────────────
+  if (view === 'reports') {
+    return (
+      <CalvingSeasonReports
+        animals={animals}
+        seasons={seasons}
+        pastures={pastures}
+        selectedSeasonId={selectedSeasonId !== 'all' ? selectedSeasonId : seasons[0]?.id}
+        onBack={() => setView('main')}
+      />
+    );
+  }
+
   // ── EDIT ANIMAL VIEW ──────────────────────────────────────
   if (view === 'edit-animal' && editAnimal) {
     return (
@@ -258,13 +272,21 @@ export default function CalvingSeason() {
           Add New Calf
         </button>
 
-        {/* ── VIEW ALL CALVES BUTTON ──────────────────── */}
-        <button
-          onClick={() => setView('all-calves')}
-          className="w-full h-14 rounded-2xl font-heading font-bold text-base border-2 border-green-300 text-green-800 bg-white hover:bg-green-50 active:scale-[0.98] transition-all flex items-center justify-center gap-2"
-        >
-          View All Calves ({calves.length})
-        </button>
+        {/* ── VIEW ALL CALVES + REPORTS BUTTONS ──────────────────── */}
+        <div className="grid grid-cols-2 gap-3">
+          <button
+            onClick={() => setView('all-calves')}
+            className="h-14 rounded-2xl font-heading font-bold text-base border-2 border-green-300 text-green-800 bg-white hover:bg-green-50 active:scale-[0.98] transition-all"
+          >
+            View All ({calves.length})
+          </button>
+          <button
+            onClick={() => setView('reports')}
+            className="h-14 rounded-2xl font-heading font-bold text-base border-2 border-green-300 text-green-800 bg-white hover:bg-green-50 active:scale-[0.98] transition-all"
+          >
+            Reports 📊
+          </button>
+        </div>
 
         {/* ── ANALYTICS CARD ──────────────────────────── */}
         <div className="bg-white rounded-2xl shadow-sm border border-green-100 overflow-hidden">
