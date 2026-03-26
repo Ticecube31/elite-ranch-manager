@@ -12,7 +12,7 @@ function exportCSV(calves, pastures) {
   const headers = ['Calf #', 'Mother #', 'Sex', 'Type', 'Date Tagged', 'Location', 'Status', 'Notes'];
   const getPastureName = (id) => id ? (pastures.find(p => p.id === id)?.pasture_name || 'Unknown') : 'Unknown';
   const rows = calves.map(a => [
-    a.animal_number,
+    a.tag_number,
     a.mother_animal_number || '',
     a.sex,
     a.animal_type,
@@ -37,7 +37,7 @@ function CalfDetailSheet({ calf, pastures, onClose, onEditCalf }) {
         <button onClick={onClose} className="text-white/80 hover:text-white p-2 -ml-2">
           <ArrowLeft className="w-6 h-6" />
         </button>
-        <h1 className="font-heading font-black text-white text-lg">Calf #{calf.animal_number}</h1>
+        <h1 className="font-heading font-black text-white text-lg">Calf #{calf.tag_number}</h1>
         <button onClick={() => onEditCalf(calf)} className="text-white/90 text-sm font-semibold pr-1">Edit</button>
       </div>
       <div className="overflow-y-auto flex-1 px-5 py-6 space-y-4 max-w-lg mx-auto w-full">
@@ -107,7 +107,7 @@ export default function AllCalvesView({ calves = [], pastures = [], seasons = []
     if (search.trim()) {
       const q = search.trim().toLowerCase();
       list = list.filter(a =>
-        a.animal_number?.toLowerCase().includes(q) ||
+        a.tag_number?.toLowerCase().includes(q) ||
         a.mother_animal_number?.toLowerCase().includes(q)
       );
     }
@@ -367,7 +367,7 @@ export default function AllCalvesView({ calves = [], pastures = [], seasons = []
                   <div className="flex-1 min-w-0">
                     <div className="flex items-baseline gap-2 flex-wrap">
                       <span className="font-heading font-black text-gray-900 text-lg leading-tight">
-                        #{a.animal_number}
+                        #{a.tag_number}
                       </span>
                       {a.mother_animal_number && (
                         <span className="text-sm text-gray-400 font-medium">Dam: #{a.mother_animal_number}</span>

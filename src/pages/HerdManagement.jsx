@@ -62,7 +62,7 @@ export default function HerdManagement() {
     onSuccess: (_, { data }) => {
       queryClient.invalidateQueries({ queryKey: ['animals'] });
       setEditMode(false);
-      toast.success(`#${data.animal_number} updated!`);
+      toast.success(`#${data.tag_number} updated!`);
     },
   });
 
@@ -76,7 +76,7 @@ export default function HerdManagement() {
 
   const filtered = animals.filter(a => {
     const matchSearch = !search ||
-      a.animal_number?.toLowerCase().includes(search.toLowerCase()) ||
+      a.tag_number?.toLowerCase().includes(search.toLowerCase()) ||
       a.mother_animal_number?.toLowerCase().includes(search.toLowerCase());
     const matchType   = typeFilter === 'all'   || a.animal_type === typeFilter;
     const matchSex    = sexFilter === 'all'     || a.sex === sexFilter;
@@ -94,7 +94,7 @@ export default function HerdManagement() {
     if (animal.date_of_birth) events.push({ date: animal.date_of_birth, type: 'birth', label: `Born / Tagged — ${animal.animal_type}` });
     // Sort events from sorting sessions
     sortingSessions.forEach(ss => {
-      const entry = ss.sorted_animals?.find(e => e.animal_number === animal.animal_number);
+      const entry = ss.sorted_animals?.find(e => e.tag_number === animal.tag_number);
       if (entry) events.push({ date: entry.timestamp || ss.session_date, type: 'sort', label: `Sorted ${entry.direction} — "${ss.session_name}"` });
     });
     // Notes as timeline entries (lines starting with "Preg Check")
@@ -112,7 +112,7 @@ export default function HerdManagement() {
   };
 
   const timeline = buildTimeline(selectedAnimal);
-  const mother = selectedAnimal ? animals.find(a => a.animal_number === selectedAnimal.mother_animal_number) : null;
+  const mother = selectedAnimal ? animals.find(a => a.tag_number === selectedAnimal.mother_animal_number) : null;
 
   // ── DETAIL VIEW ──────────────────────────────────────────
   if (selectedAnimal && !editMode) {
@@ -135,7 +135,7 @@ export default function HerdManagement() {
           <div className="p-5">
             <div className="flex items-start justify-between">
               <div>
-                <h1 className="font-heading font-black text-3xl text-foreground">#{selectedAnimal.animal_number}</h1>
+                <h1 className="font-heading font-black text-3xl text-foreground">#{selectedAnimal.tag_number}</h1>
                 <p className="text-muted-foreground text-sm mt-0.5">{selectedAnimal.animal_type} · {selectedAnimal.sex}</p>
               </div>
               <div className="flex flex-col items-end gap-2">
@@ -185,7 +185,7 @@ export default function HerdManagement() {
                     onClick={() => setSelectedAnimal(mother)}
                     className="flex items-center gap-2 font-semibold text-sm text-primary"
                   >
-                    🐮 #{mother.animal_number} — {mother.animal_type}
+                    🐮 #{mother.tag_number} — {mother.animal_type}
                     <ChevronRight className="w-3.5 h-3.5" />
                   </button>
                 ) : (
@@ -234,7 +234,7 @@ export default function HerdManagement() {
         <button onClick={() => setEditMode(false)} className="flex items-center gap-1.5 text-sm font-semibold text-muted-foreground">
           <ArrowLeft className="w-4 h-4" /> Back to Detail
         </button>
-        <h2 className="font-heading font-bold text-xl">Edit #{selectedAnimal.animal_number}</h2>
+        <h2 className="font-heading font-bold text-xl">Edit #{selectedAnimal.tag_number}</h2>
         <AnimalForm
           animal={selectedAnimal}
           onSave={handleSave}
@@ -342,7 +342,7 @@ export default function HerdManagement() {
                 )}
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between gap-2">
-                    <h3 className="font-heading font-bold text-lg text-foreground truncate">#{animal.animal_number}</h3>
+                    <h3 className="font-heading font-bold text-lg text-foreground truncate">#{animal.tag_number}</h3>
                     <Badge variant="outline" className={`text-[10px] shrink-0 ${statusColors[animal.status] || ''}`}>
                       {animal.status}
                     </Badge>

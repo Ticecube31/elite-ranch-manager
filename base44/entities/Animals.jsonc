@@ -2,7 +2,7 @@
   "name": "Animals",
   "type": "object",
   "properties": {
-    "animal_number": {
+    "tag_number": {
       "type": "string",
       "description": "Unique ear-tag or cow number \u2014 must be unique across all animals"
     },
@@ -25,9 +25,13 @@
       ],
       "description": "Type enforced by sex rules: Bull/Calf - Steer = Male only; Cow/1st Calf Heifer/Calf - Heifer = Female only"
     },
+    "mother_id": {
+      "type": "string",
+      "description": "Unique system ID of the mother animal \u2014 for relational integrity"
+    },
     "mother_animal_number": {
       "type": "string",
-      "description": "Mother's AnimalNumber \u2014 for calves. Must reference a valid Cow or 1st Calf Heifer."
+      "description": "Mother's tag number \u2014 for display/reference only. Deprecated: use mother_id for relational queries."
     },
     "date_of_birth": {
       "type": "string",
@@ -81,7 +85,7 @@
     }
   },
   "required": [
-    "animal_number",
+    "tag_number",
     "sex",
     "animal_type"
   ]

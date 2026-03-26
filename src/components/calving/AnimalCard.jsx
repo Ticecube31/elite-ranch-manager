@@ -34,7 +34,7 @@ export default function AnimalCard({ animal, onClick, pastures = [] }) {
         <div className="flex-1 min-w-0">
           <div className="flex items-center justify-between gap-2">
             <h3 className="font-heading font-bold text-lg text-foreground truncate">
-              #{animal.animal_number}
+              #{animal.tag_number}
             </h3>
             <Badge variant="outline" className={`text-[10px] shrink-0 ${statusColors[animal.status] || ''}`}>
               {animal.status}

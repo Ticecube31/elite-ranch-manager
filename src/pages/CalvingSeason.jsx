@@ -71,8 +71,8 @@ export default function CalvingSeason() {
       queryClient.invalidateQueries({ queryKey: ['animals'] });
       queryClient.invalidateQueries({ queryKey: ['animals-stats'] });
       setLastAdded(data);
-      logAudit({ action: 'Created', entityType: 'Animal', entityId: created.id, entityLabel: `Animal #${data.animal_number}`, changeSummary: `New ${data.animal_type} (${data.sex}) created`, newValue: data, user: currentUser });
-      toast.success(`Calf #${data.animal_number} added!`);
+      logAudit({ action: 'Created', entityType: 'Animal', entityId: created.id, entityLabel: `Animal #${data.tag_number}`, changeSummary: `New ${data.animal_type} (${data.sex}) created`, newValue: data, user: currentUser });
+      toast.success(`Calf #${data.tag_number} added!`);
       setView('success');
     },
   });
@@ -84,8 +84,8 @@ export default function CalvingSeason() {
       queryClient.invalidateQueries({ queryKey: ['animals-stats'] });
       setEditAnimal(null);
       setView('main');
-      toast.success(`Animal #${data.animal_number} updated!`);
-      logAudit({ action: 'Updated', entityType: 'Animal', entityId: id, entityLabel: `Animal #${data.animal_number}`, changeSummary: `Record updated`, newValue: data, user: currentUser });
+      toast.success(`Animal #${data.tag_number} updated!`);
+      logAudit({ action: 'Updated', entityType: 'Animal', entityId: id, entityLabel: `Animal #${data.tag_number}`, changeSummary: `Record updated`, newValue: data, user: currentUser });
     },
   });
 
@@ -214,7 +214,7 @@ export default function CalvingSeason() {
           <button onClick={() => { setView('main'); setEditAnimal(null); }} className="text-white/80 hover:text-white p-2 -ml-2">
             <X className="w-6 h-6" />
           </button>
-          <h1 className="font-heading font-black text-white text-lg">Edit #{editAnimal.animal_number}</h1>
+          <h1 className="font-heading font-black text-white text-lg">Edit #{editAnimal.tag_number}</h1>
           <div className="w-10" />
         </div>
         <div className="px-5 py-6 max-w-lg mx-auto">
@@ -316,7 +316,7 @@ export default function CalvingSeason() {
                     </div>
                     <div>
                       <p className="font-heading font-bold text-base text-gray-900">
-                        #{animal.animal_number}
+                        #{animal.tag_number}
                         <span className="ml-2 font-normal text-sm text-gray-500">— {animal.sex}</span>
                       </p>
                       {animal.mother_animal_number && (

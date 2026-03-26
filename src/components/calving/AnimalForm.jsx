@@ -12,9 +12,10 @@ import { allowedTypesForSex, validateSexType } from '@/lib/animalRules';
 
 export default function AnimalForm({ animal, onSave, onCancel, existingAnimals = [], seasons = [], defaultSeasonId }) {
   const [form, setForm] = useState({
-    animal_number: '',
+    tag_number: '',
     sex: '',
     animal_type: '',
+    mother_id: '',
     mother_animal_number: '',
     date_of_birth: new Date().toISOString().split('T')[0],
     status: 'Alive',
@@ -72,7 +73,7 @@ export default function AnimalForm({ animal, onSave, onCancel, existingAnimals =
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!form.animal_number?.trim()) { toast.error('Animal Number is required'); return; }
+    if (!form.tag_number?.trim()) { toast.error('Tag Number is required'); return; }
     if (!form.sex)                   { toast.error('Sex is required'); return; }
     if (!form.animal_type)           { toast.error('Animal Type is required'); return; }
     // derive location label from selected pasture for display purposes
@@ -83,36 +84,37 @@ export default function AnimalForm({ animal, onSave, onCancel, existingAnimals =
 
     // Uniqueness check (skip if editing same animal)
     const duplicate = existingAnimals.find(
-      a => a.animal_number?.toLowerCase() === form.animal_number.trim().toLowerCase() && a.id !== animal?.id
+      a => a.tag_number?.toLowerCase() === form.tag_number.trim().toLowerCase() && a.id !== animal?.id
     );
-    if (duplicate) { toast.error(`Animal #${form.animal_number} already exists`); return; }
+    if (duplicate) { toast.error(`Tag #${form.tag_number} already exists`); return; }
 
     // Mother required for Calf types
     const isCalfType = ['Calf - Steer', 'Calf - Heifer'].includes(form.animal_type);
-    if (isCalfType && !form.mother_animal_number?.trim()) {
-      toast.error('Mother Animal Number is required for a Calf');
+    if (isCalfType && !form.mother_id?.trim()) {
+      toast.error('Mother is required for a Calf');
       return;
     }
 
-    // Validate mother exists and is a Cow/1st Calf Heifer
-    if (isCalfType && form.mother_animal_number) {
+    // Validate mother exists if only tag is provided
+    if (isCalfType && form.mother_animal_number && !form.mother_id) {
       const mother = existingAnimals.find(
-        a => a.animal_number?.toLowerCase() === form.mother_animal_number.trim().toLowerCase()
+        a => a.tag_number?.toLowerCase() === form.mother_animal_number.trim().toLowerCase()
       );
       if (!mother) {
-        toast.error(`Mother #${form.mother_animal_number} not found in Animals table`);
+        toast.error(`Mother #${form.mother_animal_number} not found`);
         return;
       }
       if (!['Cow', '1st Calf Heifer'].includes(mother.animal_type)) {
-        toast.error(`#${form.mother_animal_number} is a ${mother.animal_type} — mother must be Cow or 1st Calf Heifer`);
+        toast.error(`#${form.mother_animal_number} is a ${mother.animal_type} — must be Cow or 1st Calf Heifer`);
         return;
       }
+      form.mother_id = mother.id;
     }
 
     setSaving(true);
     await onSave({
       ...form,
-      animal_number: form.animal_number.trim(),
+      tag_number: form.tag_number.trim(),
       birth_year:   form.date_of_birth ? new Date(form.date_of_birth).getFullYear() : undefined,
       is_archived:  ['Sold', 'Died'].includes(form.status),
     });
@@ -143,12 +145,12 @@ export default function AnimalForm({ animal, onSave, onCancel, existingAnimals =
         </label>
       </div>
 
-      {/* Animal Number */}
+      {/* Tag Number */}
       <div>
-        <Label className="text-sm font-semibold">Animal Number / Tag ID *</Label>
+        <Label className="text-sm font-semibold">Tag Number *</Label>
         <Input
-          value={form.animal_number}
-          onChange={(e) => update('animal_number', e.target.value)}
+          value={form.tag_number}
+          onChange={(e) => update('tag_number', e.target.value)}
           placeholder="e.g. 142, A-55"
           className="h-14 text-xl font-bold mt-1"
         />
@@ -205,16 +207,16 @@ export default function AnimalForm({ animal, onSave, onCancel, existingAnimals =
       {/* Mother (Calf types only) */}
       {['Calf - Steer', 'Calf - Heifer'].includes(form.animal_type) && (
         <div>
-          <Label className="text-sm font-semibold">Mother's Tag Number *</Label>
+          <Label className="text-sm font-semibold">Mother *</Label>
           {validMothers.length > 0 ? (
-            <Select value={form.mother_animal_number} onValueChange={(v) => update('mother_animal_number', v)}>
+            <Select value={form.mother_id || ''} onValueChange={(v) => update('mother_id', v)}>
               <SelectTrigger className="h-14 text-base mt-1">
                 <SelectValue placeholder="Pick mother (Cow or 1st Calf Heifer)" />
               </SelectTrigger>
               <SelectContent>
                 {validMothers.map(m => (
-                  <SelectItem key={m.id} value={m.animal_number}>
-                    #{m.animal_number} — {m.animal_type}
+                  <SelectItem key={m.id} value={m.id}>
+                    #{m.tag_number} — {m.animal_type}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -321,7 +323,7 @@ export default function AnimalForm({ animal, onSave, onCancel, existingAnimals =
         </Button>
         <Button type="submit" disabled={saving} className="flex-1 h-14 text-base font-semibold">
           <Save className="w-5 h-5 mr-2" />
-          {saving ? 'Saving...' : animal ? 'Update' : 'Save Animal'}
+          {saving ? 'Saving...' : animal ? 'Update' : 'Save'}
         </Button>
       </div>
     </form>

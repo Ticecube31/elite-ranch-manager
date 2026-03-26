@@ -19,6 +19,7 @@ export default function QuickCalfForm({ animals = [], seasons = [], pastures = [
   const [newCowType, setNewCowType]         = useState('Cow'); // Cow or 1st Calf Heifer
   const [addingCow, setAddingCow]           = useState(false);
   const [pendingMother, setPendingMother]   = useState(null); // mother added mid-flow
+  const [motherId, setMotherId]             = useState(null); // unique system ID of mother
 
   const [calfTag, setCalfTag]               = useState('');
   const [calfTagEdited, setCalfTagEdited]   = useState(false);
@@ -47,8 +48,15 @@ export default function QuickCalfForm({ animals = [], seasons = [], pastures = [
   // Mother lookup — use pendingMother (just-created) or search existing
   const mother = pendingMother
     || (motherTag.trim()
-      ? animals.find(a => a.animal_number?.toLowerCase() === motherTag.trim().toLowerCase())
+      ? animals.find(a => a.tag_number?.toLowerCase() === motherTag.trim().toLowerCase())
       : null);
+  
+  // Update motherId when mother is found
+  useEffect(() => {
+    if (mother && mother.id) {
+      setMotherId(mother.id);
+    }
+  }, [mother]);
 
   const motherValid   = !!mother && ['Cow', '1st Calf Heifer'].includes(mother.animal_type);
   const motherNotFound = !unknownMother && motherTag.trim().length > 0 && !mother;
@@ -84,6 +92,7 @@ export default function QuickCalfForm({ animals = [], seasons = [], pastures = [
   const handleCancelUnknown = () => {
     setUnknownMother(false);
     setPendingMother(null);
+    setMotherId(null);
     setTimeout(() => motherInputRef.current?.focus(), 50);
   };
 
@@ -93,14 +102,15 @@ export default function QuickCalfForm({ animals = [], seasons = [], pastures = [
     const birthYear = date ? new Date(date).getFullYear() : new Date().getFullYear();
     const matchedSeason = seasons.find(s => s.year === birthYear);
     const newCow = await base44.entities.Animals.create({
-      animal_number: motherTag.trim(),
+      tag_number: motherTag.trim(),
       sex: 'Female',
       animal_type: newCowType,
       status: 'Alive',
       is_archived: false,
       calving_season_id: matchedSeason?.id || defaultSeasonId || '',
     });
-    setPendingMother({ ...newCow, animal_number: motherTag.trim(), animal_type: newCowType, sex: 'Female' });
+    setPendingMother({ ...newCow, tag_number: motherTag.trim(), animal_type: newCowType, sex: 'Female' });
+    setMotherId(newCow.id);
     setAddNewCowConfirm(false);
     setAddNewCowPrompt(false);
     if (onAnimalsRefresh) onAnimalsRefresh();
@@ -114,7 +124,7 @@ export default function QuickCalfForm({ animals = [], seasons = [], pastures = [
 
     const birthYear = date ? new Date(date).getFullYear() : undefined;
     const dup = animals.find(
-      a => a.animal_number?.toLowerCase() === calfTag.trim().toLowerCase()
+      a => a.tag_number?.toLowerCase() === calfTag.trim().toLowerCase()
         && a.birth_year === birthYear
     );
     if (dup && !isTwin) {
@@ -134,9 +144,10 @@ export default function QuickCalfForm({ animals = [], seasons = [], pastures = [
     setSaving(true);
     setSaved(false);
     await onSave({
-      animal_number:        calfTag.trim(),
+      tag_number:           calfTag.trim(),
       sex,
       animal_type:          animalType,
+      mother_id:            motherId || undefined,
       mother_animal_number: resolvedMother,
       date_of_birth:        date || undefined,
       birth_year:           birthYear,
@@ -158,6 +169,7 @@ export default function QuickCalfForm({ animals = [], seasons = [], pastures = [
     setAddNewCowPrompt(false);
     setAddNewCowConfirm(false);
     setPendingMother(null);
+    setMotherId(null);
     setCalfTag('');
     setCalfTagEdited(false);
     setTwinPrompt(false);
@@ -227,7 +239,7 @@ export default function QuickCalfForm({ animals = [], seasons = [], pastures = [
           {!unknownMother && motherValid && (
             <div className="mt-2 flex items-center gap-2 text-sm font-semibold rounded-xl px-4 py-3 bg-green-50 text-green-700 border border-green-200">
               <CheckCircle2 className="w-5 h-5 shrink-0" />
-              Mother Found: {mother.animal_type} #{mother.animal_number} — Valid
+              Mother Found: {mother.animal_type} #{mother.tag_number} — Valid
             </div>
           )}
 
@@ -235,7 +247,7 @@ export default function QuickCalfForm({ animals = [], seasons = [], pastures = [
           {motherWrongType && (
             <div className="mt-2 flex items-center gap-2 text-sm font-semibold rounded-xl px-4 py-3 bg-red-50 text-red-600 border border-red-200">
               <AlertCircle className="w-5 h-5 shrink-0" />
-              #{motherTag} is a {mother.animal_type} — must be Cow or 1st Calf Heifer
+              #{motherTag} is {mother.animal_type} — must be Cow or 1st Calf Heifer
             </div>
           )}
 
