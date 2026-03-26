@@ -34,6 +34,10 @@
       "format": "date",
       "description": "Date of birth or date first tagged in the field"
     },
+    "birth_year": {
+      "type": "number",
+      "description": "Year of birth \u2014 automatically derived from date_of_birth (e.g. 2025)"
+    },
     "birth_weight": {
       "type": "number",
       "description": "Birth weight in lbs (optional)"

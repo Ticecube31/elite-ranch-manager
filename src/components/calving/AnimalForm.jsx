@@ -121,6 +121,7 @@ export default function AnimalForm({ animal, onSave, onCancel, existingAnimals =
     await onSave({
       ...form,
       animal_number: form.animal_number.trim(),
+      birth_year:   form.date_of_birth ? new Date(form.date_of_birth).getFullYear() : undefined,
       birth_weight: form.birth_weight ? Number(form.birth_weight) : undefined,
       gps_lat:      form.gps_lat      ? Number(form.gps_lat)      : undefined,
       gps_lng:      form.gps_lng      ? Number(form.gps_lng)      : undefined,
