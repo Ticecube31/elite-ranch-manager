@@ -33,6 +33,12 @@ export default function CalvingSeason() {
     initialData: [],
   });
 
+  const { data: pastures = [] } = useQuery({
+    queryKey: ['pastures'],
+    queryFn: () => base44.entities.Pastures.list(),
+    initialData: [],
+  });
+
   const createMutation = useMutation({
     mutationFn: (data) => base44.entities.Animals.create(data),
     onSuccess: (created, data) => {
@@ -74,7 +80,6 @@ export default function CalvingSeason() {
     const matchSearch = !search ||
       a.animal_number?.toLowerCase().includes(search.toLowerCase()) ||
       a.mother_animal_number?.toLowerCase().includes(search.toLowerCase()) ||
-      a.location?.toLowerCase().includes(search.toLowerCase()) ||
       a.breed?.toLowerCase().includes(search.toLowerCase());
     const matchType   = typeFilter === 'all' || a.animal_type === typeFilter;
     const matchSex    = sexFilter === 'all' || a.sex === sexFilter;
@@ -126,11 +131,11 @@ export default function CalvingSeason() {
               <SelectTrigger className="h-10"><SelectValue placeholder="Type" /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Types</SelectItem>
-                <SelectItem value="Calf">Calf</SelectItem>
                 <SelectItem value="Cow">Cow</SelectItem>
-                <SelectItem value="Heifer">Heifer</SelectItem>
+                <SelectItem value="1st Calf Heifer">1st Calf Heifer</SelectItem>
+                <SelectItem value="Calf - Heifer">Calf - Heifer</SelectItem>
                 <SelectItem value="Bull">Bull</SelectItem>
-                <SelectItem value="Steer">Steer</SelectItem>
+                <SelectItem value="Calf - Steer">Calf - Steer</SelectItem>
               </SelectContent>
             </Select>
             <Select value={sexFilter} onValueChange={setSexFilter}>
@@ -178,7 +183,7 @@ export default function CalvingSeason() {
       ) : (
         <div className="space-y-3">
           {filtered.map(animal => (
-            <AnimalCard key={animal.id} animal={animal} onClick={() => handleEdit(animal)} />
+            <AnimalCard key={animal.id} animal={animal} onClick={() => handleEdit(animal)} pastures={pastures} />
           ))}
         </div>
       )}

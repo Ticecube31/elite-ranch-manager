@@ -49,9 +49,9 @@
       "default": "Alive",
       "description": "Current status of the animal"
     },
-    "location": {
+    "pasture_id": {
       "type": "string",
-      "description": "Current location or pasture name (e.g. North Pasture)"
+      "description": "ID of the Pastures record where this animal currently lives \u2014 links to Pastures table"
     },
     "gps_lat": {
       "type": "number",
@@ -81,10 +81,6 @@
     "breed": {
       "type": "string",
       "description": "Breed or breed cross (e.g. Angus, Hereford, Angus x Hereford)"
-    },
-    "pasture_id": {
-      "type": "string",
-      "description": "ID of the Pastures record where this animal currently lives \u2014 links to Pastures table"
     }
   },
   "required": [

@@ -5,7 +5,8 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { base44 } from '@/api/base44Client';
-import { Camera, Save, X, MapPin } from 'lucide-react';
+import { Camera, Save, X, MapPin, TreePine } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { allowedTypesForSex, validateSexType } from '@/lib/animalRules';
 
@@ -20,7 +21,6 @@ export default function AnimalForm({ animal, onSave, onCancel, existingAnimals =
     date_of_birth: new Date().toISOString().split('T')[0],
     birth_weight: '',
     status: 'Alive',
-    location: '',
     notes: '',
     photo_url: '',
     tag_color: '',
@@ -33,6 +33,12 @@ export default function AnimalForm({ animal, onSave, onCancel, existingAnimals =
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [gpsLoading, setGpsLoading] = useState(false);
+
+  const { data: pastures = [] } = useQuery({
+    queryKey: ['pastures'],
+    queryFn: () => base44.entities.Pastures.list(),
+    initialData: [],
+  });
 
   const allowedTypes = allowedTypesForSex(form.sex);
 
@@ -76,6 +82,7 @@ export default function AnimalForm({ animal, onSave, onCancel, existingAnimals =
     if (!form.animal_number?.trim()) { toast.error('Animal Number is required'); return; }
     if (!form.sex)                   { toast.error('Sex is required'); return; }
     if (!form.animal_type)           { toast.error('Animal Type is required'); return; }
+    // derive location label from selected pasture for display purposes
 
     // Central sex/type rule enforcement
     const ruleError = validateSexType(form.sex, form.animal_type);
@@ -109,6 +116,7 @@ export default function AnimalForm({ animal, onSave, onCancel, existingAnimals =
       }
     }
 
+    const selectedPasture = pastures.find(p => p.id === form.pasture_id);
     setSaving(true);
     await onSave({
       ...form,
@@ -301,15 +309,31 @@ export default function AnimalForm({ animal, onSave, onCancel, existingAnimals =
         </Select>
       </div>
 
-      {/* Location */}
+      {/* Pasture / Location */}
       <div>
-        <Label className="text-sm font-semibold">Location / Pasture</Label>
-        <Input
-          value={form.location}
-          onChange={(e) => update('location', e.target.value)}
-          placeholder="e.g. North Pasture"
-          className="h-14 text-lg mt-1"
-        />
+        <Label className="text-sm font-semibold">Pasture / Location</Label>
+        <Select value={form.pasture_id || ''} onValueChange={(v) => update('pasture_id', v === '__none__' ? '' : v)}>
+          <SelectTrigger className="h-14 text-base mt-1">
+            <SelectValue placeholder="Select pasture..." />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="__none__">— No pasture assigned —</SelectItem>
+            {pastures.map(p => (
+              <SelectItem key={p.id} value={p.id}>
+                <span className="flex items-center gap-2">
+                  <TreePine className="w-4 h-4 text-amber-600" />
+                  {p.pasture_name}
+                  {p.current_herd_count !== undefined && (
+                    <span className="text-xs text-muted-foreground">({p.current_herd_count} animals)</span>
+                  )}
+                </span>
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        {pastures.length === 0 && (
+          <p className="text-xs text-muted-foreground mt-1">Add pastures in the Pastures tab to assign locations.</p>
+        )}
       </div>
 
       {/* GPS */}

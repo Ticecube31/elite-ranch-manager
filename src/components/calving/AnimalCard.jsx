@@ -16,7 +16,8 @@ const typeIcons = {
   'Calf - Steer': '🐂',
 };
 
-export default function AnimalCard({ animal, onClick }) {
+export default function AnimalCard({ animal, onClick, pastures = [] }) {
+  const pastureName = pastures.find(p => p.id === animal.pasture_id)?.pasture_name;
   return (
     <button
       onClick={onClick}
@@ -54,6 +55,9 @@ export default function AnimalCard({ animal, onClick }) {
             <p className="text-xs text-muted-foreground mt-1">
               Born: {format(new Date(animal.date_of_birth), 'MMM d, yyyy')}
             </p>
+          )}
+          {pastureName && (
+            <p className="text-xs text-muted-foreground mt-0.5">📍 {pastureName}</p>
           )}
         </div>
       </div>
