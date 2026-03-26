@@ -112,8 +112,10 @@ export default function QuickCalfForm({ animals = [], seasons = [], pastures = [
     if (!calfTag.trim()) { toast.error('Calf Tag # is required'); return; }
     if (!sex)            { toast.error('Select Male or Female'); return; }
 
+    const birthYear = date ? new Date(date).getFullYear() : undefined;
     const dup = animals.find(
       a => a.animal_number?.toLowerCase() === calfTag.trim().toLowerCase()
+        && a.birth_year === birthYear
     );
     if (dup && !isTwin) {
       setTwinPrompt(true);
@@ -124,7 +126,6 @@ export default function QuickCalfForm({ animals = [], seasons = [], pastures = [
     const ruleError  = validateSexType(sex, animalType);
     if (ruleError)  { toast.error(ruleError); return; }
 
-    const birthYear         = date ? new Date(date).getFullYear() : undefined;
     const matchedSeason     = seasons.find(s => s.year === birthYear);
     const calving_season_id = matchedSeason?.id || defaultSeasonId || '';
 
