@@ -1,115 +1,136 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import { Baby, ArrowLeftRight, Beef, Settings } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { Baby, ArrowLeftRight, TreePine, Beef, TrendingUp, Calendar } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
-import StatCard from '@/components/shared/StatCard';
-import AIHelpButton from '@/components/shared/AIHelpButton';
 
-const sectionCards = [
-  {
-    path: '/calving',
-    icon: Baby,
-    title: 'Calving Season',
-    description: 'Log new calves, mother info, sex, location, notes. View records & export.',
-    gradient: 'from-emerald-600 to-green-700',
-    iconBg: 'bg-emerald-500/20',
-  },
-  {
-    path: '/sorting',
-    icon: ArrowLeftRight,
-    title: 'Calf Sorting',
-    description: 'Quick sex lookup & fast right/left sorting by cow number.',
-    gradient: 'from-blue-600 to-sky-700',
-    iconBg: 'bg-blue-500/20',
-  },
-  {
-    path: '/pastures',
-    icon: TreePine,
-    title: 'Pasture Management',
-    description: 'Move herds, track pastures, grass & rotations.',
-    badge: 'Coming Soon',
-    gradient: 'from-amber-700 to-yellow-800',
-    iconBg: 'bg-amber-500/20',
-  },
-];
+import HeroStats from '@/components/home/HeroStats';
+import SectionCard from '@/components/home/SectionCard';
+import RecentActivity from '@/components/home/RecentActivity';
+import PastureComing from '@/components/home/PastureComing';
 
 export default function Home() {
+  const [user, setUser] = useState(null);
+  const [ranchName, setRanchName] = useState('Elite Ranch Manager');
+
+  useEffect(() => {
+    base44.auth.me().then(setUser).catch(() => {});
+    base44.entities.RanchSettings.list().then(list => {
+      if (list.length > 0 && list[0].ranch_name) setRanchName(list[0].ranch_name);
+    }).catch(() => {});
+  }, []);
+
   const { data: animals = [] } = useQuery({
     queryKey: ['animals-stats'],
     queryFn: () => base44.entities.Animals.list(),
-    initialData: [],
+    refetchInterval: 30_000,
   });
 
   const { data: sessions = [] } = useQuery({
     queryKey: ['sorting-stats'],
     queryFn: () => base44.entities.SortingSessions.list(),
+    refetchInterval: 30_000,
+  });
+
+  const { data: pastures = [] } = useQuery({
+    queryKey: ['pastures-stats'],
+    queryFn: () => base44.entities.Pastures.list(),
     initialData: [],
   });
 
   const currentYear = new Date().getFullYear();
-  const totalAnimals = animals.filter(a => a.status === 'Alive').length;
-  const calvesThisYear = animals.filter(
-    a => a.animal_type === 'Calf' && a.date_of_birth && new Date(a.date_of_birth).getFullYear() === currentYear
-  ).length;
-  const activeSessions = sessions.filter(s => s.status === 'Active').length;
+  const today = new Date().toISOString().split('T')[0];
+
+  const statsValues = {
+    totalAnimals:   animals.filter(a => a.status === 'Alive').length,
+    calvesThisYear: animals.filter(a =>
+      a.animal_type === 'Calf' &&
+      a.date_of_birth &&
+      new Date(a.date_of_birth).getFullYear() === currentYear
+    ).length,
+    activeSessions: sessions.filter(s =>
+      s.status === 'Active' && s.session_date === today
+    ).length,
+    activePastures: pastures.filter(p => p.status === 'Active').length,
+  };
+
+  const greeting = () => {
+    const h = new Date().getHours();
+    if (h < 12) return 'Good morning';
+    if (h < 17) return 'Good afternoon';
+    return 'Good evening';
+  };
+
+  const firstName = user?.full_name?.split(' ')[0] ?? user?.email?.split('@')[0] ?? 'Rancher';
 
   return (
-    <div className="px-4 py-6 max-w-2xl mx-auto space-y-8">
-      {/* Hero */}
-      <div className="text-center space-y-3">
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-semibold">
-          <Beef className="w-3.5 h-3.5" />
-          Field-Ready Ranch Tool
-        </div>
+    <div className="px-4 py-5 max-w-2xl mx-auto space-y-7 pb-6">
+
+      {/* ── Hero ─────────────────────────────────────────────── */}
+      <div className="space-y-1 pt-1">
+        <p className="text-sm text-muted-foreground font-medium">
+          {greeting()}, <span className="text-foreground font-semibold">{firstName}</span> 👋
+        </p>
         <h1 className="font-heading font-black text-3xl sm:text-4xl text-foreground leading-tight">
-          Elite Ranch Manager
+          Welcome to<br className="sm:hidden" /> Elite Ranch Manager
         </h1>
-        <p className="text-muted-foreground text-base max-w-md mx-auto">
-          Tag calves. Sort them fast. Manage your pastures. All from your phone.
+        <p className="text-muted-foreground text-[15px] leading-relaxed max-w-md">
+          Your complete field ranch management system —&nbsp;
+          tag, sort, and pasture from your phone.
         </p>
       </div>
 
-      {/* Section Cards */}
-      <div className="space-y-4">
-        {sectionCards.map(({ path, icon: Icon, title, description, gradient, iconBg, badge }) => (
-          <Link
-            key={path}
-            to={path}
-            className={`block rounded-2xl bg-gradient-to-br ${gradient} p-6 text-white shadow-lg hover:shadow-xl transition-all active:scale-[0.98]`}
-          >
-            <div className="flex items-start gap-4">
-              <div className={`w-14 h-14 rounded-xl ${iconBg} flex items-center justify-center shrink-0`}>
-                <Icon className="w-7 h-7 text-white" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2">
-                  <h2 className="font-heading font-bold text-xl">{title}</h2>
-                  {badge && (
-                    <span className="text-[10px] font-bold bg-white/20 px-2 py-0.5 rounded-full">
-                      {badge}
-                    </span>
-                  )}
-                </div>
-                <p className="text-white/80 text-sm mt-1 leading-relaxed">{description}</p>
-              </div>
-            </div>
-          </Link>
-        ))}
+      {/* ── Live Stats ───────────────────────────────────────── */}
+      <HeroStats values={statsValues} />
+
+      {/* ── Section: Calving ─────────────────────────────────── */}
+      <SectionCard
+        path="/calving"
+        icon={Baby}
+        emoji="🐄"
+        title="CALVING SEASON"
+        description="Log new calves, link to mother (Cow or Heifer), auto-generate unique Animal record, record sex, location, notes, and photos."
+        buttonLabel="Enter Calving Season"
+        gradient="bg-gradient-to-br from-emerald-500 via-green-600 to-emerald-800"
+        iconBg="bg-white/20"
+      />
+
+      {/* ── Section: Sorting ─────────────────────────────────── */}
+      <SectionCard
+        path="/sorting"
+        icon={ArrowLeftRight}
+        emoji="🔀"
+        title="CALF SORTING"
+        description="Fast cow-number lookup, instant sex display (Male / Steer or Female / Heifer), pre-session right/left mapping, one-tap sorting."
+        buttonLabel="Enter Calf Sorting"
+        gradient="bg-gradient-to-br from-blue-500 via-sky-600 to-blue-800"
+        iconBg="bg-white/20"
+      />
+
+      {/* ── Section: Pastures (Coming Soon) ──────────────────── */}
+      <PastureComing />
+
+      {/* ── Recent Activity ──────────────────────────────────── */}
+      <RecentActivity animals={animals} sessions={sessions} />
+
+      {/* ── Footer Links ─────────────────────────────────────── */}
+      <div className="flex items-center justify-between pt-2 border-t border-border">
+        <Link
+          to="/settings"
+          className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground font-medium transition-colors"
+        >
+          <Settings className="w-4 h-4" />
+          Settings
+        </Link>
+        <Link
+          to="/ai-assistant"
+          className="flex items-center gap-1.5 text-sm text-primary hover:text-primary/80 font-semibold transition-colors"
+        >
+          <Beef className="w-4 h-4" />
+          AI Ranch Assistant
+        </Link>
       </div>
 
-      {/* Stats */}
-      <div>
-        <h2 className="font-heading font-bold text-lg text-foreground mb-3">Ranch at a Glance</h2>
-        <div className="grid grid-cols-2 gap-3">
-          <StatCard icon={Beef} label="Total Animals" value={totalAnimals} color="bg-primary/10 text-primary" />
-          <StatCard icon={Baby} label="Calves This Year" value={calvesThisYear} color="bg-emerald-100 text-emerald-700" />
-          <StatCard icon={ArrowLeftRight} label="Active Sorts" value={activeSessions} color="bg-blue-100 text-blue-700" />
-          <StatCard icon={TrendingUp} label="Alive Rate" value={totalAnimals > 0 ? `${Math.round((animals.filter(a => a.status === 'Alive').length / animals.length) * 100)}%` : '—'} color="bg-amber-100 text-amber-700" />
-        </div>
-      </div>
-
-      <AIHelpButton context="home dashboard" />
     </div>
   );
 }
