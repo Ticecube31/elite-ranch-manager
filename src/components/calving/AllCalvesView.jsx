@@ -86,12 +86,10 @@ export default function AllCalvesView({ calves = [], pastures = [], seasons = []
   const [locationFilter, setLocationFilter] = useState(null);
   const [showLocationPicker, setShowLocationPicker] = useState(false);
 
-  // Derive unique seasons that actually have calves
+  // All seasons from the CalvingSeasons entity, sorted newest first
   const seasonsWithCalves = useMemo(() => {
-    const calfList = calves.filter(a => ['Calf - Heifer', 'Calf - Steer'].includes(a.animal_type));
-    const ids = new Set(calfList.map(a => a.calving_season_id).filter(Boolean));
-    return seasons.filter(s => ids.has(s.id)).sort((a, b) => b.year - a.year);
-  }, [calves, seasons]);
+    return [...seasons].sort((a, b) => b.year - a.year);
+  }, [seasons]);
 
   // Pastures that have calves (+ Unknown bucket)
   const pastureOptions = useMemo(() => {
