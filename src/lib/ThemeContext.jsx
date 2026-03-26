@@ -36,6 +36,24 @@ const SECTION_THEMES = {
     headerText: '#ffffff',
     tabColor:   'text-amber-700',
   },
+  '/preg-checking': {
+    name: 'preg-checking',
+    primary:    '33 100% 50%',
+    ring:       '33 100% 50%',
+    accent:     '20 90% 45%',
+    headerBg:   'hsla(20,60%,15%,0.97)',
+    headerText: '#ffffff',
+    tabColor:   'text-orange-500',
+  },
+  '/herd': {
+    name: 'herd',
+    primary:    '310 45% 30%',
+    ring:       '310 45% 30%',
+    accent:     '310 35% 42%',
+    headerBg:   'hsla(310,40%,12%,0.97)',
+    headerText: '#ffffff',
+    tabColor:   'text-purple-700',
+  },
 };
 
 const HOME_THEME = {

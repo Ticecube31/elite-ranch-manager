@@ -1,17 +1,18 @@
 import React, { useEffect, useState } from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
-import { Home, Baby, ArrowLeftRight, TreePine, Settings } from 'lucide-react';
+import { Home, Baby, ArrowLeftRight, TreePine, HeartPulse, Rows3 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { base44 } from '@/api/base44Client';
 import { useTheme } from '@/lib/ThemeContext';
 import AISearchBar from '@/components/layout/AISearchBar';
 
 const bottomNavItems = [
-  { path: '/',         icon: Home,           label: 'Home',     activeColor: 'text-primary',      activeBg: 'bg-primary/10'   },
-  { path: '/calving',  icon: Baby,           label: 'Calving',  activeColor: 'text-emerald-500',  activeBg: 'bg-emerald-50'   },
-  { path: '/sorting',  icon: ArrowLeftRight, label: 'Sorting',  activeColor: 'text-blue-500',     activeBg: 'bg-blue-50'      },
-  { path: '/pastures', icon: TreePine,       label: 'Pastures', activeColor: 'text-amber-600',    activeBg: 'bg-amber-50'     },
-  { path: '/settings', icon: Settings,       label: 'Settings', activeColor: 'text-slate-600',    activeBg: 'bg-slate-100'    },
+  { path: '/',              icon: Home,           label: 'Home',    activeColor: 'text-primary',      activeBg: 'bg-primary/10'   },
+  { path: '/calving',       icon: Baby,           label: 'Calving', activeColor: 'text-emerald-500',  activeBg: 'bg-emerald-50'   },
+  { path: '/sorting',       icon: ArrowLeftRight, label: 'Sorting', activeColor: 'text-blue-500',     activeBg: 'bg-blue-50'      },
+  { path: '/pastures',      icon: TreePine,       label: 'Pastures',activeColor: 'text-amber-600',    activeBg: 'bg-amber-50'     },
+  { path: '/preg-checking', icon: HeartPulse,     label: 'Preg',    activeColor: 'text-orange-500',   activeBg: 'bg-orange-50'    },
+  { path: '/herd',          icon: Rows3,          label: 'Herd',    activeColor: 'text-purple-700',   activeBg: 'bg-purple-50'    },
 ];
 
 function UserAvatar({ user }) {
@@ -90,9 +91,11 @@ export default function AppLayout() {
           {/* Desktop nav links */}
           <nav className="hidden md:flex items-center gap-1 shrink-0">
             {[
-              { path: '/calving',  label: 'Calving'  },
-              { path: '/sorting',  label: 'Sorting'  },
-              { path: '/pastures', label: 'Pastures' },
+              { path: '/calving',       label: 'Calving'  },
+              { path: '/sorting',       label: 'Sorting'  },
+              { path: '/pastures',      label: 'Pastures' },
+              { path: '/preg-checking', label: 'Preg'     },
+              { path: '/herd',          label: 'Herd'     },
             ].map(({ path, label }) => (
               <Link
                 key={path}
@@ -135,7 +138,7 @@ export default function AppLayout() {
 
       {/* ── Bottom Tab Bar ───────────────────────────────────── */}
       <nav className="fixed bottom-0 left-0 right-0 z-50 bg-card/98 backdrop-blur-md border-t border-border safe-bottom md:hidden">
-        <div className="flex items-stretch justify-around h-[64px] max-w-lg mx-auto px-1">
+        <div className="flex items-stretch justify-around h-[60px] max-w-lg mx-auto px-0.5">
           {bottomNavItems.map(({ path, icon: Icon, label, activeColor, activeBg }) => {
             const isActive = path === '/'
               ? location.pathname === '/'
@@ -145,12 +148,12 @@ export default function AppLayout() {
                 key={path}
                 to={path}
                 className={cn(
-                  'flex flex-col items-center justify-center gap-[3px] flex-1 rounded-xl my-1.5 transition-all',
+                  'flex flex-col items-center justify-center gap-[2px] flex-1 rounded-lg my-1 transition-all',
                   isActive ? `${activeColor} ${activeBg}` : 'text-muted-foreground'
                 )}
               >
-                <Icon className={cn('w-[26px] h-[26px]', isActive && 'stroke-[2.5px]')} />
-                <span className={cn('text-[10px] leading-none font-medium', isActive && 'font-bold')}>
+                <Icon className={cn('w-[22px] h-[22px]', isActive && 'stroke-[2.5px]')} />
+                <span className={cn('text-[9px] leading-none font-medium', isActive && 'font-bold')}>
                   {label}
                 </span>
               </Link>

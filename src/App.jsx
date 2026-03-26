@@ -14,6 +14,8 @@ import CalfSorting from '@/pages/CalfSorting';
 import PastureManagement from '@/pages/PastureManagement';
 import Settings from '@/pages/Settings';
 import AIAssistant from '@/pages/AIAssistant';
+import PregChecking from '@/pages/PregChecking';
+import HerdManagement from '@/pages/HerdManagement';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -49,6 +51,8 @@ const AuthenticatedApp = () => {
         <Route path="/pastures" element={<PastureManagement />} />
         <Route path="/settings" element={<Settings />} />
         <Route path="/ai-assistant" element={<AIAssistant />} />
+        <Route path="/preg-checking" element={<PregChecking />} />
+        <Route path="/herd" element={<HerdManagement />} />
       </Route>
       <Route path="*" element={<PageNotFound />} />
     </Routes>

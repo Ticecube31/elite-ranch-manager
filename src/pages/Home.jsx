@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Baby, ArrowLeftRight, Beef, Settings, Sparkles } from 'lucide-react';
+import { Baby, ArrowLeftRight, Beef, Settings, TreePine, HeartPulse, Rows3 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
@@ -7,7 +7,6 @@ import { useQuery } from '@tanstack/react-query';
 import HeroStats from '@/components/home/HeroStats';
 import SectionCard from '@/components/home/SectionCard';
 import RecentActivity from '@/components/home/RecentActivity';
-import PastureComing from '@/components/home/PastureComing';
 
 export default function Home() {
   const [user, setUser] = useState(null);
@@ -64,7 +63,7 @@ export default function Home() {
   const firstName = user?.full_name?.split(' ')[0] ?? user?.email?.split('@')[0] ?? 'Rancher';
 
   return (
-    <div className="px-4 py-5 max-w-2xl mx-auto space-y-7 pb-6">
+    <div className="px-4 py-5 max-w-2xl mx-auto space-y-5 pb-8">
 
       {/* ── Hero ─────────────────────────────────────────────── */}
       <div className="space-y-1 pt-1">
@@ -72,43 +71,76 @@ export default function Home() {
           {greeting()}, <span className="text-foreground font-semibold">{firstName}</span> 👋
         </p>
         <h1 className="font-heading font-black text-3xl sm:text-4xl text-foreground leading-tight">
-          Welcome to<br className="sm:hidden" /> Elite Ranch Manager
+          Elite Ranch Manager
         </h1>
-        <p className="text-muted-foreground text-[15px] leading-relaxed max-w-md">
-          Your complete field ranch management system —&nbsp;
-          tag, sort, and pasture from your phone.
+        <p className="text-muted-foreground text-[14px] leading-relaxed max-w-md">
+          Tag calves. Sort them fast. Manage pastures. Check pregnancies. Track your herd.
         </p>
       </div>
 
       {/* ── Live Stats ───────────────────────────────────────── */}
       <HeroStats values={statsValues} />
 
-      {/* ── Section: Calving ─────────────────────────────────── */}
+      {/* ── 1. CALVING SEASON ──────────────────────────────── */}
       <SectionCard
         path="/calving"
         icon={Baby}
         emoji="🐄"
         title="CALVING SEASON"
-        description="Log new calves, link to mother (Cow or Heifer), auto-generate unique Animal record, record sex, location, notes, and photos."
+        description="Log new calves, link to mothers, record details."
         buttonLabel="Enter Calving Season"
-        gradient="bg-gradient-to-br from-emerald-500 via-green-600 to-emerald-800"
+        gradient="bg-gradient-to-br from-emerald-400 via-green-500 to-emerald-700"
         iconBg="bg-white/20"
       />
 
-      {/* ── Section: Sorting ─────────────────────────────────── */}
+      {/* ── 2. CALF SORTING ────────────────────────────────── */}
       <SectionCard
         path="/sorting"
         icon={ArrowLeftRight}
         emoji="🔀"
         title="CALF SORTING"
-        description="Fast cow-number lookup, instant sex display (Male / Steer or Female / Heifer), pre-session right/left mapping, one-tap sorting."
+        description="Fast sex lookup and right/left sorting by cow number."
         buttonLabel="Enter Calf Sorting"
-        gradient="bg-gradient-to-br from-blue-500 via-sky-600 to-blue-800"
+        gradient="bg-gradient-to-br from-blue-400 via-sky-500 to-blue-700"
         iconBg="bg-white/20"
       />
 
-      {/* ── Section: Pastures (Coming Soon) ──────────────────── */}
-      <PastureComing />
+      {/* ── 3. PASTURE MANAGEMENT ──────────────────────────── */}
+      <SectionCard
+        path="/pastures"
+        icon={TreePine}
+        emoji="🌿"
+        title="PASTURE MANAGEMENT"
+        description="Move herds and track grazing."
+        buttonLabel="View Pastures"
+        gradient="bg-gradient-to-br from-amber-600 via-yellow-700 to-stone-700"
+        iconBg="bg-white/20"
+        badge="Coming Soon"
+      />
+
+      {/* ── 4. PREG CHECKING ───────────────────────────────── */}
+      <SectionCard
+        path="/preg-checking"
+        icon={HeartPulse}
+        emoji="🤰"
+        title="PREG CHECKING"
+        description="Check pregnancy status for upcoming calving seasons."
+        buttonLabel="Start Preg Check"
+        gradient="bg-gradient-to-br from-orange-400 via-orange-500 to-orange-800"
+        iconBg="bg-white/20"
+      />
+
+      {/* ── 5. HERD MANAGEMENT ─────────────────────────────── */}
+      <SectionCard
+        path="/herd"
+        icon={Rows3}
+        emoji="🐂"
+        title="HERD MANAGEMENT"
+        description="View and manage individual animals, full metadata and history."
+        buttonLabel="View Herd"
+        gradient="bg-gradient-to-br from-purple-600 via-fuchsia-700 to-purple-900"
+        iconBg="bg-white/20"
+      />
 
       {/* ── Recent Activity ──────────────────────────────────── */}
       <RecentActivity animals={animals} sessions={sessions} />
