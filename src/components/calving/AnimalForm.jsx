@@ -54,6 +54,14 @@ export default function AnimalForm({ animal, onSave, onCancel, existingAnimals =
     }
   }, [form.sex]);
 
+  // Auto-derive birth_year from date_of_birth
+  useEffect(() => {
+    if (form.date_of_birth) {
+      const year = new Date(form.date_of_birth).getFullYear();
+      setForm(prev => ({ ...prev, birth_year: year }));
+    }
+  }, [form.date_of_birth]);
+
   const handlePhotoUpload = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
