@@ -10,15 +10,6 @@
       "type": "string",
       "description": "Display label \u2014 auto-set to 'Calving Season YYYY'"
     },
-    "status": {
-      "type": "string",
-      "enum": [
-        "Active",
-        "Closed"
-      ],
-      "default": "Active",
-      "description": "Active = current season; Closed = historical"
-    },
     "notes": {
       "type": "string",
       "description": "Season-level notes"

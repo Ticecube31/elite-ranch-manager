@@ -49,11 +49,10 @@ export default function CalvingSeason() {
     initialData: [],
   });
 
-  // Auto-select active season on first load
+  // Auto-select most recent season on first load
   useEffect(() => {
     if (seasons.length > 0 && selectedSeasonId === 'all') {
-      const active = seasons.find(s => s.status === 'Active');
-      if (active) setSelectedSeasonId(active.id);
+      setSelectedSeasonId(seasons[0].id); // already sorted by -year
     }
   }, [seasons]);
 
@@ -100,7 +99,7 @@ export default function CalvingSeason() {
       toast.info(`Season ${year} already exists`);
       return;
     }
-    createSeasonMutation.mutate({ year, label: `Calving Season ${year}`, status: 'Active' });
+    createSeasonMutation.mutate({ year, label: `Calving Season ${year}` });
     setShowNewSeasonDialog(false);
   };
 
@@ -179,7 +178,7 @@ export default function CalvingSeason() {
           <QuickCalfForm
             animals={animals}
             seasons={seasons}
-            defaultSeasonId={selectedSeasonId !== 'all' ? selectedSeasonId : seasons.find(s => s.status === 'Active')?.id}
+            defaultSeasonId={selectedSeasonId !== 'all' ? selectedSeasonId : seasons[0]?.id}
             onSave={handleQuickSave}
             onCancel={() => setView('main')}
             onAnimalsRefresh={() => queryClient.invalidateQueries({ queryKey: ['animals'] })}
@@ -367,11 +366,7 @@ export default function CalvingSeason() {
                 style={selectedSeasonId === s.id ? { background: GREEN } : {}}
               >
                 <span>{s.label || `Calving Season ${s.year}`}</span>
-                {s.status === 'Active' && (
-                  <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${
-                    selectedSeasonId === s.id ? 'bg-white/20 text-white' : 'bg-green-100 text-green-700'
-                  }`}>Active</span>
-                )}
+
               </button>
             ))}
           </div>

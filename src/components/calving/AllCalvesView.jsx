@@ -232,11 +232,6 @@ export default function AllCalvesView({ calves = [], pastures = [], seasons = []
               style={selectedSeasonId === s.id ? { background: GREEN_DARK } : {}}
             >
               {s.year}
-              {s.status === 'Active' && (
-                <span className={`text-xs px-1.5 py-0.5 rounded-full font-bold ${
-                  selectedSeasonId === s.id ? 'bg-white/25 text-white' : 'bg-green-100 text-green-700'
-                }`}>Active</span>
-              )}
             </button>
           ))}
         </div>

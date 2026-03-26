@@ -254,7 +254,6 @@ export default function AnimalForm({ animal, onSave, onCancel, existingAnimals =
               {seasons.map(s => (
                 <SelectItem key={s.id} value={s.id}>
                   {s.label || `Calving Season ${s.year}`}
-                  {s.status === 'Active' ? ' (Active)' : ''}
                 </SelectItem>
               ))}
             </SelectContent>
