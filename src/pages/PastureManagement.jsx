@@ -1,6 +1,5 @@
 import React from 'react';
 import { TreePine, Construction } from 'lucide-react';
-import AIHelpButton from '@/components/shared/AIHelpButton';
 
 export default function PastureManagement() {
   return (
@@ -42,7 +41,6 @@ export default function PastureManagement() {
           </ul>
         </div>
       </div>
-      <AIHelpButton context="pasture management planning" />
     </div>
   );
 }

@@ -11,7 +11,6 @@ import AnimalForm from '@/components/calving/AnimalForm';
 import AnimalCard from '@/components/calving/AnimalCard';
 import ExportButtons from '@/components/shared/ExportButtons';
 import EmptyState from '@/components/shared/EmptyState';
-import AIHelpButton from '@/components/shared/AIHelpButton';
 import { logAudit } from '@/lib/auditLogger';
 
 export default function CalvingSeason() {
@@ -201,7 +200,6 @@ export default function CalvingSeason() {
         </SheetContent>
       </Sheet>
 
-      <AIHelpButton context="calving season - logging new calves and managing animal records" />
     </div>
   );
 }

@@ -8,7 +8,6 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sh
 import { toast } from 'sonner';
 import ExportButtons from '@/components/shared/ExportButtons';
 import EmptyState from '@/components/shared/EmptyState';
-import AIHelpButton from '@/components/shared/AIHelpButton';
 
 function SortingWorkArea({ session, onComplete }) {
   const [lookup, setLookup] = useState('');
@@ -213,7 +212,7 @@ export default function CalfSorting() {
           session={activeSession}
           onComplete={() => setActiveSession(null)}
         />
-        <AIHelpButton context="calf sorting session" />
+  
       </div>
     );
   }
@@ -296,7 +295,6 @@ export default function CalfSorting() {
         </SheetContent>
       </Sheet>
 
-      <AIHelpButton context="calf sorting - organizing calves by sex" />
     </div>
   );
 }

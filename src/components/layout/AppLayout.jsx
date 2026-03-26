@@ -1,15 +1,17 @@
 import React, { useEffect, useState } from 'react';
-import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
-import { Home, Baby, ArrowLeftRight, TreePine, Settings, MessageCircle, Sparkles } from 'lucide-react';
+import { Outlet, Link, useLocation } from 'react-router-dom';
+import { Home, Baby, ArrowLeftRight, TreePine, Settings } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { base44 } from '@/api/base44Client';
+import { useTheme } from '@/lib/ThemeContext';
+import AISearchBar from '@/components/layout/AISearchBar';
 
 const bottomNavItems = [
-  { path: '/',         icon: Home,           label: 'Home',     activeColor: 'text-primary',     activeBg: 'bg-primary/10'     },
-  { path: '/calving',  icon: Baby,           label: 'Calving',  activeColor: 'text-emerald-600', activeBg: 'bg-emerald-50'     },
-  { path: '/sorting',  icon: ArrowLeftRight, label: 'Sorting',  activeColor: 'text-blue-600',    activeBg: 'bg-blue-50'        },
-  { path: '/pastures', icon: TreePine,       label: 'Pastures', activeColor: 'text-amber-700',   activeBg: 'bg-amber-50'       },
-  { path: '/settings', icon: Settings,       label: 'Settings', activeColor: 'text-slate-700',   activeBg: 'bg-slate-100'      },
+  { path: '/',         icon: Home,           label: 'Home',     activeColor: 'text-primary',      activeBg: 'bg-primary/10'   },
+  { path: '/calving',  icon: Baby,           label: 'Calving',  activeColor: 'text-emerald-500',  activeBg: 'bg-emerald-50'   },
+  { path: '/sorting',  icon: ArrowLeftRight, label: 'Sorting',  activeColor: 'text-blue-500',     activeBg: 'bg-blue-50'      },
+  { path: '/pastures', icon: TreePine,       label: 'Pastures', activeColor: 'text-amber-600',    activeBg: 'bg-amber-50'     },
+  { path: '/settings', icon: Settings,       label: 'Settings', activeColor: 'text-slate-600',    activeBg: 'bg-slate-100'    },
 ];
 
 function UserAvatar({ user }) {
@@ -17,66 +19,93 @@ function UserAvatar({ user }) {
     ? user.full_name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()
     : user?.email?.[0]?.toUpperCase() ?? '?';
   return (
-    <div className="w-9 h-9 rounded-full bg-primary/15 border-2 border-primary/30 flex items-center justify-center shrink-0">
-      <span className="text-sm font-bold text-primary">{initials}</span>
+    <div className="w-9 h-9 rounded-full bg-white/20 border-2 border-white/30 flex items-center justify-center shrink-0">
+      <span className="text-sm font-bold text-white">{initials}</span>
     </div>
   );
 }
 
 export default function AppLayout() {
   const location = useLocation();
-  const navigate = useNavigate();
+  const { sectionTheme, headerStyle } = useTheme();
   const [user, setUser] = useState(null);
   const [ranchName, setRanchName] = useState('Elite Ranch Manager');
   const [logoUrl, setLogoUrl] = useState('');
 
+  const isColoredHeader = !!headerStyle.background;
+
   useEffect(() => {
     base44.auth.me().then(setUser).catch(() => {});
+  }, []);
+
+  useEffect(() => {
     base44.entities.RanchSettings.list().then(list => {
       if (list.length > 0) {
         if (list[0].ranch_name) setRanchName(list[0].ranch_name);
-        if (list[0].logo_url) setLogoUrl(list[0].logo_url);
+        if (list[0].logo_url)   setLogoUrl(list[0].logo_url);
       }
     }).catch(() => {});
-  }, []);
+  }, [location.pathname]); // refresh on nav so Settings changes reflect instantly
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
 
       {/* ── Top Bar ─────────────────────────────────────────── */}
-      <header className="sticky top-0 z-50 bg-card/95 backdrop-blur-md border-b border-border safe-top shadow-sm">
-        <div className="flex items-center justify-between px-4 h-14 max-w-3xl mx-auto w-full">
+      <header
+        className="sticky top-0 z-50 border-b safe-top shadow-sm transition-colors duration-300"
+        style={isColoredHeader
+          ? { ...headerStyle, borderColor: 'rgba(255,255,255,0.15)' }
+          : { background: 'hsl(var(--card) / 0.97)', backdropFilter: 'blur(12px)', borderColor: 'hsl(var(--border))' }
+        }
+      >
+        <div className="flex items-center gap-2 px-3 h-14 max-w-3xl mx-auto w-full">
 
-          {/* Logo + Title */}
-          <Link to="/" className="flex items-center gap-2.5 min-w-0">
+          {/* Logo */}
+          <Link to="/" className="flex items-center gap-2 shrink-0 mr-1">
             {logoUrl ? (
-              <img src={logoUrl} alt="Ranch Logo" className="w-9 h-9 rounded-lg object-cover shrink-0" />
+              <img src={logoUrl} alt="Ranch Logo" className="w-8 h-8 rounded-lg object-cover" />
             ) : (
-              <div className="w-9 h-9 rounded-lg bg-primary flex items-center justify-center shrink-0">
-                <span className="text-primary-foreground font-heading font-black text-sm tracking-tight">ER</span>
+              <div className={cn(
+                'w-8 h-8 rounded-lg flex items-center justify-center shrink-0',
+                isColoredHeader ? 'bg-white/20' : 'bg-primary'
+              )}>
+                <span className={cn('font-heading font-black text-xs', isColoredHeader ? 'text-white' : 'text-primary-foreground')}>
+                  ER
+                </span>
               </div>
             )}
-            <span className="font-heading font-bold text-base text-foreground truncate hidden sm:block">
+            <span className={cn(
+              'font-heading font-bold text-sm truncate hidden sm:block max-w-[120px]',
+              isColoredHeader ? 'text-white' : 'text-foreground'
+            )}>
               {ranchName}
             </span>
           </Link>
 
-          {/* Desktop nav (≥ md) */}
-          <nav className="hidden md:flex items-center gap-1">
+          {/* AI Search Bar — takes remaining space */}
+          <div className="flex-1">
+            <AISearchBar headerStyle={headerStyle} />
+          </div>
+
+          {/* Desktop nav links */}
+          <nav className="hidden md:flex items-center gap-1 shrink-0">
             {[
-              { path: '/calving',  label: 'Calving',  color: 'hover:text-emerald-600' },
-              { path: '/sorting',  label: 'Sorting',  color: 'hover:text-blue-600'    },
-              { path: '/pastures', label: 'Pastures', color: 'hover:text-amber-700'   },
-            ].map(({ path, label, color }) => (
+              { path: '/calving',  label: 'Calving'  },
+              { path: '/sorting',  label: 'Sorting'  },
+              { path: '/pastures', label: 'Pastures' },
+            ].map(({ path, label }) => (
               <Link
                 key={path}
                 to={path}
                 className={cn(
-                  'px-4 py-2 rounded-lg text-sm font-semibold transition-colors',
-                  color,
-                  location.pathname.startsWith(path)
-                    ? 'bg-muted text-foreground'
-                    : 'text-muted-foreground'
+                  'px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors',
+                  isColoredHeader
+                    ? location.pathname.startsWith(path)
+                      ? 'bg-white/25 text-white'
+                      : 'text-white/70 hover:text-white hover:bg-white/10'
+                    : location.pathname.startsWith(path)
+                      ? 'bg-muted text-foreground'
+                      : 'text-muted-foreground hover:text-foreground'
                 )}
               >
                 {label}
@@ -84,22 +113,18 @@ export default function AppLayout() {
             ))}
           </nav>
 
-          {/* Right cluster */}
-          <div className="flex items-center gap-2">
-            <Link
-              to="/ai-assistant"
-              className={cn(
-                'flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors',
-                location.pathname === '/ai-assistant'
-                  ? 'bg-primary text-primary-foreground'
-                  : 'bg-secondary text-secondary-foreground hover:bg-secondary/70'
-              )}
-            >
-              <Sparkles className="w-4 h-4" />
-              <span className="hidden sm:inline font-semibold">AI Help</span>
-            </Link>
-            {user && <UserAvatar user={user} />}
-          </div>
+          {/* User Avatar */}
+          {user && (
+            isColoredHeader
+              ? <UserAvatar user={user} />
+              : (
+                <div className="w-9 h-9 rounded-full bg-primary/15 border-2 border-primary/30 flex items-center justify-center shrink-0">
+                  <span className="text-sm font-bold text-primary">
+                    {user.full_name?.[0]?.toUpperCase() ?? user.email?.[0]?.toUpperCase() ?? '?'}
+                  </span>
+                </div>
+              )
+          )}
         </div>
       </header>
 
@@ -108,16 +133,7 @@ export default function AppLayout() {
         <Outlet />
       </main>
 
-      {/* ── Floating AI Button (mobile) ──────────────────────── */}
-      <Link
-        to="/ai-assistant"
-        className="fixed bottom-24 right-4 z-40 w-14 h-14 rounded-full bg-primary text-primary-foreground shadow-xl flex items-center justify-center hover:scale-105 active:scale-95 transition-transform md:hidden"
-        aria-label="AI Ranch Assistant"
-      >
-        <MessageCircle className="w-6 h-6" />
-      </Link>
-
-      {/* ── Bottom Tab Bar (mobile only) ─────────────────────── */}
+      {/* ── Bottom Tab Bar ───────────────────────────────────── */}
       <nav className="fixed bottom-0 left-0 right-0 z-50 bg-card/98 backdrop-blur-md border-t border-border safe-bottom md:hidden">
         <div className="flex items-stretch justify-around h-[64px] max-w-lg mx-auto px-1">
           {bottomNavItems.map(({ path, icon: Icon, label, activeColor, activeBg }) => {

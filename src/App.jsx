@@ -7,6 +7,7 @@ import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 
 import AppLayout from '@/components/layout/AppLayout';
+import { ThemeProvider } from '@/lib/ThemeContext';
 import Home from '@/pages/Home';
 import CalvingSeason from '@/pages/CalvingSeason';
 import CalfSorting from '@/pages/CalfSorting';
@@ -59,7 +60,9 @@ function App() {
     <AuthProvider>
       <QueryClientProvider client={queryClientInstance}>
         <Router>
-          <AuthenticatedApp />
+          <ThemeProvider>
+            <AuthenticatedApp />
+          </ThemeProvider>
         </Router>
         <Toaster />
       </QueryClientProvider>

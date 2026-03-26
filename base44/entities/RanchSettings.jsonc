@@ -39,6 +39,23 @@
     "app_store_bundle_id": {
       "type": "string",
       "description": "Apple App Store bundle ID (e.g. com.myranch.eliteranchmanager)"
+    },
+    "app_description": {
+      "type": "string",
+      "description": "App Store description text"
+    },
+    "app_keywords": {
+      "type": "string",
+      "description": "App Store keywords, comma-separated"
+    },
+    "splash_url": {
+      "type": "string",
+      "description": "URL of the splash / launch screen image"
+    },
+    "archive_after_months": {
+      "type": "number",
+      "default": 12,
+      "description": "Auto-archive sold/deceased animals after this many months"
     }
   },
   "required": []

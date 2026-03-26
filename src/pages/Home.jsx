@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Baby, ArrowLeftRight, Beef, Settings } from 'lucide-react';
+import { Baby, ArrowLeftRight, Beef, Settings, Sparkles } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
