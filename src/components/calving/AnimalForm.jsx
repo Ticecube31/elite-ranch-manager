@@ -5,12 +5,10 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { base44 } from '@/api/base44Client';
-import { Camera, Save, X, MapPin, TreePine } from 'lucide-react';
+import { Camera, Save, X, TreePine } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { allowedTypesForSex, validateSexType } from '@/lib/animalRules';
-
-const TAG_COLORS = ['Yellow', 'Orange', 'White', 'Green', 'Blue', 'Red', 'Pink', 'Purple'];
 
 export default function AnimalForm({ animal, onSave, onCancel, existingAnimals = [] }) {
   const [form, setForm] = useState({
@@ -23,16 +21,11 @@ export default function AnimalForm({ animal, onSave, onCancel, existingAnimals =
     status: 'Alive',
     notes: '',
     photo_url: '',
-    tag_color: '',
-    breed: '',
     is_archived: false,
-    gps_lat: '',
-    gps_lng: '',
     ...animal,
   });
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
-  const [gpsLoading, setGpsLoading] = useState(false);
 
   const { data: pastures = [] } = useQuery({
     queryKey: ['pastures'],
@@ -69,19 +62,6 @@ export default function AnimalForm({ animal, onSave, onCancel, existingAnimals =
     const { file_url } = await base44.integrations.Core.UploadFile({ file });
     setForm(prev => ({ ...prev, photo_url: file_url }));
     setUploading(false);
-  };
-
-  const captureGPS = () => {
-    if (!navigator.geolocation) { toast.error('GPS not available'); return; }
-    setGpsLoading(true);
-    navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        setForm(prev => ({ ...prev, gps_lat: pos.coords.latitude, gps_lng: pos.coords.longitude }));
-        setGpsLoading(false);
-        toast.success('GPS captured');
-      },
-      () => { toast.error('Could not get GPS location'); setGpsLoading(false); }
-    );
   };
 
   const handleSubmit = async (e) => {
@@ -124,15 +104,12 @@ export default function AnimalForm({ animal, onSave, onCancel, existingAnimals =
       }
     }
 
-    const selectedPasture = pastures.find(p => p.id === form.pasture_id);
     setSaving(true);
     await onSave({
       ...form,
       animal_number: form.animal_number.trim(),
       birth_year:   form.date_of_birth ? new Date(form.date_of_birth).getFullYear() : undefined,
       birth_weight: form.birth_weight ? Number(form.birth_weight) : undefined,
-      gps_lat:      form.gps_lat      ? Number(form.gps_lat)      : undefined,
-      gps_lng:      form.gps_lng      ? Number(form.gps_lng)      : undefined,
       is_archived:  ['Sold', 'Died'].includes(form.status),
     });
     setSaving(false);
@@ -274,36 +251,6 @@ export default function AnimalForm({ animal, onSave, onCancel, existingAnimals =
         />
       </div>
 
-      {/* Tag Color */}
-      <div>
-        <Label className="text-sm font-semibold">Tag Color — optional</Label>
-        <div className="flex flex-wrap gap-2 mt-2">
-          {TAG_COLORS.map(c => (
-            <button
-              key={c}
-              type="button"
-              onClick={() => update('tag_color', form.tag_color === c ? '' : c)}
-              className={`px-3 py-1.5 rounded-lg border text-sm font-medium transition-all ${
-                form.tag_color === c ? 'border-primary bg-primary/10 text-primary' : 'border-border text-muted-foreground'
-              }`}
-            >
-              {c}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Breed */}
-      <div>
-        <Label className="text-sm font-semibold">Breed — optional</Label>
-        <Input
-          value={form.breed}
-          onChange={(e) => update('breed', e.target.value)}
-          placeholder="e.g. Angus, Hereford, Angus x Hereford"
-          className="h-12 text-base mt-1"
-        />
-      </div>
-
       {/* Status */}
       <div>
         <Label className="text-sm font-semibold">Status</Label>
@@ -343,28 +290,6 @@ export default function AnimalForm({ animal, onSave, onCancel, existingAnimals =
         {pastures.length === 0 && (
           <p className="text-xs text-muted-foreground mt-1">Add pastures in the Pastures tab to assign locations.</p>
         )}
-      </div>
-
-      {/* GPS */}
-      <div>
-        <Label className="text-sm font-semibold">GPS Coordinates — optional</Label>
-        <div className="flex gap-2 mt-1">
-          <Input
-            value={form.gps_lat}
-            readOnly
-            placeholder="Latitude"
-            className="h-12 text-sm bg-muted"
-          />
-          <Input
-            value={form.gps_lng}
-            readOnly
-            placeholder="Longitude"
-            className="h-12 text-sm bg-muted"
-          />
-          <Button type="button" variant="outline" onClick={captureGPS} disabled={gpsLoading} className="h-12 px-3 shrink-0">
-            <MapPin className="w-4 h-4" />
-          </Button>
-        </div>
       </div>
 
       {/* Notes */}

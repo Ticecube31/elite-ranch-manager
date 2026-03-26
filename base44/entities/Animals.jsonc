@@ -57,14 +57,6 @@
       "type": "string",
       "description": "ID of the Pastures record where this animal currently lives \u2014 links to Pastures table"
     },
-    "gps_lat": {
-      "type": "number",
-      "description": "GPS latitude \u2014 captured from device when logging in the field"
-    },
-    "gps_lng": {
-      "type": "number",
-      "description": "GPS longitude \u2014 captured from device when logging in the field"
-    },
     "notes": {
       "type": "string",
       "description": "Free-text notes \u2014 health observations, feeding notes, any field remarks"
@@ -77,14 +69,6 @@
       "type": "boolean",
       "default": false,
       "description": "True for sold or deceased animals \u2014 hides from active lists but preserves full record"
-    },
-    "tag_color": {
-      "type": "string",
-      "description": "Physical ear-tag color (e.g. Yellow, Orange, White) \u2014 useful for field identification"
-    },
-    "breed": {
-      "type": "string",
-      "description": "Breed or breed cross (e.g. Angus, Hereford, Angus x Hereford)"
     }
   },
   "required": [
