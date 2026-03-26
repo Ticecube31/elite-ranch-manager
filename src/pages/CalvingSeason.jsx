@@ -182,6 +182,7 @@ export default function CalvingSeason() {
             defaultSeasonId={selectedSeasonId !== 'all' ? selectedSeasonId : seasons.find(s => s.status === 'Active')?.id}
             onSave={handleQuickSave}
             onCancel={() => setView('main')}
+            onAnimalsRefresh={() => queryClient.invalidateQueries({ queryKey: ['animals'] })}
           />
         </div>
       </div>

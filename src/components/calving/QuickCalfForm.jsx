@@ -1,49 +1,107 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { CheckCircle2, AlertCircle, Loader2 } from 'lucide-react';
+import { CheckCircle2, AlertCircle, Loader2, HelpCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import { validateSexType } from '@/lib/animalRules';
+import { base44 } from '@/api/base44Client';
 
 const GREEN = '#4CAF50';
 const GREEN_DARK = '#2E7D32';
 
-export default function QuickCalfForm({ animals = [], seasons = [], defaultSeasonId, onSave }) {
+export default function QuickCalfForm({ animals = [], seasons = [], defaultSeasonId, onSave, onAnimalsRefresh }) {
   const today = new Date().toISOString().split('T')[0];
 
-  const [motherTag, setMotherTag] = useState('');
-  const [calfTag, setCalfTag]     = useState('');
-  const [calfTagEdited, setCalfTagEdited] = useState(false);
-  const [sex, setSex]             = useState('');
-  const [location, setLocation]   = useState('');
-  const [date, setDate]           = useState(today);
-  const [notes, setNotes]         = useState('');
-  const [saving, setSaving]       = useState(false);
+  const [motherTag, setMotherTag]           = useState('');
+  const [unknownMother, setUnknownMother]   = useState(false);
+  const [addNewCowPrompt, setAddNewCowPrompt] = useState(false); // step 1: show prompt banner
+  const [addNewCowConfirm, setAddNewCowConfirm] = useState(false); // step 2: confirm dialog
+  const [newCowType, setNewCowType]         = useState('Cow'); // Cow or 1st Calf Heifer
+  const [addingCow, setAddingCow]           = useState(false);
+  const [pendingMother, setPendingMother]   = useState(null); // mother added mid-flow
+
+  const [calfTag, setCalfTag]               = useState('');
+  const [calfTagEdited, setCalfTagEdited]   = useState(false);
+  const [sex, setSex]                       = useState('');
+  const [location, setLocation]             = useState('');
+  const [date, setDate]                     = useState(today);
+  const [notes, setNotes]                   = useState('');
+  const [saving, setSaving]                 = useState(false);
 
   const motherInputRef = useRef(null);
 
   useEffect(() => { motherInputRef.current?.focus(); }, []);
 
-  // Auto-fill calf tag from mother tag unless user has manually edited it
+  // Auto-fill calf tag from mother unless manually edited
   useEffect(() => {
-    if (!calfTagEdited) setCalfTag(motherTag);
-  }, [motherTag]);
+    if (!calfTagEdited && !unknownMother) setCalfTag(motherTag);
+  }, [motherTag, unknownMother]);
 
-  // Mother lookup
-  const mother = motherTag.trim()
-    ? animals.find(a => a.animal_number?.toLowerCase() === motherTag.trim().toLowerCase())
-    : null;
+  // Mother lookup — use pendingMother (just-created) or search existing
+  const mother = pendingMother
+    || (motherTag.trim()
+      ? animals.find(a => a.animal_number?.toLowerCase() === motherTag.trim().toLowerCase())
+      : null);
+
   const motherValid   = !!mother && ['Cow', '1st Calf Heifer'].includes(mother.animal_type);
-  const motherInvalid = motherTag.trim().length > 0 && !motherValid;
+  const motherNotFound = !unknownMother && motherTag.trim().length > 0 && !mother;
+  const motherWrongType = !unknownMother && !!mother && !motherValid;
+
+  // Show "add new cow?" prompt when tag typed but not found
+  useEffect(() => {
+    if (motherNotFound && !pendingMother) {
+      setAddNewCowPrompt(true);
+    } else {
+      setAddNewCowPrompt(false);
+      setAddNewCowConfirm(false);
+    }
+  }, [motherNotFound, pendingMother]);
 
   const handleCalfTagChange = (val) => {
     setCalfTag(val);
-    setCalfTagEdited(val !== motherTag); // treat as edited only if diverged
+    setCalfTagEdited(true);
+  };
+
+  const handleUnknownMother = () => {
+    setUnknownMother(true);
+    setMotherTag('');
+    setAddNewCowPrompt(false);
+    setAddNewCowConfirm(false);
+    setPendingMother(null);
+    setCalfTag('');
+    setCalfTagEdited(false);
+  };
+
+  const handleCancelUnknown = () => {
+    setUnknownMother(false);
+    setPendingMother(null);
+    setTimeout(() => motherInputRef.current?.focus(), 50);
+  };
+
+  const handleAddNewCow = async () => {
+    if (!motherTag.trim()) return;
+    setAddingCow(true);
+    const birthYear = date ? new Date(date).getFullYear() : new Date().getFullYear();
+    const matchedSeason = seasons.find(s => s.year === birthYear);
+    const newCow = await base44.entities.Animals.create({
+      animal_number: motherTag.trim(),
+      sex: 'Female',
+      animal_type: newCowType,
+      status: 'Alive',
+      is_archived: false,
+      calving_season_id: matchedSeason?.id || defaultSeasonId || '',
+    });
+    setPendingMother({ ...newCow, animal_number: motherTag.trim(), animal_type: newCowType, sex: 'Female' });
+    setAddNewCowConfirm(false);
+    setAddNewCowPrompt(false);
+    if (onAnimalsRefresh) onAnimalsRefresh();
+    toast.success(`Cow #${motherTag.trim()} added as mother`);
+    setAddingCow(false);
   };
 
   const handleSubmit = async () => {
-    if (!calfTag.trim())  { toast.error('Calf Tag # is required'); return; }
-    if (!sex)             { toast.error('Select Male or Female'); return; }
+    if (!calfTag.trim()) { toast.error('Calf Tag # is required'); return; }
+    if (!sex)            { toast.error('Select Male or Female'); return; }
 
     const dup = animals.find(
       a => a.animal_number?.toLowerCase() === calfTag.trim().toLowerCase()
@@ -54,16 +112,18 @@ export default function QuickCalfForm({ animals = [], seasons = [], defaultSeaso
     const ruleError  = validateSexType(sex, animalType);
     if (ruleError)  { toast.error(ruleError); return; }
 
-    const birthYear       = date ? new Date(date).getFullYear() : undefined;
-    const matchedSeason   = seasons.find(s => s.year === birthYear);
+    const birthYear         = date ? new Date(date).getFullYear() : undefined;
+    const matchedSeason     = seasons.find(s => s.year === birthYear);
     const calving_season_id = matchedSeason?.id || defaultSeasonId || '';
+
+    const resolvedMother = unknownMother ? undefined : (motherTag.trim() || undefined);
 
     setSaving(true);
     await onSave({
       animal_number:        calfTag.trim(),
       sex,
       animal_type:          animalType,
-      mother_animal_number: motherTag.trim() || undefined,
+      mother_animal_number: resolvedMother,
       date_of_birth:        date || undefined,
       birth_year:           birthYear,
       calving_season_id,
@@ -76,6 +136,10 @@ export default function QuickCalfForm({ animals = [], seasons = [], defaultSeaso
 
   const handleClear = () => {
     setMotherTag('');
+    setUnknownMother(false);
+    setAddNewCowPrompt(false);
+    setAddNewCowConfirm(false);
+    setPendingMother(null);
     setCalfTag('');
     setCalfTagEdited(false);
     setSex('');
@@ -93,34 +157,138 @@ export default function QuickCalfForm({ animals = [], seasons = [], defaultSeaso
 
         {/* 1. Cow's Tag # */}
         <div>
-          <label className="block text-lg font-bold text-gray-800 mb-1">
-            Cow's Tag # <span className="text-red-400">*</span>
-          </label>
-          <p className="text-sm text-gray-400 mb-2">Mother's ear-tag number</p>
-          <Input
-            ref={motherInputRef}
-            value={motherTag}
-            onChange={e => setMotherTag(e.target.value)}
-            placeholder="e.g. 934"
-            inputMode="text"
-            className="h-16 text-3xl font-bold tracking-widest border-2 rounded-2xl focus-visible:ring-0 focus-visible:border-green-500 placeholder:text-gray-300"
-          />
-          {/* Validation feedback */}
-          {motherTag.trim() && (
-            <div className={`mt-2 flex items-center gap-2 text-sm font-semibold rounded-xl px-4 py-3 ${
-              motherValid
-                ? 'bg-green-50 text-green-700 border border-green-200'
-                : 'bg-red-50 text-red-600 border border-red-200'
-            }`}>
-              {motherValid
-                ? <><CheckCircle2 className="w-5 h-5 shrink-0" />
-                    Mother Found: {mother.animal_type} #{mother.animal_number} — Valid</>
-                : <><AlertCircle className="w-5 h-5 shrink-0" />
-                    {mother
-                      ? `#${motherTag} is a ${mother.animal_type} — must be Cow or 1st Calf Heifer`
-                      : `#${motherTag} not found in Animals table`
-                    }</>
-              }
+          <div className="flex items-center justify-between mb-1">
+            <label className="text-lg font-bold text-gray-800">
+              Cow's Tag # <span className="text-red-400">*</span>
+            </label>
+            {/* Unknown Mother toggle */}
+            {!unknownMother ? (
+              <button
+                type="button"
+                onClick={handleUnknownMother}
+                className="flex items-center gap-1 text-sm text-gray-400 hover:text-gray-600 font-semibold transition-colors"
+              >
+                <HelpCircle className="w-4 h-4" /> Unknown
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={handleCancelUnknown}
+                className="text-sm text-blue-500 font-semibold"
+              >
+                Enter Tag #
+              </button>
+            )}
+          </div>
+
+          {unknownMother ? (
+            /* Unknown mother selected */
+            <div className="h-16 rounded-2xl border-2 border-dashed border-gray-300 bg-gray-50 flex items-center justify-center">
+              <span className="text-gray-400 font-bold text-lg">Unknown Mother</span>
+            </div>
+          ) : (
+            <>
+              <p className="text-sm text-gray-400 mb-2">Mother's ear-tag number</p>
+              <Input
+                ref={motherInputRef}
+                value={motherTag}
+                onChange={e => { setMotherTag(e.target.value); setPendingMother(null); }}
+                placeholder="e.g. 934"
+                inputMode="text"
+                className="h-16 text-3xl font-bold tracking-widest border-2 rounded-2xl focus-visible:ring-0 focus-visible:border-green-500 placeholder:text-gray-300"
+              />
+            </>
+          )}
+
+          {/* Valid mother */}
+          {!unknownMother && motherValid && (
+            <div className="mt-2 flex items-center gap-2 text-sm font-semibold rounded-xl px-4 py-3 bg-green-50 text-green-700 border border-green-200">
+              <CheckCircle2 className="w-5 h-5 shrink-0" />
+              Mother Found: {mother.animal_type} #{mother.animal_number} — Valid
+            </div>
+          )}
+
+          {/* Wrong type */}
+          {motherWrongType && (
+            <div className="mt-2 flex items-center gap-2 text-sm font-semibold rounded-xl px-4 py-3 bg-red-50 text-red-600 border border-red-200">
+              <AlertCircle className="w-5 h-5 shrink-0" />
+              #{motherTag} is a {mother.animal_type} — must be Cow or 1st Calf Heifer
+            </div>
+          )}
+
+          {/* Not found → prompt to add */}
+          {addNewCowPrompt && !addNewCowConfirm && (
+            <div className="mt-2 rounded-xl border border-orange-200 bg-orange-50 px-4 py-3 space-y-2">
+              <div className="flex items-start gap-2">
+                <AlertCircle className="w-5 h-5 text-orange-500 shrink-0 mt-0.5" />
+                <p className="text-sm font-semibold text-orange-700">
+                  #{motherTag} not in database. Add as new mother?
+                </p>
+              </div>
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => setAddNewCowConfirm(true)}
+                  className="flex-1 h-10 rounded-xl font-bold text-sm text-white"
+                  style={{ background: GREEN_DARK }}
+                >
+                  Add New Cow
+                </button>
+                <button
+                  type="button"
+                  onClick={handleUnknownMother}
+                  className="flex-1 h-10 rounded-xl font-bold text-sm border-2 border-gray-200 text-gray-600 bg-white"
+                >
+                  Use Unknown
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Step 2: Confirm add new cow */}
+          {addNewCowConfirm && (
+            <div className="mt-2 rounded-xl border-2 border-orange-300 bg-orange-50 px-4 py-4 space-y-3">
+              <p className="font-bold text-orange-800 text-base">Confirm: Add Cow #{motherTag}?</p>
+              <p className="text-sm text-orange-600">This will create a new Animal record as this calf's mother.</p>
+
+              {/* Cow type selector */}
+              <div className="grid grid-cols-2 gap-2">
+                {['Cow', '1st Calf Heifer'].map(t => (
+                  <button
+                    key={t}
+                    type="button"
+                    onClick={() => setNewCowType(t)}
+                    className={`h-11 rounded-xl font-bold text-sm border-2 transition-all ${
+                      newCowType === t
+                        ? 'text-white border-transparent'
+                        : 'bg-white text-gray-600 border-gray-200'
+                    }`}
+                    style={newCowType === t ? { background: GREEN_DARK } : {}}
+                  >
+                    {t}
+                  </button>
+                ))}
+              </div>
+
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={handleAddNewCow}
+                  disabled={addingCow}
+                  className="flex-1 h-11 rounded-xl font-black text-sm text-white flex items-center justify-center gap-2"
+                  style={{ background: GREEN_DARK }}
+                >
+                  {addingCow ? <Loader2 className="w-4 h-4 animate-spin" /> : '✓ Confirm & Add'}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setAddNewCowConfirm(false)}
+                  disabled={addingCow}
+                  className="flex-1 h-11 rounded-xl font-bold text-sm border-2 border-gray-200 text-gray-600 bg-white"
+                >
+                  Cancel
+                </button>
+              </div>
             </div>
           )}
         </div>
