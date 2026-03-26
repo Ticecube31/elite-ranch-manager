@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Plus, Search, Filter, ChevronDown, Calendar } from 'lucide-react';
+import { Plus, Search, Filter, Calendar } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { Badge } from '@/components/ui/badge';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 import AnimalForm from '@/components/calving/AnimalForm';
 import AnimalCard from '@/components/calving/AnimalCard';
@@ -23,6 +25,8 @@ export default function CalvingSeason() {
   const [statusFilter, setStatusFilter] = useState('active');
   const [showFilters, setShowFilters] = useState(false);
   const [selectedSeasonId, setSelectedSeasonId] = useState('all');
+  const [showNewSeasonDialog, setShowNewSeasonDialog] = useState(false);
+  const [newSeasonYear, setNewSeasonYear] = useState(new Date().getFullYear());
   const [currentUser, setCurrentUser] = useState(null);
 
   useEffect(() => { base44.auth.me().then(setCurrentUser).catch(() => {}); }, []);
@@ -88,10 +92,22 @@ export default function CalvingSeason() {
   });
 
   const handleAddNewSeason = () => {
-    const year = new Date().getFullYear();
+    setNewSeasonYear(new Date().getFullYear());
+    setShowNewSeasonDialog(true);
+  };
+
+  const handleConfirmNewSeason = () => {
+    const year = Number(newSeasonYear);
+    if (!year || year < 2000 || year > 2100) { toast.error('Please enter a valid year'); return; }
     const exists = seasons.find(s => s.year === year);
-    if (exists) { setSelectedSeasonId(exists.id); return; }
+    if (exists) {
+      setSelectedSeasonId(exists.id);
+      setShowNewSeasonDialog(false);
+      toast.info(`Season ${year} already exists`);
+      return;
+    }
     createSeasonMutation.mutate({ year, label: `Calving Season ${year}`, status: 'Active' });
+    setShowNewSeasonDialog(false);
   };
 
   const handleSave = async (formData) => {
@@ -276,6 +292,30 @@ export default function CalvingSeason() {
           ))}
         </div>
       )}
+
+      {/* New Season Dialog */}
+      <Dialog open={showNewSeasonDialog} onOpenChange={setShowNewSeasonDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>New Calving Season</DialogTitle>
+          </DialogHeader>
+          <div className="py-2">
+            <Label className="text-sm font-semibold">Year</Label>
+            <Input
+              type="number"
+              value={newSeasonYear}
+              onChange={(e) => setNewSeasonYear(e.target.value)}
+              className="h-12 text-lg mt-1"
+              min="2000"
+              max="2100"
+            />
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowNewSeasonDialog(false)}>Cancel</Button>
+            <Button onClick={handleConfirmNewSeason}>Create Season</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Form Sheet */}
       <Sheet open={showForm} onOpenChange={setShowForm}>
