@@ -17,7 +17,6 @@ export default function AnimalForm({ animal, onSave, onCancel, existingAnimals =
     animal_type: '',
     mother_animal_number: '',
     date_of_birth: new Date().toISOString().split('T')[0],
-    birth_weight: '',
     status: 'Alive',
     notes: '',
     photo_url: '',
@@ -109,7 +108,6 @@ export default function AnimalForm({ animal, onSave, onCancel, existingAnimals =
       ...form,
       animal_number: form.animal_number.trim(),
       birth_year:   form.date_of_birth ? new Date(form.date_of_birth).getFullYear() : undefined,
-      birth_weight: form.birth_weight ? Number(form.birth_weight) : undefined,
       is_archived:  ['Sold', 'Died'].includes(form.status),
     });
     setSaving(false);
@@ -233,20 +231,6 @@ export default function AnimalForm({ animal, onSave, onCancel, existingAnimals =
           type="date"
           value={form.date_of_birth}
           onChange={(e) => update('date_of_birth', e.target.value)}
-          className="h-14 text-lg mt-1"
-        />
-      </div>
-
-      {/* Birth Weight */}
-      <div>
-        <Label className="text-sm font-semibold">Birth Weight (lbs) — optional</Label>
-        <Input
-          type="number"
-          min="0"
-          step="0.1"
-          value={form.birth_weight}
-          onChange={(e) => update('birth_weight', e.target.value)}
-          placeholder="e.g. 85"
           className="h-14 text-lg mt-1"
         />
       </div>
