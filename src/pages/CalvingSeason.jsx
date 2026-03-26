@@ -178,10 +178,14 @@ export default function CalvingSeason() {
           <QuickCalfForm
             animals={animals}
             seasons={seasons}
+            pastures={pastures}
             defaultSeasonId={selectedSeasonId !== 'all' ? selectedSeasonId : seasons[0]?.id}
             onSave={handleQuickSave}
             onCancel={() => setView('main')}
-            onAnimalsRefresh={() => queryClient.invalidateQueries({ queryKey: ['animals'] })}
+            onAnimalsRefresh={() => {
+              queryClient.invalidateQueries({ queryKey: ['animals'] });
+              queryClient.invalidateQueries({ queryKey: ['pastures'] });
+            }}
           />
         </div>
       </div>

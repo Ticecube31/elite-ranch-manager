@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { CheckCircle2, AlertCircle, Loader2, HelpCircle } from 'lucide-react';
+import { CheckCircle2, AlertCircle, Loader2, HelpCircle, MapPin } from 'lucide-react';
 import { toast } from 'sonner';
 import { validateSexType } from '@/lib/animalRules';
 import { base44 } from '@/api/base44Client';
@@ -9,7 +9,7 @@ import { base44 } from '@/api/base44Client';
 const GREEN = '#4CAF50';
 const GREEN_DARK = '#2E7D32';
 
-export default function QuickCalfForm({ animals = [], seasons = [], defaultSeasonId, onSave, onAnimalsRefresh }) {
+export default function QuickCalfForm({ animals = [], seasons = [], pastures = [], defaultSeasonId, onSave, onAnimalsRefresh }) {
   const today = new Date().toISOString().split('T')[0];
 
   const [motherTag, setMotherTag]           = useState('');
@@ -24,6 +24,10 @@ export default function QuickCalfForm({ animals = [], seasons = [], defaultSeaso
   const [calfTagEdited, setCalfTagEdited]   = useState(false);
   const [sex, setSex]                       = useState('');
   const [location, setLocation]             = useState('');
+  const [pastureId, setPastureId]           = useState('');
+  const [pastureQuery, setPastureQuery]     = useState('');
+  const [showPasturePrompt, setShowPasturePrompt] = useState(false);
+  const [addingPasture, setAddingPasture]   = useState(false);
   const [date, setDate]                     = useState(today);
   const [notes, setNotes]                   = useState('');
   const [saving, setSaving]                 = useState(false);
@@ -127,6 +131,7 @@ export default function QuickCalfForm({ animals = [], seasons = [], defaultSeaso
       date_of_birth:        date || undefined,
       birth_year:           birthYear,
       calving_season_id,
+      pasture_id:           pastureId || undefined,
       notes:                notes.trim() || undefined,
       status:               'Alive',
       is_archived:          false,
@@ -144,6 +149,9 @@ export default function QuickCalfForm({ animals = [], seasons = [], defaultSeaso
     setCalfTagEdited(false);
     setSex('');
     setLocation('');
+    setPastureId('');
+    setPastureQuery('');
+    setShowPasturePrompt(false);
     setDate(today);
     setNotes('');
     setTimeout(() => motherInputRef.current?.focus(), 50);
@@ -341,16 +349,121 @@ export default function QuickCalfForm({ animals = [], seasons = [], defaultSeaso
           </div>
         </div>
 
-        {/* 4. Location Tagged */}
+        {/* 4. Pasture / Location */}
         <div>
-          <label className="block text-lg font-bold text-gray-800 mb-1">Location Tagged</label>
-          <p className="text-sm text-gray-400 mb-2">Optional — e.g. North Pasture, Corral 3</p>
-          <Input
-            value={location}
-            onChange={e => setLocation(e.target.value)}
-            placeholder="e.g. North Pasture"
-            className="h-14 text-xl border-2 rounded-2xl focus-visible:ring-0 focus-visible:border-green-500"
-          />
+          <label className="block text-lg font-bold text-gray-800 mb-1">Pasture / Location</label>
+          <p className="text-sm text-gray-400 mb-2">Optional — search or create a pasture</p>
+
+          {/* Selected pasture chip */}
+          {pastureId ? (
+            <div className="flex items-center gap-3 h-14 px-4 rounded-2xl border-2 border-green-400 bg-green-50">
+              <MapPin className="w-5 h-5 text-green-600 shrink-0" />
+              <span className="font-bold text-green-800 text-lg flex-1">
+                {pastures.find(p => p.id === pastureId)?.pasture_name}
+              </span>
+              <button
+                type="button"
+                onClick={() => { setPastureId(''); setPastureQuery(''); setShowPasturePrompt(false); }}
+                className="text-green-500 hover:text-green-700 font-bold text-sm"
+              >
+                Change
+              </button>
+            </div>
+          ) : (
+            <>
+              <Input
+                value={pastureQuery}
+                onChange={e => {
+                  const val = e.target.value;
+                  setPastureQuery(val);
+                  setPastureId('');
+                  setShowPasturePrompt(false);
+                }}
+                onBlur={() => {
+                  // small delay so clicks on suggestions register first
+                  setTimeout(() => {
+                    if (pastureQuery.trim() && !pastureId) {
+                      const match = pastures.find(p =>
+                        p.pasture_name.toLowerCase() === pastureQuery.trim().toLowerCase()
+                      );
+                      if (match) {
+                        setPastureId(match.id);
+                        setPastureQuery('');
+                      } else {
+                        setShowPasturePrompt(true);
+                      }
+                    }
+                  }, 150);
+                }}
+                placeholder="e.g. North Pasture"
+                className="h-14 text-xl border-2 rounded-2xl focus-visible:ring-0 focus-visible:border-green-500"
+              />
+
+              {/* Live suggestions */}
+              {pastureQuery.trim().length > 0 && !pastureId && (() => {
+                const matches = pastures.filter(p =>
+                  p.pasture_name.toLowerCase().includes(pastureQuery.trim().toLowerCase())
+                );
+                return matches.length > 0 ? (
+                  <div className="mt-1 rounded-xl border border-green-200 bg-white shadow-md overflow-hidden">
+                    {matches.map(p => (
+                      <button
+                        key={p.id}
+                        type="button"
+                        onMouseDown={() => { setPastureId(p.id); setPastureQuery(''); setShowPasturePrompt(false); }}
+                        className="w-full flex items-center gap-3 px-4 py-3 hover:bg-green-50 active:bg-green-100 transition-colors text-left border-b border-gray-100 last:border-0"
+                      >
+                        <MapPin className="w-4 h-4 text-green-500 shrink-0" />
+                        <span className="font-semibold text-gray-800">{p.pasture_name}</span>
+                        {p.current_herd_count !== undefined && (
+                          <span className="ml-auto text-xs text-gray-400">{p.current_herd_count} animals</span>
+                        )}
+                      </button>
+                    ))}
+                  </div>
+                ) : null;
+              })()}
+
+              {/* No match prompt */}
+              {showPasturePrompt && pastureQuery.trim() && !pastureId && (
+                <div className="mt-2 rounded-xl border border-blue-200 bg-blue-50 px-4 py-3 space-y-2">
+                  <div className="flex items-start gap-2">
+                    <AlertCircle className="w-5 h-5 text-blue-500 shrink-0 mt-0.5" />
+                    <p className="text-sm font-semibold text-blue-700">
+                      "{pastureQuery}" not found. Create it as a new pasture?
+                    </p>
+                  </div>
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      disabled={addingPasture}
+                      onClick={async () => {
+                        setAddingPasture(true);
+                        const created = await base44.entities.Pastures.create({ pasture_name: pastureQuery.trim() });
+                        setPastureId(created.id);
+                        setPastureQuery('');
+                        setShowPasturePrompt(false);
+                        if (onAnimalsRefresh) onAnimalsRefresh();
+                        toast.success(`Pasture "${pastureQuery.trim()}" created!`);
+                        setAddingPasture(false);
+                      }}
+                      className="flex-1 h-10 rounded-xl font-bold text-sm text-white flex items-center justify-center gap-2"
+                      style={{ background: GREEN_DARK }}
+                    >
+                      {addingPasture ? <Loader2 className="w-4 h-4 animate-spin" /> : '+ Create Pasture'}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setShowPasturePrompt(false)}
+                      className="flex-1 h-10 rounded-xl font-bold text-sm border-2 border-gray-200 text-gray-600 bg-white"
+                    >
+                      Skip
+                    </button>
+                  </div>
+                </div>
+              )}
+            </>
+          )}
         </div>
 
         {/* 5. Date Tagged */}
