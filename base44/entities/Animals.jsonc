@@ -4,7 +4,7 @@
   "properties": {
     "animal_number": {
       "type": "string",
-      "description": "Unique ear-tag or cow number"
+      "description": "Unique ear-tag or cow number \u2014 must be unique across all animals"
     },
     "sex": {
       "type": "string",
@@ -12,7 +12,7 @@
         "Male",
         "Female"
       ],
-      "description": "Sex of the animal"
+      "description": "Sex of the animal. Males can only be Bull, Steer, or Calf. Females can only be Cow, Heifer, or Calf."
     },
     "animal_type": {
       "type": "string",
@@ -23,46 +23,68 @@
         "Steer",
         "Bull"
       ],
-      "description": "Type of animal"
+      "description": "Type enforced by sex rules: Bull/Steer = Male only; Cow/Heifer = Female only; Calf = either"
     },
     "mother_animal_number": {
       "type": "string",
-      "description": "Mother's animal number (for calves)"
+      "description": "Mother's AnimalNumber \u2014 required when animal_type = Calf. Must reference a valid Cow or Heifer."
     },
     "date_of_birth": {
       "type": "string",
       "format": "date",
-      "description": "Date of birth or date tagged"
+      "description": "Date of birth or date first tagged in the field"
+    },
+    "birth_weight": {
+      "type": "number",
+      "description": "Birth weight in lbs (optional)"
     },
     "status": {
       "type": "string",
       "enum": [
         "Alive",
         "Sold",
-        "Died"
+        "Died",
+        "Missing"
       ],
       "default": "Alive",
-      "description": "Current status"
+      "description": "Current status of the animal"
     },
     "location": {
       "type": "string",
-      "description": "Current location or pasture name"
+      "description": "Current location or pasture name (e.g. North Pasture)"
     },
     "gps_lat": {
       "type": "number",
-      "description": "GPS latitude"
+      "description": "GPS latitude \u2014 captured from device when logging in the field"
     },
     "gps_lng": {
       "type": "number",
-      "description": "GPS longitude"
+      "description": "GPS longitude \u2014 captured from device when logging in the field"
     },
     "notes": {
       "type": "string",
-      "description": "Additional notes"
+      "description": "Free-text notes \u2014 health observations, feeding notes, any field remarks"
     },
     "photo_url": {
       "type": "string",
-      "description": "Photo of the animal"
+      "description": "URL of uploaded animal photo"
+    },
+    "is_archived": {
+      "type": "boolean",
+      "default": false,
+      "description": "True for sold or deceased animals \u2014 hides from active lists but preserves full record"
+    },
+    "tag_color": {
+      "type": "string",
+      "description": "Physical ear-tag color (e.g. Yellow, Orange, White) \u2014 useful for field identification"
+    },
+    "breed": {
+      "type": "string",
+      "description": "Breed or breed cross (e.g. Angus, Hereford, Angus x Hereford)"
+    },
+    "pasture_id": {
+      "type": "string",
+      "description": "ID of the Pastures record where this animal currently lives \u2014 links to Pastures table"
     }
   },
   "required": [

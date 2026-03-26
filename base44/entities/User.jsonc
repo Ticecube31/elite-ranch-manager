@@ -1,0 +1,16 @@
+{
+  "name": "User",
+  "type": "object",
+  "properties": {
+    "role": {
+      "type": "string",
+      "enum": [
+        "Owner",
+        "Manager",
+        "RanchHand"
+      ],
+      "default": "RanchHand",
+      "description": "Owner: full access. Manager: create/edit/reports. RanchHand: log calves and sort only."
+    }
+  }
+}

@@ -1,0 +1,63 @@
+{
+  "name": "AuditLog",
+  "type": "object",
+  "properties": {
+    "action": {
+      "type": "string",
+      "enum": [
+        "Created",
+        "Updated",
+        "Deleted",
+        "Sorted",
+        "Moved",
+        "Archived"
+      ],
+      "description": "Type of change that was made"
+    },
+    "entity_type": {
+      "type": "string",
+      "enum": [
+        "Animal",
+        "SortingSession",
+        "Pasture",
+        "AnimalMovement",
+        "Settings"
+      ],
+      "description": "Which table was affected"
+    },
+    "entity_id": {
+      "type": "string",
+      "description": "ID of the affected record"
+    },
+    "entity_label": {
+      "type": "string",
+      "description": "Human-readable label (e.g. Animal #142, Session: Spring Sort 2026)"
+    },
+    "changed_by": {
+      "type": "string",
+      "description": "Email of the user who made the change"
+    },
+    "changed_by_name": {
+      "type": "string",
+      "description": "Full name of the user who made the change"
+    },
+    "change_summary": {
+      "type": "string",
+      "description": "Short description of what changed (e.g. Status changed from Alive to Sold)"
+    },
+    "previous_value": {
+      "type": "string",
+      "description": "JSON string of the previous state (for rollback reference)"
+    },
+    "new_value": {
+      "type": "string",
+      "description": "JSON string of the new state"
+    }
+  },
+  "required": [
+    "action",
+    "entity_type",
+    "entity_id",
+    "changed_by"
+  ]
+}

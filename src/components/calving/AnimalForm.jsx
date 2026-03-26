@@ -5,35 +5,45 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { base44 } from '@/api/base44Client';
-import { Camera, Save, X } from 'lucide-react';
+import { Camera, Save, X, MapPin } from 'lucide-react';
 import { toast } from 'sonner';
+import { allowedTypesForSex, validateSexType } from '@/lib/animalRules';
 
-const TYPE_BY_SEX = {
-  Male: ['Calf', 'Bull', 'Steer'],
-  Female: ['Calf', 'Cow', 'Heifer'],
-};
+const TAG_COLORS = ['Yellow', 'Orange', 'White', 'Green', 'Blue', 'Red', 'Pink', 'Purple'];
 
-export default function AnimalForm({ animal, onSave, onCancel }) {
+export default function AnimalForm({ animal, onSave, onCancel, existingAnimals = [] }) {
   const [form, setForm] = useState({
     animal_number: '',
     sex: '',
     animal_type: '',
     mother_animal_number: '',
     date_of_birth: new Date().toISOString().split('T')[0],
+    birth_weight: '',
     status: 'Alive',
     location: '',
     notes: '',
     photo_url: '',
+    tag_color: '',
+    breed: '',
+    is_archived: false,
+    gps_lat: '',
+    gps_lng: '',
     ...animal,
   });
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [gpsLoading, setGpsLoading] = useState(false);
 
-  const allowedTypes = form.sex ? TYPE_BY_SEX[form.sex] : [];
+  const allowedTypes = allowedTypesForSex(form.sex);
 
-  // Reset animal_type if sex changes and current type is invalid
+  // Valid mothers for calf linking
+  const validMothers = existingAnimals.filter(
+    a => a.sex === 'Female' && ['Cow', 'Heifer'].includes(a.animal_type)
+  );
+
+  // Reset animal_type if sex changes and current type becomes invalid
   useEffect(() => {
-    if (form.sex && form.animal_type && !TYPE_BY_SEX[form.sex]?.includes(form.animal_type)) {
+    if (form.sex && form.animal_type && !allowedTypesForSex(form.sex).includes(form.animal_type)) {
       setForm(prev => ({ ...prev, animal_type: '' }));
     }
   }, [form.sex]);
@@ -47,30 +57,74 @@ export default function AnimalForm({ animal, onSave, onCancel }) {
     setUploading(false);
   };
 
+  const captureGPS = () => {
+    if (!navigator.geolocation) { toast.error('GPS not available'); return; }
+    setGpsLoading(true);
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        setForm(prev => ({ ...prev, gps_lat: pos.coords.latitude, gps_lng: pos.coords.longitude }));
+        setGpsLoading(false);
+        toast.success('GPS captured');
+      },
+      () => { toast.error('Could not get GPS location'); setGpsLoading(false); }
+    );
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!form.animal_number || !form.sex || !form.animal_type) {
-      toast.error('Please fill in Animal Number, Sex, and Type');
+
+    if (!form.animal_number?.trim()) { toast.error('Animal Number is required'); return; }
+    if (!form.sex)                   { toast.error('Sex is required'); return; }
+    if (!form.animal_type)           { toast.error('Animal Type is required'); return; }
+
+    // Central sex/type rule enforcement
+    const ruleError = validateSexType(form.sex, form.animal_type);
+    if (ruleError) { toast.error(ruleError); return; }
+
+    // Uniqueness check (skip if editing same animal)
+    const duplicate = existingAnimals.find(
+      a => a.animal_number?.toLowerCase() === form.animal_number.trim().toLowerCase() && a.id !== animal?.id
+    );
+    if (duplicate) { toast.error(`Animal #${form.animal_number} already exists`); return; }
+
+    // Mother required for Calf
+    if (form.animal_type === 'Calf' && !form.mother_animal_number?.trim()) {
+      toast.error('Mother Animal Number is required for a Calf');
       return;
     }
-    // Enforce gender rules
-    if (form.sex === 'Male' && ['Cow', 'Heifer'].includes(form.animal_type)) {
-      toast.error('Males cannot be Cow or Heifer');
-      return;
+
+    // Validate mother exists and is a Cow/Heifer
+    if (form.animal_type === 'Calf' && form.mother_animal_number) {
+      const mother = existingAnimals.find(
+        a => a.animal_number?.toLowerCase() === form.mother_animal_number.trim().toLowerCase()
+      );
+      if (!mother) {
+        toast.error(`Mother #${form.mother_animal_number} not found in Animals table`);
+        return;
+      }
+      if (!['Cow', 'Heifer'].includes(mother.animal_type)) {
+        toast.error(`#${form.mother_animal_number} is a ${mother.animal_type} — mother must be Cow or Heifer`);
+        return;
+      }
     }
-    if (form.sex === 'Female' && ['Bull', 'Steer'].includes(form.animal_type)) {
-      toast.error('Females cannot be Bull or Steer');
-      return;
-    }
+
     setSaving(true);
-    await onSave(form);
+    await onSave({
+      ...form,
+      animal_number: form.animal_number.trim(),
+      birth_weight: form.birth_weight ? Number(form.birth_weight) : undefined,
+      gps_lat:      form.gps_lat      ? Number(form.gps_lat)      : undefined,
+      gps_lng:      form.gps_lng      ? Number(form.gps_lng)      : undefined,
+      is_archived:  ['Sold', 'Died'].includes(form.status),
+    });
     setSaving(false);
   };
 
   const update = (field, value) => setForm(prev => ({ ...prev, [field]: value }));
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-5">
+    <form onSubmit={handleSubmit} className="space-y-5 pb-4">
+
       {/* Photo */}
       <div className="flex justify-center">
         <label className="cursor-pointer">
@@ -97,7 +151,7 @@ export default function AnimalForm({ animal, onSave, onCancel }) {
           value={form.animal_number}
           onChange={(e) => update('animal_number', e.target.value)}
           placeholder="e.g. 142, A-55"
-          className="h-14 text-lg mt-1"
+          className="h-14 text-xl font-bold mt-1"
         />
       </div>
 
@@ -112,11 +166,13 @@ export default function AnimalForm({ animal, onSave, onCancel }) {
               onClick={() => update('sex', s)}
               className={`h-14 rounded-xl border-2 font-bold text-lg transition-all ${
                 form.sex === s
-                  ? 'border-primary bg-primary/10 text-primary'
-                  : 'border-border bg-card text-muted-foreground hover:border-primary/50'
+                  ? s === 'Male'
+                    ? 'border-blue-500 bg-blue-50 text-blue-700'
+                    : 'border-pink-500 bg-pink-50 text-pink-700'
+                  : 'border-border bg-card text-muted-foreground'
               }`}
             >
-              {s}
+              {s === 'Male' ? '♂ Male' : '♀ Female'}
             </button>
           ))}
         </div>
@@ -126,7 +182,7 @@ export default function AnimalForm({ animal, onSave, onCancel }) {
       <div>
         <Label className="text-sm font-semibold">Animal Type *</Label>
         <div className="grid grid-cols-3 gap-2 mt-1">
-          {allowedTypes.map(t => (
+          {form.sex ? allowedTypes.map(t => (
             <button
               key={t}
               type="button"
@@ -134,34 +190,48 @@ export default function AnimalForm({ animal, onSave, onCancel }) {
               className={`h-12 rounded-xl border-2 font-semibold text-sm transition-all ${
                 form.animal_type === t
                   ? 'border-primary bg-primary/10 text-primary'
-                  : 'border-border bg-card text-muted-foreground hover:border-primary/50'
+                  : 'border-border bg-card text-muted-foreground'
               }`}
             >
               {t}
             </button>
-          ))}
-          {!form.sex && (
-            <p className="col-span-3 text-sm text-muted-foreground text-center py-3">
+          )) : (
+            <p className="col-span-3 text-sm text-muted-foreground text-center py-3 bg-muted rounded-xl">
               Select sex first
             </p>
           )}
         </div>
       </div>
 
-      {/* Mother */}
+      {/* Mother (Calf only) */}
       {form.animal_type === 'Calf' && (
         <div>
-          <Label className="text-sm font-semibold">Mother's Animal Number</Label>
-          <Input
-            value={form.mother_animal_number}
-            onChange={(e) => update('mother_animal_number', e.target.value)}
-            placeholder="Mother's tag #"
-            className="h-14 text-lg mt-1"
-          />
+          <Label className="text-sm font-semibold">Mother's Tag Number *</Label>
+          {validMothers.length > 0 ? (
+            <Select value={form.mother_animal_number} onValueChange={(v) => update('mother_animal_number', v)}>
+              <SelectTrigger className="h-14 text-base mt-1">
+                <SelectValue placeholder="Pick mother (Cow or Heifer)" />
+              </SelectTrigger>
+              <SelectContent>
+                {validMothers.map(m => (
+                  <SelectItem key={m.id} value={m.animal_number}>
+                    #{m.animal_number} — {m.animal_type}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          ) : (
+            <Input
+              value={form.mother_animal_number}
+              onChange={(e) => update('mother_animal_number', e.target.value)}
+              placeholder="Mother's tag # (must be a Cow or Heifer)"
+              className="h-14 text-lg mt-1"
+            />
+          )}
         </div>
       )}
 
-      {/* Date */}
+      {/* Date of Birth */}
       <div>
         <Label className="text-sm font-semibold">Date of Birth / Tagged</Label>
         <Input
@@ -172,17 +242,60 @@ export default function AnimalForm({ animal, onSave, onCancel }) {
         />
       </div>
 
+      {/* Birth Weight */}
+      <div>
+        <Label className="text-sm font-semibold">Birth Weight (lbs) — optional</Label>
+        <Input
+          type="number"
+          min="0"
+          step="0.1"
+          value={form.birth_weight}
+          onChange={(e) => update('birth_weight', e.target.value)}
+          placeholder="e.g. 85"
+          className="h-14 text-lg mt-1"
+        />
+      </div>
+
+      {/* Tag Color */}
+      <div>
+        <Label className="text-sm font-semibold">Tag Color — optional</Label>
+        <div className="flex flex-wrap gap-2 mt-2">
+          {TAG_COLORS.map(c => (
+            <button
+              key={c}
+              type="button"
+              onClick={() => update('tag_color', form.tag_color === c ? '' : c)}
+              className={`px-3 py-1.5 rounded-lg border text-sm font-medium transition-all ${
+                form.tag_color === c ? 'border-primary bg-primary/10 text-primary' : 'border-border text-muted-foreground'
+              }`}
+            >
+              {c}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Breed */}
+      <div>
+        <Label className="text-sm font-semibold">Breed — optional</Label>
+        <Input
+          value={form.breed}
+          onChange={(e) => update('breed', e.target.value)}
+          placeholder="e.g. Angus, Hereford, Angus x Hereford"
+          className="h-12 text-base mt-1"
+        />
+      </div>
+
       {/* Status */}
       <div>
         <Label className="text-sm font-semibold">Status</Label>
         <Select value={form.status} onValueChange={(v) => update('status', v)}>
-          <SelectTrigger className="h-14 text-lg mt-1">
-            <SelectValue />
-          </SelectTrigger>
+          <SelectTrigger className="h-14 text-lg mt-1"><SelectValue /></SelectTrigger>
           <SelectContent>
-            <SelectItem value="Alive">Alive</SelectItem>
-            <SelectItem value="Sold">Sold</SelectItem>
-            <SelectItem value="Died">Died</SelectItem>
+            <SelectItem value="Alive">✅ Alive</SelectItem>
+            <SelectItem value="Sold">💰 Sold</SelectItem>
+            <SelectItem value="Died">💀 Died</SelectItem>
+            <SelectItem value="Missing">❓ Missing</SelectItem>
           </SelectContent>
         </Select>
       </div>
@@ -198,13 +311,35 @@ export default function AnimalForm({ animal, onSave, onCancel }) {
         />
       </div>
 
+      {/* GPS */}
+      <div>
+        <Label className="text-sm font-semibold">GPS Coordinates — optional</Label>
+        <div className="flex gap-2 mt-1">
+          <Input
+            value={form.gps_lat}
+            readOnly
+            placeholder="Latitude"
+            className="h-12 text-sm bg-muted"
+          />
+          <Input
+            value={form.gps_lng}
+            readOnly
+            placeholder="Longitude"
+            className="h-12 text-sm bg-muted"
+          />
+          <Button type="button" variant="outline" onClick={captureGPS} disabled={gpsLoading} className="h-12 px-3 shrink-0">
+            <MapPin className="w-4 h-4" />
+          </Button>
+        </div>
+      </div>
+
       {/* Notes */}
       <div>
         <Label className="text-sm font-semibold">Notes</Label>
         <Textarea
           value={form.notes}
           onChange={(e) => update('notes', e.target.value)}
-          placeholder="Any observations..."
+          placeholder="Health observations, feeding notes, field remarks..."
           className="text-base mt-1"
           rows={3}
         />
@@ -212,22 +347,12 @@ export default function AnimalForm({ animal, onSave, onCancel }) {
 
       {/* Actions */}
       <div className="flex gap-3 pt-2">
-        <Button
-          type="button"
-          variant="outline"
-          onClick={onCancel}
-          className="flex-1 h-14 text-base font-semibold"
-        >
-          <X className="w-5 h-5 mr-2" />
-          Cancel
+        <Button type="button" variant="outline" onClick={onCancel} className="flex-1 h-14 text-base font-semibold">
+          <X className="w-5 h-5 mr-2" />Cancel
         </Button>
-        <Button
-          type="submit"
-          disabled={saving}
-          className="flex-1 h-14 text-base font-semibold"
-        >
+        <Button type="submit" disabled={saving} className="flex-1 h-14 text-base font-semibold">
           <Save className="w-5 h-5 mr-2" />
-          {saving ? 'Saving...' : (animal ? 'Update' : 'Save')}
+          {saving ? 'Saving...' : animal ? 'Update' : 'Save Animal'}
         </Button>
       </div>
     </form>

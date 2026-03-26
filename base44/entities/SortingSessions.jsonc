@@ -4,12 +4,12 @@
   "properties": {
     "session_name": {
       "type": "string",
-      "description": "Name of the sorting session"
+      "description": "Name of this sorting session (e.g. Spring Sort 2026)"
     },
     "session_date": {
       "type": "string",
       "format": "date",
-      "description": "Date of the sorting session"
+      "description": "Date the sort took place"
     },
     "status": {
       "type": "string",
@@ -17,11 +17,22 @@
         "Active",
         "Completed"
       ],
-      "default": "Active"
+      "default": "Active",
+      "description": "Active = in progress; Completed = finished and locked"
+    },
+    "left_pen_label": {
+      "type": "string",
+      "default": "Left",
+      "description": "Custom label for the left pen (e.g. Heifers, Keep, South Pasture)"
+    },
+    "right_pen_label": {
+      "type": "string",
+      "default": "Right",
+      "description": "Custom label for the right pen (e.g. Steers, Sell, North Pasture)"
     },
     "sorted_animals": {
       "type": "array",
-      "description": "Animals sorted in this session",
+      "description": "Full list of all sorted animal entries in this session",
       "items": {
         "type": "object",
         "properties": {
@@ -41,14 +52,44 @@
           "animal_type": {
             "type": "string"
           },
+          "mother_animal_number": {
+            "type": "string"
+          },
+          "location": {
+            "type": "string"
+          },
           "timestamp": {
             "type": "string"
+          },
+          "sorted_by": {
+            "type": "string",
+            "description": "Email of user who performed the sort"
           }
         }
       }
     },
+    "total_sorted": {
+      "type": "number",
+      "default": 0,
+      "description": "Cached count of total animals sorted \u2014 updated on each sort action"
+    },
+    "left_count": {
+      "type": "number",
+      "default": 0,
+      "description": "Cached count of animals sorted Left"
+    },
+    "right_count": {
+      "type": "number",
+      "default": 0,
+      "description": "Cached count of animals sorted Right"
+    },
     "notes": {
-      "type": "string"
+      "type": "string",
+      "description": "Session-level notes (e.g. weather, crew, pen conditions)"
+    },
+    "completed_at": {
+      "type": "string",
+      "description": "ISO timestamp when session was marked Complete"
     }
   },
   "required": [

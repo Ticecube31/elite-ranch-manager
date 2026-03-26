@@ -4,13 +4,41 @@
   "properties": {
     "ranch_name": {
       "type": "string",
-      "default": "My Ranch"
+      "default": "My Ranch",
+      "description": "Display name of the ranch \u2014 shown in header and reports"
     },
     "logo_url": {
-      "type": "string"
+      "type": "string",
+      "description": "URL of the ranch logo (1024x1024 recommended for App Store)"
     },
     "owner_email": {
-      "type": "string"
+      "type": "string",
+      "description": "Primary owner email \u2014 used for notifications and audit attribution"
+    },
+    "default_location": {
+      "type": "string",
+      "description": "Default pasture or location pre-filled when creating new animals"
+    },
+    "weight_unit": {
+      "type": "string",
+      "enum": [
+        "lbs",
+        "kg"
+      ],
+      "default": "lbs"
+    },
+    "offline_mode_enabled": {
+      "type": "boolean",
+      "default": false,
+      "description": "When true, app attempts to cache data for offline field use"
+    },
+    "privacy_policy_url": {
+      "type": "string",
+      "description": "URL of the privacy policy \u2014 required for Apple App Store submission"
+    },
+    "app_store_bundle_id": {
+      "type": "string",
+      "description": "Apple App Store bundle ID (e.g. com.myranch.eliteranchmanager)"
     }
   },
   "required": []

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Plus, Search, Filter } from 'lucide-react';
@@ -12,6 +12,7 @@ import AnimalCard from '@/components/calving/AnimalCard';
 import ExportButtons from '@/components/shared/ExportButtons';
 import EmptyState from '@/components/shared/EmptyState';
 import AIHelpButton from '@/components/shared/AIHelpButton';
+import { logAudit } from '@/lib/auditLogger';
 
 export default function CalvingSeason() {
   const [showForm, setShowForm] = useState(false);
@@ -19,7 +20,11 @@ export default function CalvingSeason() {
   const [search, setSearch] = useState('');
   const [typeFilter, setTypeFilter] = useState('all');
   const [sexFilter, setSexFilter] = useState('all');
+  const [statusFilter, setStatusFilter] = useState('active'); // 'active' hides archived
   const [showFilters, setShowFilters] = useState(false);
+  const [currentUser, setCurrentUser] = useState(null);
+
+  useEffect(() => { base44.auth.me().then(setCurrentUser).catch(() => {}); }, []);
 
   const queryClient = useQueryClient();
 
@@ -31,22 +36,24 @@ export default function CalvingSeason() {
 
   const createMutation = useMutation({
     mutationFn: (data) => base44.entities.Animals.create(data),
-    onSuccess: () => {
+    onSuccess: (created, data) => {
       queryClient.invalidateQueries({ queryKey: ['animals'] });
       queryClient.invalidateQueries({ queryKey: ['animals-stats'] });
       setShowForm(false);
-      toast.success('Animal saved!');
+      toast.success(`Animal #${data.animal_number} saved!`);
+      logAudit({ action: 'Created', entityType: 'Animal', entityId: created.id, entityLabel: `Animal #${data.animal_number}`, changeSummary: `New ${data.animal_type} (${data.sex}) created`, newValue: data, user: currentUser });
     },
   });
 
   const updateMutation = useMutation({
     mutationFn: ({ id, data }) => base44.entities.Animals.update(id, data),
-    onSuccess: () => {
+    onSuccess: (_, { id, data }) => {
       queryClient.invalidateQueries({ queryKey: ['animals'] });
       queryClient.invalidateQueries({ queryKey: ['animals-stats'] });
       setShowForm(false);
       setEditAnimal(null);
-      toast.success('Animal updated!');
+      toast.success(`Animal #${data.animal_number} updated!`);
+      logAudit({ action: 'Updated', entityType: 'Animal', entityId: id, entityLabel: `Animal #${data.animal_number}`, changeSummary: `Record updated`, newValue: data, user: currentUser });
     },
   });
 
@@ -65,13 +72,15 @@ export default function CalvingSeason() {
   };
 
   const filtered = animals.filter(a => {
-    const matchSearch = !search || 
+    const matchSearch = !search ||
       a.animal_number?.toLowerCase().includes(search.toLowerCase()) ||
       a.mother_animal_number?.toLowerCase().includes(search.toLowerCase()) ||
-      a.location?.toLowerCase().includes(search.toLowerCase());
-    const matchType = typeFilter === 'all' || a.animal_type === typeFilter;
-    const matchSex = sexFilter === 'all' || a.sex === sexFilter;
-    return matchSearch && matchType && matchSex;
+      a.location?.toLowerCase().includes(search.toLowerCase()) ||
+      a.breed?.toLowerCase().includes(search.toLowerCase());
+    const matchType   = typeFilter === 'all' || a.animal_type === typeFilter;
+    const matchSex    = sexFilter === 'all' || a.sex === sexFilter;
+    const matchStatus = statusFilter === 'all' || !a.is_archived;
+    return matchSearch && matchType && matchSex && matchStatus;
   });
 
   return (
@@ -113,7 +122,7 @@ export default function CalvingSeason() {
           </Button>
         </div>
         {showFilters && (
-          <div className="flex gap-2">
+          <div className="grid grid-cols-2 gap-2">
             <Select value={typeFilter} onValueChange={setTypeFilter}>
               <SelectTrigger className="h-10"><SelectValue placeholder="Type" /></SelectTrigger>
               <SelectContent>
@@ -128,9 +137,16 @@ export default function CalvingSeason() {
             <Select value={sexFilter} onValueChange={setSexFilter}>
               <SelectTrigger className="h-10"><SelectValue placeholder="Sex" /></SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All</SelectItem>
+                <SelectItem value="all">All Sexes</SelectItem>
                 <SelectItem value="Male">Male</SelectItem>
                 <SelectItem value="Female">Female</SelectItem>
+              </SelectContent>
+            </Select>
+            <Select value={statusFilter} onValueChange={setStatusFilter}>
+              <SelectTrigger className="h-10"><SelectValue placeholder="Status" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="active">Active Only</SelectItem>
+                <SelectItem value="all">Include Archived</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -180,6 +196,7 @@ export default function CalvingSeason() {
             animal={editAnimal}
             onSave={handleSave}
             onCancel={() => { setShowForm(false); setEditAnimal(null); }}
+            existingAnimals={animals}
           />
         </SheetContent>
       </Sheet>

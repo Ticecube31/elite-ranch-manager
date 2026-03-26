@@ -1,0 +1,50 @@
+{
+  "name": "AnimalMovements",
+  "type": "object",
+  "properties": {
+    "animal_number": {
+      "type": "string",
+      "description": "AnimalNumber of the animal that moved \u2014 links to Animals table"
+    },
+    "from_location": {
+      "type": "string",
+      "description": "Previous pasture / location name"
+    },
+    "to_location": {
+      "type": "string",
+      "description": "New pasture / location name"
+    },
+    "pasture_id": {
+      "type": "string",
+      "description": "ID of destination Pastures record \u2014 links to Pastures table"
+    },
+    "move_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Date of the move"
+    },
+    "move_reason": {
+      "type": "string",
+      "enum": [
+        "Rotation",
+        "Weaning",
+        "Sale",
+        "Health",
+        "Other"
+      ],
+      "description": "Reason for moving"
+    },
+    "moved_by": {
+      "type": "string",
+      "description": "Email of ranch hand who performed the move"
+    },
+    "notes": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "animal_number",
+    "to_location",
+    "move_date"
+  ]
+}

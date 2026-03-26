@@ -4,11 +4,11 @@
   "properties": {
     "pasture_name": {
       "type": "string",
-      "description": "Name of the pasture"
+      "description": "Name of the pasture (e.g. North Pasture, Back 40)"
     },
     "acreage": {
       "type": "number",
-      "description": "Size in acres"
+      "description": "Size of the pasture in acres"
     },
     "grass_condition": {
       "type": "string",
@@ -16,25 +16,39 @@
         "Excellent",
         "Good",
         "Fair",
-        "Poor"
+        "Poor",
+        "Depleted"
       ],
-      "description": "Current grass condition"
+      "description": "Current forage / grass condition"
+    },
+    "water_status": {
+      "type": "string",
+      "enum": [
+        "Good",
+        "Low",
+        "Dry",
+        "Unknown"
+      ],
+      "default": "Good",
+      "description": "Water availability in this pasture"
+    },
+    "fence_status": {
+      "type": "string",
+      "enum": [
+        "Good",
+        "Needs Repair",
+        "Broken"
+      ],
+      "default": "Good"
     },
     "current_herd_count": {
       "type": "number",
-      "description": "Number of animals currently in pasture"
+      "default": 0,
+      "description": "Number of animals currently grazing \u2014 updated when animals move"
     },
-    "gps_lat": {
-      "type": "number"
-    },
-    "gps_lng": {
-      "type": "number"
-    },
-    "notes": {
-      "type": "string"
-    },
-    "photo_url": {
-      "type": "string"
+    "max_capacity": {
+      "type": "number",
+      "description": "Maximum recommended animal capacity for this pasture"
     },
     "status": {
       "type": "string",
@@ -43,7 +57,30 @@
         "Resting",
         "Inactive"
       ],
-      "default": "Active"
+      "default": "Active",
+      "description": "Active = currently grazed; Resting = recovery; Inactive = not in use"
+    },
+    "last_grazed_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Most recent date animals were moved into this pasture"
+    },
+    "rest_start_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Date rotation rest period started"
+    },
+    "notes": {
+      "type": "string"
+    },
+    "photo_url": {
+      "type": "string"
+    },
+    "gps_lat": {
+      "type": "number"
+    },
+    "gps_lng": {
+      "type": "number"
     }
   },
   "required": [
