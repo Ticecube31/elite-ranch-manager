@@ -1,0 +1,57 @@
+{
+  "name": "SortingSessions",
+  "type": "object",
+  "properties": {
+    "session_name": {
+      "type": "string",
+      "description": "Name of the sorting session"
+    },
+    "session_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Date of the sorting session"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "Active",
+        "Completed"
+      ],
+      "default": "Active"
+    },
+    "sorted_animals": {
+      "type": "array",
+      "description": "Animals sorted in this session",
+      "items": {
+        "type": "object",
+        "properties": {
+          "animal_number": {
+            "type": "string"
+          },
+          "direction": {
+            "type": "string",
+            "enum": [
+              "Left",
+              "Right"
+            ]
+          },
+          "sex": {
+            "type": "string"
+          },
+          "animal_type": {
+            "type": "string"
+          },
+          "timestamp": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "notes": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "session_name"
+  ]
+}

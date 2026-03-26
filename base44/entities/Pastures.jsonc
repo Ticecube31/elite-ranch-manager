@@ -1,0 +1,52 @@
+{
+  "name": "Pastures",
+  "type": "object",
+  "properties": {
+    "pasture_name": {
+      "type": "string",
+      "description": "Name of the pasture"
+    },
+    "acreage": {
+      "type": "number",
+      "description": "Size in acres"
+    },
+    "grass_condition": {
+      "type": "string",
+      "enum": [
+        "Excellent",
+        "Good",
+        "Fair",
+        "Poor"
+      ],
+      "description": "Current grass condition"
+    },
+    "current_herd_count": {
+      "type": "number",
+      "description": "Number of animals currently in pasture"
+    },
+    "gps_lat": {
+      "type": "number"
+    },
+    "gps_lng": {
+      "type": "number"
+    },
+    "notes": {
+      "type": "string"
+    },
+    "photo_url": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "Active",
+        "Resting",
+        "Inactive"
+      ],
+      "default": "Active"
+    }
+  },
+  "required": [
+    "pasture_name"
+  ]
+}

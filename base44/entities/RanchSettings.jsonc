@@ -1,0 +1,17 @@
+{
+  "name": "RanchSettings",
+  "type": "object",
+  "properties": {
+    "ranch_name": {
+      "type": "string",
+      "default": "My Ranch"
+    },
+    "logo_url": {
+      "type": "string"
+    },
+    "owner_email": {
+      "type": "string"
+    }
+  },
+  "required": []
+}

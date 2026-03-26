@@ -1,0 +1,73 @@
+{
+  "name": "Animals",
+  "type": "object",
+  "properties": {
+    "animal_number": {
+      "type": "string",
+      "description": "Unique ear-tag or cow number"
+    },
+    "sex": {
+      "type": "string",
+      "enum": [
+        "Male",
+        "Female"
+      ],
+      "description": "Sex of the animal"
+    },
+    "animal_type": {
+      "type": "string",
+      "enum": [
+        "Cow",
+        "Heifer",
+        "Calf",
+        "Steer",
+        "Bull"
+      ],
+      "description": "Type of animal"
+    },
+    "mother_animal_number": {
+      "type": "string",
+      "description": "Mother's animal number (for calves)"
+    },
+    "date_of_birth": {
+      "type": "string",
+      "format": "date",
+      "description": "Date of birth or date tagged"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "Alive",
+        "Sold",
+        "Died"
+      ],
+      "default": "Alive",
+      "description": "Current status"
+    },
+    "location": {
+      "type": "string",
+      "description": "Current location or pasture name"
+    },
+    "gps_lat": {
+      "type": "number",
+      "description": "GPS latitude"
+    },
+    "gps_lng": {
+      "type": "number",
+      "description": "GPS longitude"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Additional notes"
+    },
+    "photo_url": {
+      "type": "string",
+      "description": "Photo of the animal"
+    }
+  },
+  "required": [
+    "animal_number",
+    "sex",
+    "animal_type"
+  ]
+}
