@@ -22,6 +22,8 @@ export default function QuickCalfForm({ animals = [], seasons = [], pastures = [
 
   const [calfTag, setCalfTag]               = useState('');
   const [calfTagEdited, setCalfTagEdited]   = useState(false);
+  const [twinPrompt, setTwinPrompt]         = useState(false); // null | existing animal when dup detected
+  const [isTwin, setIsTwin]                 = useState(false);
   const [sex, setSex]                       = useState('');
   const [location, setLocation]             = useState('');
   const [bornPastureId, setBornPastureId]   = useState('');
@@ -65,6 +67,8 @@ export default function QuickCalfForm({ animals = [], seasons = [], pastures = [
   const handleCalfTagChange = (val) => {
     setCalfTag(val);
     setCalfTagEdited(true);
+    setTwinPrompt(false);
+    setIsTwin(false);
   };
 
   const handleUnknownMother = () => {
@@ -111,7 +115,10 @@ export default function QuickCalfForm({ animals = [], seasons = [], pastures = [
     const dup = animals.find(
       a => a.animal_number?.toLowerCase() === calfTag.trim().toLowerCase()
     );
-    if (dup) { toast.error(`Tag #${calfTag} already exists in Animals`); return; }
+    if (dup && !isTwin) {
+      setTwinPrompt(true);
+      return;
+    }
 
     const animalType = sex === 'Male' ? 'Calf - Steer' : 'Calf - Heifer';
     const ruleError  = validateSexType(sex, animalType);
@@ -137,6 +144,7 @@ export default function QuickCalfForm({ animals = [], seasons = [], pastures = [
       notes:                notes.trim() || undefined,
       status:               'Alive',
       is_archived:          false,
+      twin:                 isTwin,
     });
     setSaving(false);
     setSaved(true);
@@ -151,6 +159,8 @@ export default function QuickCalfForm({ animals = [], seasons = [], pastures = [
     setPendingMother(null);
     setCalfTag('');
     setCalfTagEdited(false);
+    setTwinPrompt(false);
+    setIsTwin(false);
     setSex('');
     setLocation('');
     setBornPastureId('');
@@ -320,6 +330,46 @@ export default function QuickCalfForm({ animals = [], seasons = [], pastures = [
             inputMode="text"
             className="h-16 text-3xl font-bold tracking-widest border-2 rounded-2xl focus-visible:ring-0 focus-visible:border-green-500 placeholder:text-gray-300"
           />
+
+          {/* Twin / Mistake prompt */}
+          {twinPrompt && (
+            <div className="mt-3 rounded-2xl border-2 border-amber-300 bg-amber-50 px-4 py-4 space-y-3">
+              <div className="flex items-start gap-2">
+                <AlertCircle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
+                <div>
+                  <p className="font-bold text-amber-800 text-base">Tag #{calfTag} already exists!</p>
+                  <p className="text-sm text-amber-600 mt-0.5">Is this a twin, or was the tag number entered by mistake?</p>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  onClick={() => { setIsTwin(true); setTwinPrompt(false); }}
+                  className="h-14 rounded-xl font-black text-sm text-white flex flex-col items-center justify-center gap-0.5"
+                  style={{ background: GREEN_DARK }}
+                >
+                  <span className="text-lg">👯</span>
+                  <span>It's a Twin</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => { setTwinPrompt(false); setCalfTag(''); setCalfTagEdited(false); }}
+                  className="h-14 rounded-xl font-black text-sm border-2 border-red-200 text-red-600 bg-white flex flex-col items-center justify-center gap-0.5"
+                >
+                  <span className="text-lg">✏️</span>
+                  <span>Fix the Tag #</span>
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Twin badge — shown after confirming twin */}
+          {isTwin && !twinPrompt && (
+            <div className="mt-2 flex items-center gap-2 text-sm font-semibold rounded-xl px-4 py-3 bg-purple-50 text-purple-700 border border-purple-200">
+              <span className="text-base">👯</span>
+              Marked as Twin — will save with twin = Yes
+            </div>
+          )}
         </div>
 
         {/* 3. Sex */}

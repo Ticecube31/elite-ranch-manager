@@ -61,6 +61,11 @@
       "type": "string",
       "description": "ID of the Pastures record where this animal was born \u2014 links to Pastures table"
     },
+    "twin": {
+      "type": "boolean",
+      "default": false,
+      "description": "True if this calf is a twin \u2014 shares the same mother and birth date as another calf"
+    },
     "notes": {
       "type": "string",
       "description": "Free-text notes \u2014 health observations, feeding notes, any field remarks"
