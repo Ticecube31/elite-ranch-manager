@@ -10,7 +10,7 @@ import { useQuery } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { allowedTypesForSex, validateSexType } from '@/lib/animalRules';
 
-export default function AnimalForm({ animal, onSave, onCancel, existingAnimals = [] }) {
+export default function AnimalForm({ animal, onSave, onCancel, existingAnimals = [], seasons = [], defaultSeasonId }) {
   const [form, setForm] = useState({
     animal_number: '',
     sex: '',
@@ -21,6 +21,7 @@ export default function AnimalForm({ animal, onSave, onCancel, existingAnimals =
     notes: '',
     photo_url: '',
     is_archived: false,
+    calving_season_id: defaultSeasonId || '',
     ...animal,
   });
   const [saving, setSaving] = useState(false);
@@ -46,13 +47,18 @@ export default function AnimalForm({ animal, onSave, onCancel, existingAnimals =
     }
   }, [form.sex]);
 
-  // Auto-derive birth_year from date_of_birth
+  // Auto-derive birth_year and calving_season_id from date_of_birth
   useEffect(() => {
     if (form.date_of_birth) {
       const year = new Date(form.date_of_birth).getFullYear();
-      setForm(prev => ({ ...prev, birth_year: year }));
+      const matchedSeason = seasons.find(s => s.year === year);
+      setForm(prev => ({
+        ...prev,
+        birth_year: year,
+        calving_season_id: matchedSeason ? matchedSeason.id : prev.calving_season_id,
+      }));
     }
-  }, [form.date_of_birth]);
+  }, [form.date_of_birth, seasons]);
 
   const handlePhotoUpload = async (e) => {
     const file = e.target.files?.[0];
@@ -234,6 +240,27 @@ export default function AnimalForm({ animal, onSave, onCancel, existingAnimals =
           className="h-14 text-lg mt-1"
         />
       </div>
+
+      {/* Calving Season */}
+      {seasons.length > 0 && (
+        <div>
+          <Label className="text-sm font-semibold">Calving Season</Label>
+          <Select value={form.calving_season_id || ''} onValueChange={(v) => update('calving_season_id', v === '__none__' ? '' : v)}>
+            <SelectTrigger className="h-14 text-base mt-1">
+              <SelectValue placeholder="Select season..." />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="__none__">— No season assigned —</SelectItem>
+              {seasons.map(s => (
+                <SelectItem key={s.id} value={s.id}>
+                  {s.label || `Calving Season ${s.year}`}
+                  {s.status === 'Active' ? ' (Active)' : ''}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      )}
 
       {/* Status */}
       <div>

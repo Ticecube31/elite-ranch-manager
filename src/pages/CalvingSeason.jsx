@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Plus, Search, Filter } from 'lucide-react';
+import { Plus, Search, Filter, ChevronDown, Calendar } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
+import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import AnimalForm from '@/components/calving/AnimalForm';
 import AnimalCard from '@/components/calving/AnimalCard';
@@ -19,13 +20,20 @@ export default function CalvingSeason() {
   const [search, setSearch] = useState('');
   const [typeFilter, setTypeFilter] = useState('all');
   const [sexFilter, setSexFilter] = useState('all');
-  const [statusFilter, setStatusFilter] = useState('active'); // 'active' hides archived
+  const [statusFilter, setStatusFilter] = useState('active');
   const [showFilters, setShowFilters] = useState(false);
+  const [selectedSeasonId, setSelectedSeasonId] = useState('all');
   const [currentUser, setCurrentUser] = useState(null);
 
   useEffect(() => { base44.auth.me().then(setCurrentUser).catch(() => {}); }, []);
 
   const queryClient = useQueryClient();
+
+  const { data: seasons = [] } = useQuery({
+    queryKey: ['calving-seasons'],
+    queryFn: () => base44.entities.CalvingSeasons.list('-year'),
+    initialData: [],
+  });
 
   const { data: animals = [], isLoading } = useQuery({
     queryKey: ['animals'],
@@ -37,6 +45,23 @@ export default function CalvingSeason() {
     queryKey: ['pastures'],
     queryFn: () => base44.entities.Pastures.list(),
     initialData: [],
+  });
+
+  // Auto-select the active season on first load
+  useEffect(() => {
+    if (seasons.length > 0 && selectedSeasonId === 'all') {
+      const active = seasons.find(s => s.status === 'Active');
+      if (active) setSelectedSeasonId(active.id);
+    }
+  }, [seasons]);
+
+  const createSeasonMutation = useMutation({
+    mutationFn: (data) => base44.entities.CalvingSeasons.create(data),
+    onSuccess: (created) => {
+      queryClient.invalidateQueries({ queryKey: ['calving-seasons'] });
+      setSelectedSeasonId(created.id);
+      toast.success(`Calving Season ${created.year} created!`);
+    },
   });
 
   const createMutation = useMutation({
@@ -62,6 +87,13 @@ export default function CalvingSeason() {
     },
   });
 
+  const handleAddNewSeason = () => {
+    const year = new Date().getFullYear();
+    const exists = seasons.find(s => s.year === year);
+    if (exists) { setSelectedSeasonId(exists.id); return; }
+    createSeasonMutation.mutate({ year, label: `Calving Season ${year}`, status: 'Active' });
+  };
+
   const handleSave = async (formData) => {
     const { id, created_date, updated_date, created_by, ...data } = formData;
     if (editAnimal) {
@@ -76,15 +108,19 @@ export default function CalvingSeason() {
     setShowForm(true);
   };
 
+  const selectedSeason = seasons.find(s => s.id === selectedSeasonId);
+
   const filtered = animals.filter(a => {
     const matchSearch = !search ||
       a.animal_number?.toLowerCase().includes(search.toLowerCase()) ||
-      a.mother_animal_number?.toLowerCase().includes(search.toLowerCase()) ||
-      a.breed?.toLowerCase().includes(search.toLowerCase());
+      a.mother_animal_number?.toLowerCase().includes(search.toLowerCase());
     const matchType   = typeFilter === 'all' || a.animal_type === typeFilter;
     const matchSex    = sexFilter === 'all' || a.sex === sexFilter;
     const matchStatus = statusFilter === 'all' || !a.is_archived;
-    return matchSearch && matchType && matchSex && matchStatus;
+    const matchSeason = selectedSeasonId === 'all'
+      ? true
+      : a.calving_season_id === selectedSeasonId;
+    return matchSearch && matchType && matchSex && matchStatus && matchSeason;
   });
 
   return (
@@ -104,6 +140,59 @@ export default function CalvingSeason() {
         </Button>
       </div>
 
+      {/* Season Selector */}
+      <div className="bg-card border border-border rounded-xl p-4 space-y-3">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Calendar className="w-5 h-5 text-primary" />
+            <span className="font-semibold text-sm">Season</span>
+          </div>
+          <Button variant="outline" size="sm" onClick={handleAddNewSeason} className="text-xs h-8">
+            <Plus className="w-3 h-3 mr-1" /> New Season
+          </Button>
+        </div>
+        <div className="flex gap-2 flex-wrap">
+          <button
+            onClick={() => setSelectedSeasonId('all')}
+            className={`px-3 py-1.5 rounded-lg text-sm font-medium border transition-all ${
+              selectedSeasonId === 'all'
+                ? 'bg-primary text-primary-foreground border-primary'
+                : 'bg-card border-border text-muted-foreground'
+            }`}
+          >
+            All
+          </button>
+          {seasons.map(s => (
+            <button
+              key={s.id}
+              onClick={() => setSelectedSeasonId(s.id)}
+              className={`px-3 py-1.5 rounded-lg text-sm font-medium border transition-all flex items-center gap-1.5 ${
+                selectedSeasonId === s.id
+                  ? 'bg-primary text-primary-foreground border-primary'
+                  : 'bg-card border-border text-muted-foreground'
+              }`}
+            >
+              {s.year}
+              {s.status === 'Active' && (
+                <span className={`w-1.5 h-1.5 rounded-full ${selectedSeasonId === s.id ? 'bg-primary-foreground' : 'bg-emerald-500'}`} />
+              )}
+            </button>
+          ))}
+          {seasons.length === 0 && (
+            <p className="text-xs text-muted-foreground italic">No seasons yet — click "New Season" to create one.</p>
+          )}
+        </div>
+        {selectedSeason && (
+          <p className="text-xs text-muted-foreground">
+            {filtered.length} animals in <strong>{selectedSeason.label || `Calving Season ${selectedSeason.year}`}</strong>
+            {' · '}
+            <Badge variant="outline" className={`text-[10px] ${selectedSeason.status === 'Active' ? 'text-emerald-700 border-emerald-300' : 'text-muted-foreground'}`}>
+              {selectedSeason.status}
+            </Badge>
+          </p>
+        )}
+      </div>
+
       {/* Search & Filters */}
       <div className="space-y-3">
         <div className="flex gap-2">
@@ -112,7 +201,7 @@ export default function CalvingSeason() {
             <Input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search by tag #, mother, location..."
+              placeholder="Search by tag #, mother..."
               className="pl-10 h-12 text-base"
             />
           </div>
@@ -173,7 +262,7 @@ export default function CalvingSeason() {
         <EmptyState
           icon={Plus}
           title="No Animals Yet"
-          description="Tap 'Add Animal' to log your first calf or cow."
+          description={selectedSeason ? `No animals recorded for ${selectedSeason.year} yet.` : "Tap 'Add Animal' to log your first calf or cow."}
           action={
             <Button onClick={() => { setEditAnimal(null); setShowForm(true); }} className="h-12 px-6">
               <Plus className="w-5 h-5 mr-2" /> Add First Animal
@@ -201,10 +290,11 @@ export default function CalvingSeason() {
             onSave={handleSave}
             onCancel={() => { setShowForm(false); setEditAnimal(null); }}
             existingAnimals={animals}
+            seasons={seasons}
+            defaultSeasonId={selectedSeasonId !== 'all' ? selectedSeasonId : seasons.find(s => s.status === 'Active')?.id}
           />
         </SheetContent>
       </Sheet>
-
     </div>
   );
 }

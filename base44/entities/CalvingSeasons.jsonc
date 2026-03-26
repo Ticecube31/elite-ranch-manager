@@ -1,0 +1,35 @@
+{
+  "name": "CalvingSeasons",
+  "type": "object",
+  "properties": {
+    "year": {
+      "type": "number",
+      "description": "The calendar year of this calving season (e.g. 2025)"
+    },
+    "label": {
+      "type": "string",
+      "description": "Display label \u2014 auto-set to 'Calving Season YYYY'"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "Active",
+        "Closed"
+      ],
+      "default": "Active",
+      "description": "Active = current season; Closed = historical"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Season-level notes"
+    },
+    "total_animals": {
+      "type": "number",
+      "default": 0,
+      "description": "Cached count of animals in this season"
+    }
+  },
+  "required": [
+    "year"
+  ]
+}

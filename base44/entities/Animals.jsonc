@@ -38,6 +38,10 @@
       "type": "number",
       "description": "Year of birth \u2014 automatically derived from date_of_birth (e.g. 2025)"
     },
+    "calving_season_id": {
+      "type": "string",
+      "description": "ID of the CalvingSeasons record this animal belongs to \u2014 matched by birth_year"
+    },
     "status": {
       "type": "string",
       "enum": [

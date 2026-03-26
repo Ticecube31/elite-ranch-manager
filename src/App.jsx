@@ -9,7 +9,7 @@ import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import AppLayout from '@/components/layout/AppLayout';
 import { ThemeProvider } from '@/lib/ThemeContext';
 import Home from '@/pages/Home';
-import CalvingSeason from '@/pages/CalvingSeason';
+import CalvingSeason from '@/pages/CalvingSeason.jsx';
 import CalfSorting from '@/pages/CalfSorting';
 import PastureManagement from '@/pages/PastureManagement';
 import Settings from '@/pages/Settings';
