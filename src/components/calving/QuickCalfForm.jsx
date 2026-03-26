@@ -143,7 +143,8 @@ export default function QuickCalfForm({ animals = [], seasons = [], pastures = [
 
     setSaving(true);
     setSaved(false);
-    await onSave({
+    
+    const formData = {
       tag_number:           calfTag.trim(),
       sex,
       animal_type:          animalType,
@@ -157,7 +158,12 @@ export default function QuickCalfForm({ animals = [], seasons = [], pastures = [
       status:               'Alive',
       is_archived:          false,
       twin:                 isTwin,
-    });
+    };
+    
+    // Remove undefined values
+    Object.keys(formData).forEach(key => formData[key] === undefined && delete formData[key]);
+    
+    await onSave(formData);
     setSaving(false);
     setSaved(true);
     setTimeout(() => setSaved(false), 3000);
