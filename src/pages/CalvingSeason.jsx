@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import QuickCalfForm from '@/components/calving/QuickCalfForm';
 import AnimalForm from '@/components/calving/AnimalForm';
+import AllCalvesView from '@/components/calving/AllCalvesView';
 import { logAudit } from '@/lib/auditLogger';
 import { format } from 'date-fns';
 
@@ -17,7 +18,7 @@ const GREEN_DARK = '#2E7D32';
 const GREEN_BG = '#F1F8F1';
 
 export default function CalvingSeason() {
-  const [view, setView] = useState('main');           // 'main' | 'add-calf' | 'edit-animal'
+  const [view, setView] = useState('main');           // 'main' | 'add-calf' | 'edit-animal' | 'all-calves'
   const [editAnimal, setEditAnimal] = useState(null);
   const [selectedSeasonId, setSelectedSeasonId] = useState('all');
   const [showSeasonPicker, setShowSeasonPicker] = useState(false);
@@ -187,6 +188,19 @@ export default function CalvingSeason() {
     );
   }
 
+  // ── ALL CALVES VIEW ───────────────────────────────────────
+  if (view === 'all-calves') {
+    return (
+      <AllCalvesView
+        calves={animals}
+        pastures={pastures}
+        seasons={seasons}
+        onBack={() => setView('main')}
+        onEditCalf={(animal) => { setEditAnimal(animal); setView('edit-animal'); }}
+      />
+    );
+  }
+
   // ── EDIT ANIMAL VIEW ──────────────────────────────────────
   if (view === 'edit-animal' && editAnimal) {
     return (
@@ -238,6 +252,14 @@ export default function CalvingSeason() {
         >
           <Plus className="w-7 h-7 stroke-[3px]" />
           Add New Calf
+        </button>
+
+        {/* ── VIEW ALL CALVES BUTTON ──────────────────── */}
+        <button
+          onClick={() => setView('all-calves')}
+          className="w-full h-14 rounded-2xl font-heading font-bold text-base border-2 border-green-300 text-green-800 bg-white hover:bg-green-50 active:scale-[0.98] transition-all flex items-center justify-center gap-2"
+        >
+          View All Calves ({calves.length})
         </button>
 
         {/* ── ANALYTICS CARD ──────────────────────────── */}
