@@ -9,7 +9,7 @@ import { base44 } from '@/api/base44Client';
 const GREEN = '#4CAF50';
 const GREEN_DARK = '#2E7D32';
 
-export default function QuickCalfForm({ animals = [], seasons = [], pastures = [], defaultSeasonId, onSave, onAnimalsRefresh }) {
+export default function QuickCalfForm({ animals = [], seasons = [], pastures = [], defaultSeasonId, isTwinDefault = false, onSave, onAnimalsRefresh }) {
   const today = new Date().toISOString().split('T')[0];
 
   const [motherTag, setMotherTag]           = useState('');
@@ -24,7 +24,7 @@ export default function QuickCalfForm({ animals = [], seasons = [], pastures = [
   const [calfTag, setCalfTag]               = useState('');
   const [calfTagEdited, setCalfTagEdited]   = useState(false);
   const [twinPrompt, setTwinPrompt]         = useState(false); // null | existing animal when dup detected
-  const [isTwin, setIsTwin]                 = useState(false);
+  const [isTwin, setIsTwin]                 = useState(isTwinDefault);
   const [sex, setSex]                       = useState('');
   const [location, setLocation]             = useState('');
   const [bornPastureId, setBornPastureId]   = useState('');
@@ -39,6 +39,7 @@ export default function QuickCalfForm({ animals = [], seasons = [], pastures = [
   const motherInputRef = useRef(null);
 
   useEffect(() => { motherInputRef.current?.focus(); }, []);
+  useEffect(() => { setIsTwin(isTwinDefault); }, [isTwinDefault]);
 
   // Auto-fill calf tag from mother unless manually edited
   useEffect(() => {
