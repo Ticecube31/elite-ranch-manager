@@ -21,6 +21,8 @@ export default function FastSortingInputScreen() {
   const [cowNumber, setCowNumber] = useState('');
   const [matchedAnimal, setMatchedAnimal] = useState(null);
   const [noteSynced, setNoteSynced] = useState(false);
+  const [duplicates, setDuplicates] = useState([]);
+  const [showDuplicateSelector, setShowDuplicateSelector] = useState(false);
 
   // Fetch session details
   const { data: session, isLoading: sessionLoading } = useQuery({
@@ -53,11 +55,31 @@ export default function FastSortingInputScreen() {
   useEffect(() => {
     if (!cowNumber.trim()) {
       setMatchedAnimal(null);
+      setDuplicates([]);
+      setShowDuplicateSelector(false);
       return;
     }
-    const found = animals.find(a => a.tag_number === cowNumber.trim());
-    setMatchedAnimal(found || null);
+    const matches = animals.filter(a => a.tag_number === cowNumber.trim());
+    if (matches.length === 1) {
+      setMatchedAnimal(matches[0]);
+      setDuplicates([]);
+      setShowDuplicateSelector(false);
+    } else if (matches.length > 1) {
+      setDuplicates(matches);
+      setShowDuplicateSelector(true);
+      setMatchedAnimal(null);
+    } else {
+      setMatchedAnimal(null);
+      setDuplicates([]);
+      setShowDuplicateSelector(false);
+    }
   }, [cowNumber, animals]);
+
+  const getMotherBirthYear = (animal) => {
+    if (!animal?.mother_animal_number) return null;
+    const mother = animals.find(a => a.tag_number === animal.mother_animal_number);
+    return mother?.birth_year || null;
+  };
 
   const handleSort = async (direction) => {
     if (!matchedAnimal) {
@@ -150,44 +172,6 @@ export default function FastSortingInputScreen() {
       {/* ── MAIN CONTENT ────────────────────────────────────── */}
       <div className="flex-1 flex flex-col overflow-hidden">
 
-        {/* ── COW NUMBER INPUT (Top third) ──────────────────── */}
-        <div className="shrink-0 px-4 pt-6 pb-2 flex flex-col gap-3">
-          <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Enter Cow #</label>
-          <input
-            ref={inputRef}
-            type="number"
-            value={cowNumber}
-            onChange={(e) => setCowNumber(e.target.value)}
-            placeholder="Enter Cow #"
-            inputMode="numeric"
-            className="w-full h-20 text-center text-5xl font-heading font-black border-0 rounded-2xl shadow-md"
-            style={{
-              background: 'white',
-              color: matchedAnimal ? BLUE_DARK : '#999',
-              outline: `3px solid ${matchedAnimal ? SKY_BLUE : '#ddd'}`,
-              outlineOffset: '-3px',
-            }}
-          />
-        </div>
-
-        {/* ── SEX DISPLAY ────────────────────────────────────── */}
-        <div className="shrink-0 px-4 py-3 text-center">
-          {matchedAnimal ? (
-            <div>
-              <p className="font-heading font-black text-2xl" style={{ color: BLUE_DARK }}>
-                Cow #{matchedAnimal.tag_number} → {matchedAnimal.sex.toUpperCase()}
-              </p>
-              <p className="text-lg font-bold mt-1" style={{ color: BLUE }}>
-                {matchedAnimal.animal_type}
-              </p>
-            </div>
-          ) : cowNumber.trim() ? (
-            <p className="font-heading font-black text-xl text-red-500">❌ No matching cow found</p>
-          ) : (
-            <p className="text-lg text-gray-400">Enter a cow number to begin</p>
-          )}
-        </div>
-
         {/* ── SORTING ZONES (left/right split) ───────────────── */}
         <div className="flex-1 flex overflow-hidden gap-0">
 
@@ -225,6 +209,67 @@ export default function FastSortingInputScreen() {
             <p className="text-sm font-semibold mt-2 text-gray-400">{session.right_count || 0} sorted</p>
           </button>
         </div>
+      </div>
+
+      {/* ── COW NUMBER INPUT + INFO ────────────────────────── */}
+      <div className="shrink-0 px-4 pt-4 pb-2 flex flex-col gap-3">
+        <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Enter Cow #</label>
+        <input
+          ref={inputRef}
+          type="number"
+          value={cowNumber}
+          onChange={(e) => setCowNumber(e.target.value)}
+          placeholder="Enter Cow #"
+          inputMode="numeric"
+          className="w-full h-20 text-center text-5xl font-heading font-black border-0 rounded-2xl shadow-md"
+          style={{
+            background: 'white',
+            color: matchedAnimal ? BLUE_DARK : '#999',
+            outline: `3px solid ${matchedAnimal ? SKY_BLUE : '#ddd'}`,
+            outlineOffset: '-3px',
+          }}
+        />
+        
+        {/* Duplicate selector */}
+        {showDuplicateSelector && duplicates.length > 1 && (
+          <div className="bg-white rounded-2xl border-2 p-3 space-y-2" style={{ borderColor: SKY_BLUE }}>
+            <p className="text-xs font-bold text-gray-600 text-center">Multiple cows found. Select one:</p>
+            {duplicates.map(dup => {
+              const motherYear = getMotherBirthYear(dup);
+              return (
+                <button
+                  key={dup.id}
+                  onClick={() => {
+                    setMatchedAnimal(dup);
+                    setShowDuplicateSelector(false);
+                  }}
+                  className="w-full px-3 py-2 rounded-xl text-sm font-bold bg-blue-50 border border-blue-200 hover:bg-blue-100 text-left"
+                >
+                  #{dup.tag_number} {dup.animal_type} {motherYear && `(Mom: ${motherYear})`}
+                </button>
+              );
+            })}
+          </div>
+        )}
+
+        {/* Sex Display */}
+        {matchedAnimal && (
+          <div className="text-center bg-white rounded-2xl p-3">
+            <p className="font-heading font-black text-2xl" style={{ color: BLUE_DARK }}>
+              Cow #{matchedAnimal.tag_number} → {matchedAnimal.sex.toUpperCase()}
+            </p>
+            <p className="text-lg font-bold mt-1" style={{ color: BLUE }}>
+              {matchedAnimal.animal_type}
+            </p>
+            {getMotherBirthYear(matchedAnimal) && (
+              <p className="text-sm text-gray-600 mt-1">Mom born: {getMotherBirthYear(matchedAnimal)}</p>
+            )}
+          </div>
+        )}
+
+        {cowNumber.trim() && !matchedAnimal && !showDuplicateSelector && (
+          <p className="font-heading font-black text-xl text-red-500 text-center">❌ No matching cow found</p>
+        )}
       </div>
 
       {/* ── BOTTOM ACTION BAR ────────────────────────────────── */}
