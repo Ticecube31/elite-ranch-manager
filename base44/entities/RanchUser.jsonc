@@ -44,5 +44,11 @@
     "ranch_id",
     "user_email",
     "role"
+  ],
+  "uniqueComposite": [
+    [
+      "ranch_id",
+      "user_email"
+    ]
   ]
 }
