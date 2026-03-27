@@ -59,24 +59,20 @@ export default function PreSessionSetup() {
   const handleLeftSexChange = (sex) => {
     if (leftSex === sex) {
       setLeftSex(null);
+      setRightSex(null);
     } else {
       setLeftSex(sex);
-      // Auto-assign opposite to right if needed
-      if (rightSex === sex) {
-        setRightSex(null);
-      }
+      setRightSex(sex === 'Male' ? 'Female' : 'Male');
     }
   };
 
   const handleRightSexChange = (sex) => {
     if (rightSex === sex) {
+      setLeftSex(null);
       setRightSex(null);
     } else {
       setRightSex(sex);
-      // Auto-assign opposite to left if needed
-      if (leftSex === sex) {
-        setLeftSex(null);
-      }
+      setLeftSex(sex === 'Male' ? 'Female' : 'Male');
     }
   };
 
