@@ -1,11 +1,12 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Plus, ChevronDown, ChevronRight, X } from 'lucide-react';
+import { Plus, ChevronDown, ChevronRight, X, Edit2 } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
+import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
 import QuickCalfForm from '@/components/calving/QuickCalfForm';
 import { logTagHistory } from '@/lib/tagHistoryLogger';
@@ -33,6 +34,8 @@ export default function CalvingSeason() {
   const [lastAdded, setLastAdded] = useState(null); // for "add another" flow
   const [showAI, setShowAI] = useState(false);
   const [isTwinDefault, setIsTwinDefault] = useState(false);
+  const [showEditSeasonDialog, setShowEditSeasonDialog] = useState(false);
+  const [editSeasonForm, setEditSeasonForm] = useState({});
 
   // Scroll to top on every view change
   useEffect(() => { window.scrollTo(0, 0); }, [view]);
@@ -86,6 +89,15 @@ export default function CalvingSeason() {
       queryClient.invalidateQueries({ queryKey: ['calving-seasons'] });
       setSelectedSeasonId(created.id);
       toast.success(`Calving Season ${created.year} created!`);
+    },
+  });
+
+  const updateSeasonMutation = useMutation({
+    mutationFn: ({ id, data }) => base44.entities.CalvingSeasons.update(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['calving-seasons'] });
+      setShowEditSeasonDialog(false);
+      toast.success('Season updated!');
     },
   });
 
@@ -301,15 +313,29 @@ export default function CalvingSeason() {
     <div className="min-h-screen pb-[60px] bg-background">
 
       {/* ── Season Header Bar ────────────────────────────── */}
-      <div className="sticky top-0 z-10 px-4 py-3 shadow-md" style={{ background: GREEN_DARK }}>
-        <p className="text-white/70 text-xs font-semibold uppercase tracking-wider">Calving Season</p>
-        <button
-          onClick={() => setShowSeasonPicker(true)}
-          className="flex items-center gap-2 mt-0.5"
-        >
-          <span className="font-heading font-black text-white text-xl leading-tight">{seasonLabel}</span>
-          <ChevronDown className="w-5 h-5 text-white/70" />
-        </button>
+      <div className="sticky top-0 z-10 px-4 py-3 shadow-md flex items-center justify-between" style={{ background: GREEN_DARK }}>
+        <div className="flex-1">
+          <p className="text-white/70 text-xs font-semibold uppercase tracking-wider">Calving Season</p>
+          <button
+            onClick={() => setShowSeasonPicker(true)}
+            className="flex items-center gap-2 mt-0.5"
+          >
+            <span className="font-heading font-black text-white text-xl leading-tight">{seasonLabel}</span>
+            <ChevronDown className="w-5 h-5 text-white/70" />
+          </button>
+        </div>
+        {selectedSeason && (
+          <button
+            onClick={() => {
+              setEditSeasonForm(selectedSeason);
+              setShowEditSeasonDialog(true);
+            }}
+            className="p-2 hover:bg-white/10 rounded-lg transition-colors"
+            title="Edit season"
+          >
+            <Edit2 className="w-5 h-5 text-white" />
+          </button>
+        )}
       </div>
 
       <div className="px-4 py-5 max-w-lg mx-auto space-y-6">
@@ -477,6 +503,57 @@ export default function CalvingSeason() {
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowNewSeasonDialog(false)}>Cancel</Button>
             <Button onClick={handleConfirmNewSeason} style={{ background: GREEN, border: 'none' }}>Create Season</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* ── Edit Season Dialog ────────────────────────────── */}
+      <Dialog open={showEditSeasonDialog} onOpenChange={setShowEditSeasonDialog}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Edit Calving Season</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-2">
+            <div>
+              <Label className="text-sm font-semibold">Year</Label>
+              <Input
+                type="number"
+                value={editSeasonForm.year || ''}
+                onChange={e => setEditSeasonForm(prev => ({ ...prev, year: parseInt(e.target.value) || '' }))}
+                className="h-12 text-lg mt-1"
+                min="2000"
+                max="2100"
+              />
+            </div>
+            <div>
+              <Label className="text-sm font-semibold">Label</Label>
+              <Input
+                type="text"
+                value={editSeasonForm.label || ''}
+                onChange={e => setEditSeasonForm(prev => ({ ...prev, label: e.target.value }))}
+                className="h-12 mt-1"
+                placeholder="e.g. Calving Season 2026"
+              />
+            </div>
+            <div>
+              <Label className="text-sm font-semibold">Notes</Label>
+              <Textarea
+                value={editSeasonForm.notes || ''}
+                onChange={e => setEditSeasonForm(prev => ({ ...prev, notes: e.target.value }))}
+                className="mt-1 resize-none"
+                placeholder="Season notes..."
+                rows={3}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowEditSeasonDialog(false)}>Cancel</Button>
+            <Button
+              onClick={() => updateSeasonMutation.mutate({ id: editSeasonForm.id, data: editSeasonForm })}
+              style={{ background: GREEN, border: 'none' }}
+            >
+              Save Changes
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
