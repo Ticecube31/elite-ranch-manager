@@ -134,8 +134,8 @@ export default function CalvingSeason() {
   const maleCalves   = calves.filter(a => a.sex === 'Male').length;
   const femaleCalves = calves.filter(a => a.sex === 'Female').length;
 
-  // Recent activity: last 8 animals added in this season
-  const recentCalves = [...calves]
+  // Recent activity: last 8 records added in the selected season
+  const recentCalves = [...seasonAnimals]
     .sort((a, b) => new Date(b.created_date) - new Date(a.created_date))
     .slice(0, 8);
 
