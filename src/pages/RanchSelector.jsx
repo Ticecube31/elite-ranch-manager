@@ -9,9 +9,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger, DropdownMenuSeparator, DropdownMenuItem } from '@/components/ui/dropdown-menu';
 import { RanchContext } from '@/lib/RanchContext';
 
-const PURPLE = '#6B2D5E';
-const PURPLE_DARK = '#4A1F40';
-const PURPLE_LIGHT = '#F3E8F0';
+const RANCH_GREEN = 'hsl(142 40% 32%)';
+const RANCH_DARK = 'hsl(30 35% 35%)';
+const RANCH_TAN = 'hsl(30 25% 55%)';
 
 export default function RanchSelector() {
   const navigate = useNavigate();
@@ -134,7 +134,7 @@ export default function RanchSelector() {
     return (
       <div className="min-h-screen flex items-center justify-center" style={{ background: `linear-gradient(135deg, ${PURPLE_DARK}, ${PURPLE})` }}>
         <div className="text-center">
-          <div className="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-6" style={{ background: 'rgba(255,255,255,0.15)' }}>
+          <div className="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-6" style={{ background: RANCH_TAN }}>
             <span className="text-white font-heading font-black text-2xl">ER</span>
           </div>
           <h1 className="text-white font-heading font-black text-3xl mb-2">Elite Ranch Manager</h1>
@@ -142,7 +142,7 @@ export default function RanchSelector() {
           <Button
             onClick={() => base44.auth.redirectToLogin()}
             className="h-13 px-8 text-base font-bold text-white"
-            style={{ background: `linear-gradient(135deg, ${PURPLE}, ${PURPLE_DARK})` }}
+            style={{ background: `linear-gradient(135deg, ${RANCH_GREEN}, ${RANCH_DARK})` }}
           >
             Sign In
           </Button>
@@ -163,17 +163,17 @@ export default function RanchSelector() {
   }
 
   return (
-    <div className="min-h-screen" style={{ background: `linear-gradient(135deg, ${PURPLE_DARK}, ${PURPLE})` }}>
+    <div className="min-h-screen" style={{ background: `linear-gradient(135deg, ${RANCH_DARK}, ${RANCH_GREEN})` }}>
       {/* Header */}
-      <header className="border-b border-white/10 bg-black/20 backdrop-blur-sm">
+      <header className="border-b border-white/10 bg-white/5 backdrop-blur-sm">
         <div className="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{ background: 'rgba(255,255,255,0.15)' }}>
+            <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{ background: RANCH_TAN }}>
               <span className="text-white font-heading font-black text-lg">ER</span>
             </div>
             <div>
-              <p className="text-white font-heading font-bold">{currentRanch?.ranch_name || 'Elite Ranch Manager'}</p>
-              <p className="text-white/60 text-xs">{user?.full_name || user?.email}</p>
+              <p className="text-foreground font-heading font-bold">{currentRanch?.ranch_name || 'Elite Ranch Manager'}</p>
+              <p className="text-muted-foreground text-xs">{user?.full_name || user?.email}</p>
             </div>
           </div>
           <div className="flex items-center gap-2">
@@ -224,7 +224,7 @@ export default function RanchSelector() {
             <Button
               onClick={() => setShowCreateDialog(true)}
               className="h-11 px-4 text-sm font-bold text-white"
-              style={{ background: `linear-gradient(135deg, ${PURPLE}, ${PURPLE_DARK})` }}
+              style={{ background: `linear-gradient(135deg, ${RANCH_GREEN}, ${RANCH_DARK})` }}
             >
               <Plus className="w-4 h-4 mr-2" /> New Ranch
             </Button>
@@ -247,18 +247,18 @@ export default function RanchSelector() {
                     {ranch.logo_url ? (
                       <img src={ranch.logo_url} alt="" className="w-12 h-12 rounded-lg object-cover" />
                     ) : (
-                      <div className="w-12 h-12 rounded-lg flex items-center justify-center text-2xl" style={{ background: PURPLE_LIGHT }}>
+                      <div className="w-12 h-12 rounded-lg flex items-center justify-center text-2xl" style={{ background: 'hsl(30 25% 90%)' }}>
                         🐄
                       </div>
                     )}
                     <div className="flex-1">
-                      <h3 className="font-heading font-black text-xl" style={{ color: PURPLE_DARK }}>
+                      <h3 className="font-heading font-black text-xl" style={{ color: RANCH_GREEN }}>
                         {ranch.ranch_name || 'Unnamed Ranch'}
                       </h3>
                       <p className="text-xs text-gray-500 capitalize mt-1">{ranch.userRole}</p>
                     </div>
                   </div>
-                  <div className="text-sm font-bold" style={{ color: PURPLE_DARK }}>Enter Ranch →</div>
+                  <div className="text-sm font-bold" style={{ color: RANCH_GREEN }}>Enter Ranch →</div>
                 </button>
               ))}
             </div>
@@ -295,18 +295,18 @@ export default function RanchSelector() {
                     {ranch.logo_url ? (
                       <img src={ranch.logo_url} alt="" className="w-12 h-12 rounded-lg object-cover" />
                     ) : (
-                      <div className="w-12 h-12 rounded-lg flex items-center justify-center text-2xl" style={{ background: PURPLE_LIGHT }}>
+                      <div className="w-12 h-12 rounded-lg flex items-center justify-center text-2xl" style={{ background: 'hsl(30 25% 90%)' }}>
                         🐄
                       </div>
                     )}
-                    <h3 className="font-heading font-bold text-lg" style={{ color: PURPLE_DARK }}>
+                    <h3 className="font-heading font-bold text-lg" style={{ color: RANCH_GREEN }}>
                       {ranch.ranch_name}
                     </h3>
                   </div>
                   <Button
                     onClick={() => handleJoinRanch(ranch.id)}
                     className="w-full h-11 text-sm font-bold text-white"
-                    style={{ background: `linear-gradient(135deg, ${PURPLE}, ${PURPLE_DARK})` }}
+                    style={{ background: `linear-gradient(135deg, ${RANCH_GREEN}, ${RANCH_DARK})` }}
                   >
                     <Plus className="w-4 h-4 mr-2" /> Join Ranch
                   </Button>
@@ -347,7 +347,7 @@ export default function RanchSelector() {
               onClick={handleCreateRanch}
               disabled={creating || !newRanchName.trim()}
               className="text-white"
-              style={{ background: `linear-gradient(135deg, ${PURPLE}, ${PURPLE_DARK})` }}
+              style={{ background: `linear-gradient(135deg, ${RANCH_GREEN}, ${RANCH_DARK})` }}
             >
               {creating ? 'Creating...' : 'Create'}
             </Button>
