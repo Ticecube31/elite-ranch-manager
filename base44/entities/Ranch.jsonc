@@ -4,7 +4,8 @@
   "properties": {
     "ranch_name": {
       "type": "string",
-      "description": "Name of the ranch (e.g., Blauw Cattle Company)"
+      "description": "Name of the ranch (e.g., Blauw Cattle Company)",
+      "unique": true
     },
     "logo_url": {
       "type": "string",
