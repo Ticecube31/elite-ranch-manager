@@ -203,7 +203,6 @@ export default function FastSortingInputScreen() {
 
       {/* ── COW NUMBER INPUT + INFO ────────────────────────── */}
       <div className="shrink-0 px-4 pt-4 pb-2 flex flex-col gap-3">
-        <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Enter Cow #</label>
         <input
           ref={inputRef}
           type="number"
