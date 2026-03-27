@@ -96,7 +96,7 @@ export default function PreSessionSetup() {
   };
 
   return (
-    <div className="min-h-screen pb-32 flex flex-col" style={{ background: BLUE_BG }}>
+    <div className="min-h-screen flex flex-col" style={{ background: BLUE_BG }}>
 
       {/* ── Header ──────────────────────────────────────────── */}
       <div className="sticky top-0 z-20 shrink-0 flex items-center justify-between px-4 h-14" style={{ background: BLUE_DARK }}>
@@ -107,7 +107,7 @@ export default function PreSessionSetup() {
         <div className="w-10" />
       </div>
 
-      <div className="px-4 py-6 max-w-lg mx-auto w-full space-y-6">
+      <div className="px-4 py-6 max-w-lg mx-auto w-full space-y-6 pb-40 md:pb-0">
 
         {/* ── Session Name & Date ────────────────────────── */}
         <div className="space-y-3">
