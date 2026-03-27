@@ -67,6 +67,12 @@ export default function CalvingSeason() {
     initialData: [],
   });
 
+  const { data: auditLogs = [] } = useQuery({
+    queryKey: ['audit-log-calving'],
+    queryFn: () => base44.entities.AuditLog.filter({ entity_type: 'Animal' }, '-created_date', 20),
+    initialData: [],
+  });
+
   // Auto-select most recent season on first load
   useEffect(() => {
     if (seasons.length > 0 && selectedSeasonId === 'all') {
@@ -152,10 +158,32 @@ export default function CalvingSeason() {
   const maleCalves   = calves.filter(a => a.sex === 'Male').length;
   const femaleCalves = calves.filter(a => a.sex === 'Female').length;
 
-  // Recent activity: last 8 records added in the selected season
-  const recentCalves = [...seasonAnimals]
-    .sort((a, b) => new Date(b.created_date) - new Date(a.created_date))
-    .slice(0, 8);
+  // Recent activity: merge animal creates + audit log updates, filtered to selected season
+  const recentActivity = (() => {
+    const seasonAnimalIds = new Set(seasonAnimals.map(a => a.id));
+    // "Added" entries from animals themselves
+    const added = seasonAnimals.map(a => ({
+      animal: a,
+      action: 'Added',
+      summary: a.animal_type,
+      date: new Date(a.created_date),
+    }));
+    // "Modified" entries from audit log
+    const modified = auditLogs
+      .filter(log => log.action === 'Updated' && seasonAnimalIds.has(log.entity_id))
+      .map(log => {
+        const animal = seasonAnimals.find(a => a.id === log.entity_id);
+        return {
+          animal: animal || { tag_number: log.entity_label?.replace('Animal #', '') || '?', animal_type: '—' },
+          action: 'Modified',
+          summary: log.change_summary || 'Updated',
+          date: new Date(log.created_date),
+        };
+      });
+    return [...added, ...modified]
+      .sort((a, b) => b.date - a.date)
+      .slice(0, 8);
+  })();
 
   const seasonLabel = selectedSeason
     ? (selectedSeason.label || `Calving Season ${selectedSeason.year}`)
@@ -341,7 +369,7 @@ export default function CalvingSeason() {
             <div className="flex justify-center py-10">
               <div className="w-8 h-8 border-4 border-green-200 border-t-green-600 rounded-full animate-spin" />
             </div>
-          ) : recentCalves.length === 0 ? (
+          ) : recentActivity.length === 0 ? (
             <div className="bg-white rounded-2xl border border-green-100 shadow-sm px-5 py-10 text-center">
               <p className="text-4xl mb-3">🐄</p>
               <p className="font-bold text-gray-700">No calves recorded yet</p>
@@ -349,33 +377,33 @@ export default function CalvingSeason() {
             </div>
           ) : (
             <div className="bg-white rounded-2xl border border-green-100 shadow-sm overflow-hidden divide-y divide-gray-100">
-              {recentCalves.map((animal) => (
+              {recentActivity.map((entry, i) => (
                 <button
-                  key={animal.id}
-                  onClick={() => { setEditAnimal(animal); setView('edit-animal'); }}
+                  key={`${entry.animal?.id}-${i}`}
+                  onClick={() => { if (entry.animal?.id) { setEditAnimal(entry.animal); setView('edit-animal'); } }}
                   className="w-full flex items-center justify-between px-5 py-4 hover:bg-green-50 active:bg-green-100 transition-colors text-left"
                 >
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-xl flex items-center justify-center text-xl shrink-0"
-                      style={{ background: '#E8F5E9' }}>
-                      {animal.sex === 'Male' ? '♂' : '♀'}
+                      style={{ background: entry.action === 'Added' ? '#E8F5E9' : '#FFF3E0' }}>
+                      {entry.action === 'Added' ? '🐄' : '✏️'}
                     </div>
                     <div>
                       <p className="font-heading font-bold text-base text-gray-900">
-                        #{animal.tag_number}
-                        <span className="ml-2 font-normal text-sm text-gray-500">— {animal.sex}</span>
+                        #{entry.animal?.tag_number}
+                        <span className={`ml-2 text-xs font-bold px-2 py-0.5 rounded-full ${
+                          entry.action === 'Added'
+                            ? 'bg-green-100 text-green-700'
+                            : 'bg-orange-100 text-orange-700'
+                        }`}>{entry.action}</span>
                       </p>
-                      {animal.mother_animal_number && (
-                        <p className="text-xs text-gray-400">Mother: #{animal.mother_animal_number}</p>
-                      )}
+                      <p className="text-xs text-gray-400 mt-0.5">{entry.summary}</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-2 shrink-0">
-                    {animal.created_date && (
-                      <span className="text-xs text-gray-400">
-                        {format(new Date(animal.created_date), 'MMM d, h:mm a')}
-                      </span>
-                    )}
+                    <span className="text-xs text-gray-400">
+                      {format(entry.date, 'MMM d, h:mm a')}
+                    </span>
                     <ChevronRight className="w-4 h-4 text-gray-300" />
                   </div>
                 </button>
