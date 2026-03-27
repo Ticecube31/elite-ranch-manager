@@ -281,7 +281,7 @@ export default function FastSortingInputScreen() {
         {matchedAnimal && (
           <div className="text-center bg-white rounded-2xl p-3">
             <p className="font-heading font-black text-2xl" style={{ color: BLUE_DARK }}>
-              Cow #{matchedAnimal.tag_number} → {matchedAnimal.sex.toUpperCase()}
+              Cow #{matchedAnimal.tag_number} · Born {matchedAnimal.birth_year || '—'}
             </p>
             <p className="text-lg font-bold mt-1" style={{ color: BLUE }}>
               {matchedAnimal.animal_type}
