@@ -99,7 +99,7 @@ export default function ChildrenCell({ animalId, animals, onAddChild, onRemoveCh
                   }}
                   className="w-full text-left px-2 py-1 text-xs hover:bg-purple-50 rounded text-gray-700 whitespace-nowrap"
                 >
-                  #{child.tag_number} ({child.animal_type}) ({child.birth_year || '—'})
+                  <strong>#{child.tag_number}</strong> ({child.animal_type}) ({child.birth_year || '—'})
                 </button>
               ))
             ) : (
