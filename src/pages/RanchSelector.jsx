@@ -173,7 +173,7 @@ export default function RanchSelector() {
             </div>
             <div>
               <p className="text-foreground font-heading font-bold">Elite Ranch Manager</p>
-              <p className="text-muted-foreground text-xs">{user?.full_name || user?.email}</p>
+              <p className="text-foreground/70 text-sm">{user?.full_name || user?.email}</p>
             </div>
           </div>
           <div className="flex items-center gap-2">
