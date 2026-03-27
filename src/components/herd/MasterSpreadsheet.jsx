@@ -1,10 +1,11 @@
-import React, { useState, useMemo, useRef } from 'react';
+import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   ArrowLeft, Plus, Download, Upload, Search, X, ChevronUp, ChevronDown,
-  Trash2, CheckSquare, Square, Camera, AlertTriangle, ExternalLink
+  Trash2, CheckSquare, Square, Camera, AlertTriangle, ExternalLink, Save
 } from 'lucide-react';
+import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 import AnimalDetailView from '@/components/herd/AnimalDetailView';
 import ImportWizard from '@/components/herd/ImportWizard';
 import { Input } from '@/components/ui/input';
@@ -289,7 +290,28 @@ export default function MasterSpreadsheet({ onBack, currentUser }) {
   const [visibleCols, setVisibleCols] = useState(new Set(['tag_number', 'sex', 'animal_type', 'mother_animal_number', 'date_of_birth', 'status', 'pasture_id', 'notes']));
   const [showColMenu, setShowColMenu] = useState(false);
   const [resizing, setResizing] = useState(null);
+  const [sortedAnimals, setSortedAnimals] = useState([]);
   const importRef = useRef();
+
+  // Load saved layout on mount
+  useEffect(() => {
+    const saved = localStorage.getItem('masterSpreadsheet_layout');
+    if (saved) {
+      try {
+        const { colWidths: savedWidths, visibleCols: savedCols, filterChip: savedFilter, sortCol: savedSort, sortDir: savedSortDir } = JSON.parse(saved);
+        setColWidths(savedWidths || {});
+        setVisibleCols(new Set(savedCols || []));
+        setFilterChip(savedFilter || 'All');
+        setSortCol(savedSort || 'tag_number');
+        setSortDir(savedSortDir || 'asc');
+      } catch (e) {}
+    }
+  }, []);
+
+  // Save sorted animals for reordering
+  useEffect(() => {
+    setSortedAnimals([...filtered]);
+  }, [filtered]);
 
   const queryClient = useQueryClient();
 
@@ -396,6 +418,29 @@ export default function MasterSpreadsheet({ onBack, currentUser }) {
   const handleSort = (col) => {
     if (sortCol === col) setSortDir(d => d === 'asc' ? 'desc' : 'asc');
     else { setSortCol(col); setSortDir('asc'); }
+  };
+
+  const handleDragEnd = (result) => {
+    const { source, destination } = result;
+    if (!destination) return;
+    if (source.index === destination.index) return;
+
+    const reordered = [...sortedAnimals];
+    const [moved] = reordered.splice(source.index, 1);
+    reordered.splice(destination.index, 0, moved);
+    setSortedAnimals(reordered);
+  };
+
+  const handleSaveLayout = () => {
+    const layout = {
+      colWidths,
+      visibleCols: Array.from(visibleCols),
+      filterChip,
+      sortCol,
+      sortDir,
+    };
+    localStorage.setItem('masterSpreadsheet_layout', JSON.stringify(layout));
+    toast.success('Layout saved as default');
   };
 
   // ── Detail view ───────────────────────────────────────────
@@ -541,6 +586,13 @@ export default function MasterSpreadsheet({ onBack, currentUser }) {
       <div className="flex items-center justify-between px-4 py-2 shrink-0">
         <p className="text-xs font-semibold text-gray-400">{filtered.length} animals{selected.size > 0 ? ` · ${selected.size} selected` : ''}</p>
         <div className="flex gap-2 items-center">
+          <button
+            onClick={handleSaveLayout}
+            className="h-9 px-3 rounded-xl flex items-center justify-center gap-1.5 text-xs font-bold hover:bg-gray-100 border border-gray-200"
+            title="Save layout as default"
+          >
+            <Save className="w-4 h-4" /> Save Layout
+          </button>
           <div className="relative">
             <button
               onClick={() => setShowColMenu(!showColMenu)}
@@ -586,6 +638,7 @@ export default function MasterSpreadsheet({ onBack, currentUser }) {
             <p className="text-sm mt-1">Try clearing filters or adding a new animal.</p>
           </div>
         ) : (
+          <DragDropContext onDragEnd={handleDragEnd}>
           <div className="overflow-hidden bg-white border border-gray-300">
             {/* Column headers */}
             <div className="flex items-center bg-gray-50 sticky top-0 z-10" style={{ borderBottom: '2px solid #999' }}>
@@ -646,11 +699,18 @@ export default function MasterSpreadsheet({ onBack, currentUser }) {
             </div>
 
             {/* Rows */}
-            {filtered.map((animal, idx) => (
+            <Droppable droppableId="animals-list">
+              {(provided, snapshot) => (
+                <div ref={provided.innerRef} {...provided.droppableProps}>
+            {sortedAnimals.map((animal, idx) => (
+              <Draggable key={animal.id} draggableId={animal.id} index={idx}>
+                {(provided, snapshot) => (
               <div
-                key={animal.id}
-                className={`flex transition-colors ${selected.has(animal.id) ? 'bg-purple-100' : 'bg-white'}`}
-                style={{ borderBottom: '1px solid #ccc' }}
+                ref={provided.innerRef}
+                {...provided.draggableProps}
+                {...provided.dragHandleProps}
+                className={`flex transition-all ${snapshot.isDragging ? 'bg-blue-100 shadow-lg' : selected.has(animal.id) ? 'bg-purple-100' : 'bg-white'}`}
+                style={{ borderBottom: '1px solid #ccc', ...provided.draggableProps.style }}
               >
                 {/* Checkbox */}
                 <div style={{ width: 40, minWidth: 40, maxWidth: 40, borderRight: '1px solid #ccc' }} className="flex items-center justify-center shrink-0 py-2">
@@ -754,12 +814,19 @@ export default function MasterSpreadsheet({ onBack, currentUser }) {
                   </button>
                 </div>
               </div>
+                )}
+              </Draggable>
             ))}
-          </div>
-        )}
-      </div>
+              {provided.placeholder}
+                </div>
+              )}
+              </Droppable>
+              </div>
+              </DragDropContext>
+              )}
+              </div>
 
-      {/* ── Bulk Action Bar ──────────────────────────────────── */}
+              {/* ── Bulk Action Bar ──────────────────────────────────── */}
       {selected.size > 0 && (
         <BulkBar
           count={selected.size}
