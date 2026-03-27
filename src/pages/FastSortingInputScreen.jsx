@@ -352,11 +352,11 @@ export default function FastSortingInputScreen() {
             <DialogTitle>Exit Sorting Session?</DialogTitle>
           </DialogHeader>
           <p className="text-gray-600 py-2">Save your progress before leaving.</p>
-          <DialogFooter className="flex gap-2 flex-col">
-            <Button onClick={() => handleEndSession(true)} className="h-12" style={{ background: BLUE, border: 'none', color: 'white', fontSize: '16px', fontWeight: 'bold' }}>
+          <DialogFooter className="flex gap-2 flex-col items-center">
+            <Button onClick={() => handleEndSession(true)} className="h-12 w-full" style={{ background: BLUE, border: 'none', color: 'white', fontSize: '16px', fontWeight: 'bold' }}>
               Exit and Save
             </Button>
-            <Button onClick={() => handleEndSession(false)} variant="outline" className="h-9 text-sm">
+            <Button onClick={() => handleEndSession(false)} className="h-9 w-full text-sm" style={{ background: '#EF4444', border: 'none', color: 'white' }}>
               Exit Without Saving
             </Button>
           </DialogFooter>
