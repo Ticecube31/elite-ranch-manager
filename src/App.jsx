@@ -25,6 +25,7 @@ import Settings from '@/pages/Settings';
 import AIAssistant from '@/pages/AIAssistant';
 import PregChecking from '@/pages/PregChecking';
 import HerdManagement from '@/pages/HerdManagement';
+import CalvingSeasonSpreadsheet from '@/components/herd/CalvingSeasonSpreadsheet';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
