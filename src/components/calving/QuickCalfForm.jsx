@@ -312,8 +312,8 @@ export default function QuickCalfForm({ animals = [], seasons = [], pastures = [
 
       {/* Add Cow Modal */}
       {showAddCowModal && (
-        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 pb-0">
-          <div className="bg-white rounded-t-3xl w-full max-w-lg shadow-2xl p-6 space-y-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+          <div className="bg-white rounded-3xl w-full max-w-lg shadow-2xl p-6 space-y-4 mx-4">
             <div className="flex items-center justify-between">
               <h3 className="font-heading font-bold text-xl" style={{ color: GREEN_DARK }}>Add New Cow</h3>
               <button onClick={() => setShowAddCowModal(false)} className="p-1 hover:bg-gray-100 rounded-lg">
