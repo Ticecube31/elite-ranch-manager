@@ -3,8 +3,6 @@ import { base44 } from '@/api/base44Client';
 
 export const RanchContext = createContext();
 
-let refreshRanchAccess = null; // Global ref to refresh from outside
-
 export function RanchProvider({ children }) {
   const [currentRanch, setCurrentRanch] = useState(null);
   const [userRanches, setUserRanches] = useState([]);
@@ -70,9 +68,6 @@ export function RanchProvider({ children }) {
     };
 
     initializeRanch();
-    
-    // Expose refresh function globally
-    refreshRanchAccess = initializeRanch;
   }, []);
 
   const switchRanch = (ranchId) => {
@@ -85,10 +80,8 @@ export function RanchProvider({ children }) {
   };
 
   return (
-    <RanchContext.Provider value={{ currentRanch, userRanches, userRole, loading, switchRanch, refreshRanchAccess }}>
+    <RanchContext.Provider value={{ currentRanch, userRanches, userRole, loading, switchRanch }}>
       {children}
     </RanchContext.Provider>
   );
 }
-
-export { refreshRanchAccess };

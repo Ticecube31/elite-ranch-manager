@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
-import { refreshRanchAccess } from '@/lib/RanchContext';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -84,7 +83,6 @@ export default function RanchSelector() {
 
   const handleJoinRanch = async (ranchId) => {
     try {
-      // Create RanchUser record to give access
       await base44.entities.RanchUser.create({
         ranch_id: ranchId,
         user_email: user.email,
@@ -92,12 +90,10 @@ export default function RanchSelector() {
         status: 'active'
       });
       toast.success('Joined ranch!');
+      // Reload and immediately enter the ranch
       await loadData();
-      if (refreshRanchAccess) {
-        await refreshRanchAccess();
-      }
       localStorage.setItem('selectedRanchId', ranchId);
-      navigate('/');
+      setTimeout(() => navigate('/'), 500);
     } catch (error) {
       console.error('Error joining ranch:', error);
       toast.error('Failed to join ranch');
