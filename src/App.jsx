@@ -31,10 +31,12 @@ function RouteTransition({ children }) {
 import PageNotFound from './lib/PageNotFound';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
+import { RanchProvider, RanchContext } from '@/lib/RanchContext';
 
 import AppLayout from '@/components/layout/AppLayout';
 import { ThemeProvider } from '@/lib/ThemeContext';
 import Home from '@/pages/Home';
+import RanchSelector from '@/pages/RanchSelector';
 import CalvingSeason from '@/pages/CalvingSeason.jsx';
 import CalfSortingDashboard from '@/pages/CalfSortingDashboard';
 import PreSessionSetup from '@/pages/PreSessionSetup';
@@ -48,8 +50,10 @@ import CalvingSeasonSpreadsheet from '@/components/herd/CalvingSeasonSpreadsheet
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
+  const ranchContext = React.useContext(RanchContext);
+  const { currentRanch, loading: ranchLoading } = ranchContext || {};
 
-  if (isLoadingPublicSettings || isLoadingAuth) {
+  if (isLoadingPublicSettings || isLoadingAuth || ranchLoading) {
     return (
       <div className="fixed inset-0 flex items-center justify-center bg-background">
         <div className="flex flex-col items-center gap-3">
@@ -69,6 +73,10 @@ const AuthenticatedApp = () => {
       navigateToLogin();
       return null;
     }
+  }
+
+  if (!currentRanch) {
+    return <RanchSelector />;
   }
 
   return (
@@ -96,8 +104,10 @@ function App() {
       <QueryClientProvider client={queryClientInstance}>
         <Router>
           <ThemeProvider>
-            <ScrollToTop />
-            <AuthenticatedApp />
+            <RanchProvider>
+              <ScrollToTop />
+              <AuthenticatedApp />
+            </RanchProvider>
           </ThemeProvider>
         </Router>
         <Toaster />

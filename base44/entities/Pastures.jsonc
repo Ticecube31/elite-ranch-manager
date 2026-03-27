@@ -2,6 +2,10 @@
   "name": "Pastures",
   "type": "object",
   "properties": {
+    "ranch_id": {
+      "type": "string",
+      "description": "ID of the Ranch this pasture belongs to"
+    },
     "pasture_name": {
       "type": "string",
       "description": "Name of the pasture (e.g. North Pasture, Back 40)"
@@ -84,6 +88,7 @@
     }
   },
   "required": [
+    "ranch_id",
     "pasture_name"
   ]
 }

@@ -1,0 +1,74 @@
+{
+  "name": "DataChangeLog",
+  "type": "object",
+  "properties": {
+    "ranch_id": {
+      "type": "string",
+      "description": "ID of the Ranch this change belongs to"
+    },
+    "user_email": {
+      "type": "string",
+      "description": "Email of the user who made the change"
+    },
+    "user_full_name": {
+      "type": "string",
+      "description": "Full name of the user for easier reference"
+    },
+    "action": {
+      "type": "string",
+      "enum": [
+        "create",
+        "update",
+        "delete"
+      ],
+      "description": "Type of action performed"
+    },
+    "entity_type": {
+      "type": "string",
+      "enum": [
+        "Animal",
+        "Pasture",
+        "SortingSession",
+        "Calvingseason",
+        "PregnancyCheck"
+      ],
+      "description": "Type of entity that was changed"
+    },
+    "entity_id": {
+      "type": "string",
+      "description": "ID of the entity that was changed"
+    },
+    "entity_label": {
+      "type": "string",
+      "description": "Human-readable label (e.g., 'Animal #142', 'Pasture: North Field')"
+    },
+    "field_changed": {
+      "type": "string",
+      "description": "Which field was changed (for updates)"
+    },
+    "old_value": {
+      "type": "string",
+      "description": "Previous value (JSON string)"
+    },
+    "new_value": {
+      "type": "string",
+      "description": "New value (JSON string)"
+    },
+    "change_summary": {
+      "type": "string",
+      "description": "Human-readable summary of the change"
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the change occurred"
+    }
+  },
+  "required": [
+    "ranch_id",
+    "user_email",
+    "action",
+    "entity_type",
+    "timestamp"
+  ]
+}

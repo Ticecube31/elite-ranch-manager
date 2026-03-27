@@ -1,0 +1,40 @@
+{
+  "name": "Ranch",
+  "type": "object",
+  "properties": {
+    "ranch_name": {
+      "type": "string",
+      "description": "Name of the ranch (e.g., Blauw Cattle Company)"
+    },
+    "logo_url": {
+      "type": "string",
+      "description": "URL of the ranch logo/brand image"
+    },
+    "owner_id": {
+      "type": "string",
+      "description": "User ID of the ranch owner/admin"
+    },
+    "owner_email": {
+      "type": "string",
+      "description": "Email of the ranch owner for reference"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "archived"
+      ],
+      "default": "active",
+      "description": "Active or archived status"
+    },
+    "created_date": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the ranch was created"
+    }
+  },
+  "required": [
+    "ranch_name",
+    "owner_id"
+  ]
+}
