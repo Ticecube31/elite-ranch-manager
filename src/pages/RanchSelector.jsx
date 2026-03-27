@@ -30,7 +30,7 @@ export default function RanchSelector() {
 
   const loadData = async () => {
     try {
-      setLoading(false);
+      setLoading(true);
       
       // Get current user
       const currentUser = await base44.auth.me();
@@ -39,7 +39,6 @@ export default function RanchSelector() {
         return;
       }
       
-      setLoading(true);
       setUser(currentUser);
 
       // Get user's ranches
