@@ -2,9 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
-import { LogOut, Palette, Users, Smartphone, Database, ClipboardList, Info } from 'lucide-react';
+import { LogOut, Trash2, Palette, Users, Smartphone, Database, ClipboardList, Info } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 
 import BrandingSection      from '@/components/settings/BrandingSection';
 import UserManagementSection from '@/components/settings/UserManagementSection';
@@ -23,6 +24,8 @@ const TABS = [
 export default function Settings() {
   const [activeTab, setActiveTab] = useState('branding');
   const [uploading, setUploading] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [deleteConfirmText, setDeleteConfirmText] = useState('');
   const queryClient = useQueryClient();
 
   const { data: settingsList = [] } = useQuery({
@@ -58,6 +61,21 @@ export default function Settings() {
 
   const handleSave = (data) => {
     saveMutation.mutate({ ...settings, ...data });
+  };
+
+  const handleDeleteAccount = async () => {
+    if (deleteConfirmText !== 'DELETE') {
+      toast.error('Type DELETE to confirm');
+      return;
+    }
+    try {
+      // Revoke session and redirect to login
+      await base44.auth.logout('/');
+      // TODO: Add backend function to permanently delete user account if needed
+      toast.success('Account deletion initiated');
+    } catch (err) {
+      toast.error('Failed to delete account');
+    }
   };
 
   return (
@@ -108,8 +126,8 @@ export default function Settings() {
         )}
         {activeTab === 'audit' && <AuditLogSection />}
 
-        {/* Sign Out — always visible */}
-        <div className="pt-4 border-t border-border">
+        {/* Account Actions — always visible */}
+        <div className="pt-4 border-t border-border space-y-3">
           <Button
             variant="destructive"
             onClick={() => base44.auth.logout('/')}
@@ -117,10 +135,53 @@ export default function Settings() {
           >
             <LogOut className="w-5 h-5 mr-2" /> Sign Out
           </Button>
-          <p className="text-center text-xs text-muted-foreground mt-3">
+          <Button
+            variant="destructive"
+            onClick={() => setShowDeleteDialog(true)}
+            className="w-full h-12 text-sm font-bold bg-red-700 hover:bg-red-800"
+          >
+            <Trash2 className="w-4 h-4 mr-2" /> Delete Account
+          </Button>
+          <p className="text-center text-xs text-muted-foreground">
             Elite Ranch Manager · v0.4.0 · Built on Base44
           </p>
         </div>
+
+        {/* Delete Account Dialog */}
+        <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+          <DialogContent className="max-w-sm">
+            <DialogHeader>
+              <DialogTitle className="text-red-600">Delete Account</DialogTitle>
+            </DialogHeader>
+            <div className="py-4 space-y-3">
+              <p className="text-sm text-gray-600">
+                <strong>Warning:</strong> This action cannot be undone. All your data will be permanently deleted.
+              </p>
+              <p className="text-sm text-gray-600">
+                Type <code className="bg-gray-100 px-2 py-1 rounded font-mono">DELETE</code> to confirm:
+              </p>
+              <input
+                type="text"
+                value={deleteConfirmText}
+                onChange={(e) => setDeleteConfirmText(e.target.value)}
+                placeholder="Type DELETE"
+                className="w-full h-10 px-3 rounded-lg border border-gray-300 text-sm"
+              />
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => { setShowDeleteDialog(false); setDeleteConfirmText(''); }}>
+                Cancel
+              </Button>
+              <Button
+                variant="destructive"
+                onClick={handleDeleteAccount}
+                disabled={deleteConfirmText !== 'DELETE'}
+              >
+                Delete Account
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   );

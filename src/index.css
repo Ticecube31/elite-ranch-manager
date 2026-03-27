@@ -105,9 +105,15 @@
     font-family: var(--font-body);
     -webkit-tap-highlight-color: transparent;
     -webkit-font-smoothing: antialiased;
+    overscroll-behavior: none;
   }
   h1, h2, h3, h4, h5, h6 {
     font-family: var(--font-heading);
+  }
+  button, [role="tab"], svg, [role="button"] {
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-touch-callout: none;
   }
 }
 
