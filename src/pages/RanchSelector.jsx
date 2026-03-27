@@ -3,8 +3,9 @@ import { base44 } from '@/api/base44Client';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Search, Plus, LogOut } from 'lucide-react';
+import { Search, Plus, LogOut, Plus as PlusIcon } from 'lucide-react';
 import { toast } from 'sonner';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 
 const PURPLE = '#6B2D5E';
 const PURPLE_DARK = '#4A1F40';
@@ -18,6 +19,9 @@ export default function RanchSelector() {
   const [showRequestForm, setShowRequestForm] = useState(false);
   const [requestingRanchId, setRequestingRanchId] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [showCreateDialog, setShowCreateDialog] = useState(false);
+  const [newRanchName, setNewRanchName] = useState('');
+  const [creating, setCreating] = useState(false);
 
   useEffect(() => {
     const loadRanches = async () => {
@@ -82,6 +86,40 @@ export default function RanchSelector() {
     await base44.auth.logout();
   };
 
+  const handleCreateRanch = async () => {
+    if (!newRanchName.trim()) {
+      toast.error('Ranch name required');
+      return;
+    }
+    setCreating(true);
+    try {
+      const ranch = await base44.entities.Ranch.create({
+        ranch_name: newRanchName,
+        owner_id: user.id,
+        owner_email: user.email,
+        status: 'active'
+      });
+
+      await base44.entities.RanchUser.create({
+        ranch_id: ranch.id,
+        user_email: user.email,
+        role: 'admin',
+        status: 'active'
+      });
+
+      setNewRanchName('');
+      setShowCreateDialog(false);
+      localStorage.setItem('selectedRanchId', ranch.id);
+      navigate('/');
+      toast.success('Ranch created!');
+    } catch (error) {
+      toast.error('Failed to create ranch');
+      console.error(error);
+    } finally {
+      setCreating(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center" style={{ background: `linear-gradient(135deg, ${PURPLE_DARK}, ${PURPLE})` }}>
@@ -104,7 +142,16 @@ export default function RanchSelector() {
 
         {/* My Ranches */}
         <div className="mb-8">
-          <h2 className="text-white font-heading font-bold text-xl mb-4">My Ranches</h2>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-white font-heading font-bold text-xl">My Ranches</h2>
+            <Button
+              onClick={() => setShowCreateDialog(true)}
+              className="h-10 px-4 text-sm font-bold text-white"
+              style={{ background: `linear-gradient(135deg, ${PURPLE}, ${PURPLE_DARK})` }}
+            >
+              <Plus className="w-4 h-4 mr-1" /> New Ranch
+            </Button>
+          </div>
           {userRanches.length === 0 ? (
             <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20">
               <p className="text-white/70 text-center">You don't have any ranches yet. Request to join one below or ask an admin to add you.</p>
@@ -189,6 +236,40 @@ export default function RanchSelector() {
             <LogOut className="w-4 h-4" /> Logout
           </button>
         </div>
+
+        {/* Create Ranch Dialog */}
+        <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
+          <DialogContent className="max-w-sm">
+            <DialogHeader>
+              <DialogTitle>Create New Ranch</DialogTitle>
+            </DialogHeader>
+            <div className="py-4 space-y-3">
+              <Input
+                value={newRanchName}
+                onChange={(e) => setNewRanchName(e.target.value)}
+                placeholder="Ranch name"
+                className="h-12"
+                onKeyDown={(e) => e.key === 'Enter' && handleCreateRanch()}
+              />
+            </div>
+            <DialogFooter>
+              <Button
+                variant="outline"
+                onClick={() => setShowCreateDialog(false)}
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={handleCreateRanch}
+                disabled={creating}
+                className="text-white"
+                style={{ background: `linear-gradient(135deg, ${PURPLE}, ${PURPLE_DARK})` }}
+              >
+                {creating ? 'Creating...' : 'Create Ranch'}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   );
