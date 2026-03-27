@@ -19,7 +19,7 @@ export function RanchProvider({ children }) {
         }
 
         // Initialize default ranch if user has none
-        const ranchUsers = await base44.entities.RanchUser.filter({
+        let ranchUsers = await base44.entities.RanchUser.filter({
           user_email: user.email,
           status: 'active'
         });
@@ -28,21 +28,19 @@ export function RanchProvider({ children }) {
           // Create default ranch for this user
           await base44.functions.invoke('initializeDefaultRanch', {});
           // Re-fetch after initialization
-          const newRanchUsers = await base44.entities.RanchUser.filter({
+          ranchUsers = await base44.entities.RanchUser.filter({
             user_email: user.email,
             status: 'active'
           });
           
-          if (newRanchUsers.length === 0) {
+          if (ranchUsers.length === 0) {
             setLoading(false);
             return;
           }
         }
 
-        // Get ranch details for each (refetch after potential init)
-        const latestRanchUsers = ranchUsers.length === 0 
-          ? await base44.entities.RanchUser.filter({ user_email: user.email, status: 'active' })
-          : ranchUsers;
+        // Get ranch details for each
+        const latestRanchUsers = ranchUsers;
 
         const ranches = await Promise.all(
           latestRanchUsers.map(async (ru) => {
