@@ -227,8 +227,8 @@ export default function FastSortingInputScreen() {
         </div>
       </div>
 
-      {/* ── BOTTOM FIXED BAR ────────────────────────────────── */}
-      <div className="fixed bottom-0 left-0 right-0 z-20 px-4 pt-2 pb-4 bg-white border-t-2" style={{ borderColor: BLUE_LIGHT }}>
+      {/* ── BOTTOM ACTION BAR ────────────────────────────────── */}
+      <div className="px-4 pt-2 pb-4 bg-white border-t-2" style={{ borderColor: BLUE_LIGHT }}>
         <div className="max-w-2xl mx-auto flex gap-3">
           <button
             onClick={() => { setCowNumber(''); inputRef.current?.focus(); }}
@@ -246,9 +246,6 @@ export default function FastSortingInputScreen() {
           </button>
         </div>
       </div>
-
-      {/* ── SPACER FOR BOTTOM BAR ────────────────────────────── */}
-      <div className="h-24" />
     </div>
   );
 }
