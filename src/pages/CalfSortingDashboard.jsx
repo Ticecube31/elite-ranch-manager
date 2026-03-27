@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
+import { useNavigate } from 'react-router-dom';
 import { ArrowRight, Plus } from 'lucide-react';
 import { format, isToday } from 'date-fns';
 
@@ -45,6 +46,7 @@ function SessionCard({ session }) {
 }
 
 export default function CalfSortingDashboard() {
+  const navigate = useNavigate();
   const [currentUser, setCurrentUser] = useState(null);
 
   useEffect(() => {
@@ -83,6 +85,7 @@ export default function CalfSortingDashboard() {
 
         {/* ── Start New Session Button ────────────────────── */}
         <button
+          onClick={() => navigate('/sorting/setup')}
           className="w-full h-28 rounded-2xl font-heading font-black text-xl text-white shadow-xl active:scale-[0.98] transition-all flex items-center justify-center gap-3"
           style={{ background: `linear-gradient(135deg, ${BLUE}, ${BLUE_DARK})` }}
         >
@@ -127,6 +130,7 @@ export default function CalfSortingDashboard() {
 
         {/* ── View All Groups Button ──────────────────────── */}
         <button
+          onClick={() => navigate('/sorting/groups')}
           className="w-full h-14 rounded-2xl font-heading font-bold text-base border-2 bg-white active:scale-[0.98] transition-all flex items-center justify-between px-5"
           style={{ borderColor: BLUE, color: BLUE }}
         >
