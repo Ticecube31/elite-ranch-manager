@@ -559,7 +559,7 @@ export default function MasterSpreadsheet({ onBack, currentUser }) {
             {/* Column headers */}
             <div className="flex items-center bg-gray-50 sticky top-0 z-10" style={{ borderBottom: '2px solid #999' }}>
               {/* Select-all checkbox */}
-              <div className="w-10 flex items-center justify-center px-2 py-3 shrink-0" style={{ borderRight: '1px solid #ccc' }}>
+              <div style={{ width: 40, minWidth: 40, maxWidth: 40, borderRight: '1px solid #ccc' }} className="flex items-center justify-center px-2 py-3 shrink-0">
                 <button onClick={toggleAll}>
                   {selected.size === filtered.length && filtered.length > 0
                     ? <CheckSquare className="w-5 h-5" style={{ color: PURPLE }} />
@@ -568,10 +568,10 @@ export default function MasterSpreadsheet({ onBack, currentUser }) {
               </div>
 
               {/* Column visibility menu */}
-              <div className="relative" style={{ borderRight: '1px solid #ccc' }}>
+              <div style={{ width: 40, minWidth: 40, maxWidth: 40, borderRight: '1px solid #ccc' }} className="relative flex items-center justify-center shrink-0">
                 <button
                   onClick={() => setShowColMenu(!showColMenu)}
-                  className="h-full px-3 text-xs font-bold text-gray-500 hover:bg-gray-100"
+                  className="px-3 text-xs font-bold text-gray-500 hover:bg-gray-100"
                   title="Show/hide columns"
                 >
                   ⚙️
@@ -599,12 +599,12 @@ export default function MasterSpreadsheet({ onBack, currentUser }) {
                 return (
                   <div
                     key={col.key}
-                    style={{ width, borderRight: '1px solid #ccc' }}
-                    className="relative shrink-0 group"
+                    style={{ width, minWidth: width, maxWidth: width, borderRight: '1px solid #ccc' }}
+                    className="relative shrink-0 group flex items-center"
                   >
                     <button
                       onClick={() => col.key !== 'photo_url' && col.key !== 'created_date' && handleSort(col.key)}
-                      className={`w-full h-full text-left text-xs font-bold px-2 py-3 uppercase tracking-wide ${col.key !== 'photo_url' && col.key !== 'created_date' ? 'cursor-pointer hover:bg-gray-100' : 'cursor-default'}`}
+                      className={`w-full text-left text-xs font-bold px-2 py-3 uppercase tracking-wide overflow-hidden ${col.key !== 'photo_url' && col.key !== 'created_date' ? 'cursor-pointer hover:bg-gray-100' : 'cursor-default'}`}
                       style={{ color: PURPLE_DARK }}
                     >
                       {col.label} <SortIcon col={col.key} />
@@ -635,7 +635,7 @@ export default function MasterSpreadsheet({ onBack, currentUser }) {
                   </div>
                 );
               })}
-              <div className="w-10 shrink-0" style={{ borderRight: '1px solid #ccc' }} />
+              <div style={{ width: 40, minWidth: 40, maxWidth: 40, borderRight: '1px solid #ccc' }} className="shrink-0" />
             </div>
 
             {/* Rows */}
@@ -646,7 +646,7 @@ export default function MasterSpreadsheet({ onBack, currentUser }) {
                 style={{ borderBottom: '1px solid #ccc' }}
               >
                 {/* Checkbox */}
-                <div className="w-10 flex items-center justify-center px-2 shrink-0 py-2" style={{ borderRight: '1px solid #ccc' }}>
+                <div style={{ width: 40, minWidth: 40, maxWidth: 40, borderRight: '1px solid #ccc' }} className="flex items-center justify-center shrink-0 py-2">
                   <button onClick={() => toggleSelect(animal.id)}>
                     {selected.has(animal.id)
                       ? <CheckSquare className="w-5 h-5" style={{ color: PURPLE }} />
@@ -656,39 +656,39 @@ export default function MasterSpreadsheet({ onBack, currentUser }) {
 
                 {/* Dynamic cells */}
                 {visibleCols.has('tag_number') && (
-                  <div style={{ width: getColWidth('tag_number'), borderRight: '1px solid #ccc', color: PURPLE_DARK }} className="px-2 py-2 shrink-0 font-bold text-sm" style={{ wordWrap: 'break-word', whiteSpace: 'pre-wrap' }}>
+                  <div style={{ width: getColWidth('tag_number'), minWidth: getColWidth('tag_number'), maxWidth: getColWidth('tag_number'), borderRight: '1px solid #ccc', color: PURPLE_DARK }} className="px-2 py-2 shrink-0 font-bold text-sm overflow-hidden flex items-center">
                     <CellText value={animal.tag_number} onCommit={v => handleCellUpdate(animal, 'tag_number', v)} />
                   </div>
                 )}
                 {visibleCols.has('sex') && (
-                  <div style={{ width: getColWidth('sex'), borderRight: '1px solid #ccc' }} className="px-2 py-2 shrink-0 text-sm" style={{ wordWrap: 'break-word', whiteSpace: 'pre-wrap' }}>
+                  <div style={{ width: getColWidth('sex'), minWidth: getColWidth('sex'), maxWidth: getColWidth('sex'), borderRight: '1px solid #ccc' }} className="px-2 py-2 shrink-0 text-sm overflow-hidden flex items-center">
                     <CellSelect value={animal.sex} options={['Male', 'Female']} onCommit={v => handleCellUpdate(animal, 'sex', v)} />
                   </div>
                 )}
                 {visibleCols.has('animal_type') && (
-                  <div style={{ width: getColWidth('animal_type'), borderRight: '1px solid #ccc' }} className="px-2 py-2 shrink-0 text-sm" style={{ wordWrap: 'break-word', whiteSpace: 'pre-wrap' }}>
+                  <div style={{ width: getColWidth('animal_type'), minWidth: getColWidth('animal_type'), maxWidth: getColWidth('animal_type'), borderRight: '1px solid #ccc' }} className="px-2 py-2 shrink-0 text-sm overflow-hidden flex items-center">
                     <CellSelect value={animal.animal_type} options={ANIMAL_TYPES} onCommit={v => handleCellUpdate(animal, 'animal_type', v)} />
                   </div>
                 )}
                 {visibleCols.has('mother_animal_number') && (
-                  <div style={{ width: getColWidth('mother_animal_number'), borderRight: '1px solid #ccc' }} className="px-2 py-2 shrink-0 text-sm" style={{ wordWrap: 'break-word', whiteSpace: 'pre-wrap' }}>
+                  <div style={{ width: getColWidth('mother_animal_number'), minWidth: getColWidth('mother_animal_number'), maxWidth: getColWidth('mother_animal_number'), borderRight: '1px solid #ccc' }} className="px-2 py-2 shrink-0 text-sm overflow-hidden flex items-center">
                     <CellText value={animal.mother_animal_number} onCommit={v => handleCellUpdate(animal, 'mother_animal_number', v)} placeholder="—" />
                   </div>
                 )}
                 {visibleCols.has('date_of_birth') && (
-                  <div style={{ width: getColWidth('date_of_birth'), borderRight: '1px solid #ccc' }} className="px-2 py-2 shrink-0 text-sm" style={{ wordWrap: 'break-word', whiteSpace: 'pre-wrap' }}>
+                  <div style={{ width: getColWidth('date_of_birth'), minWidth: getColWidth('date_of_birth'), maxWidth: getColWidth('date_of_birth'), borderRight: '1px solid #ccc' }} className="px-2 py-2 shrink-0 text-sm overflow-hidden flex items-center">
                     <CellDate value={animal.date_of_birth} onCommit={v => handleCellUpdate(animal, 'date_of_birth', v)} />
                   </div>
                 )}
                 {visibleCols.has('status') && (
-                  <div style={{ width: getColWidth('status'), borderRight: '1px solid #ccc' }} className="px-2 py-2 shrink-0 text-sm" style={{ wordWrap: 'break-word', whiteSpace: 'pre-wrap' }}>
+                  <div style={{ width: getColWidth('status'), minWidth: getColWidth('status'), maxWidth: getColWidth('status'), borderRight: '1px solid #ccc' }} className="px-2 py-2 shrink-0 text-sm overflow-hidden flex items-center">
                     <div className={`text-xs font-bold px-2 py-0.5 rounded-full inline-block ${statusBadgeColor(animal.status)}`}>
                       <CellSelect value={animal.status} options={STATUSES} onCommit={v => handleCellUpdate(animal, 'status', v)} />
                     </div>
                   </div>
                 )}
                 {visibleCols.has('pasture_id') && (
-                  <div style={{ width: getColWidth('pasture_id'), borderRight: '1px solid #ccc' }} className="px-2 py-2 shrink-0 text-sm" style={{ wordWrap: 'break-word', whiteSpace: 'pre-wrap' }}>
+                  <div style={{ width: getColWidth('pasture_id'), minWidth: getColWidth('pasture_id'), maxWidth: getColWidth('pasture_id'), borderRight: '1px solid #ccc' }} className="px-2 py-2 shrink-0 text-sm overflow-hidden flex items-center">
                     <CellSelect
                       value={getPastureName(animal.pasture_id)}
                       options={pastures.map(p => p.pasture_name)}
@@ -700,28 +700,28 @@ export default function MasterSpreadsheet({ onBack, currentUser }) {
                   </div>
                 )}
                 {visibleCols.has('notes') && (
-                  <div style={{ width: getColWidth('notes'), borderRight: '1px solid #ccc' }} className="px-2 py-2 shrink-0 text-sm" style={{ wordWrap: 'break-word', whiteSpace: 'pre-wrap' }}>
+                  <div style={{ width: getColWidth('notes'), minWidth: getColWidth('notes'), maxWidth: getColWidth('notes'), borderRight: '1px solid #ccc' }} className="px-2 py-2 shrink-0 text-sm overflow-hidden flex items-center">
                     <CellText value={animal.notes} onCommit={v => handleCellUpdate(animal, 'notes', v)} placeholder="—" />
                   </div>
                 )}
                 {visibleCols.has('photo_url') && (
-                  <div style={{ width: getColWidth('photo_url'), borderRight: '1px solid #ccc' }} className="px-2 py-2 shrink-0 flex items-center justify-center">
+                  <div style={{ width: getColWidth('photo_url'), minWidth: getColWidth('photo_url'), maxWidth: getColWidth('photo_url'), borderRight: '1px solid #ccc' }} className="px-2 py-2 shrink-0 flex items-center justify-center overflow-hidden">
                     <CellPhoto value={animal.photo_url} onCommit={v => handleCellUpdate(animal, 'photo_url', v)} />
                   </div>
                 )}
                 {visibleCols.has('created_date') && (
-                  <div style={{ width: getColWidth('created_date'), borderRight: '1px solid #ccc' }} className="px-2 py-2 shrink-0 text-xs text-gray-400" style={{ wordWrap: 'break-word', whiteSpace: 'pre-wrap' }}>
+                  <div style={{ width: getColWidth('created_date'), minWidth: getColWidth('created_date'), maxWidth: getColWidth('created_date'), borderRight: '1px solid #ccc' }} className="px-2 py-2 shrink-0 text-xs text-gray-400 overflow-hidden flex items-center">
                     {animal.created_date ? format(new Date(animal.created_date), 'MM/dd/yy') : '—'}
                   </div>
                 )}
                 {/* View detail */}
-                <div className="w-8 flex items-center justify-center shrink-0" style={{ borderRight: '1px solid #ccc' }}>
+                <div style={{ width: 32, minWidth: 32, maxWidth: 32, borderRight: '1px solid #ccc' }} className="flex items-center justify-center shrink-0">
                   <button onClick={() => setDetailAnimalId(animal.id)} className="p-1.5 hover:bg-gray-100" title="View Details">
                     <ExternalLink className="w-4 h-4" style={{ color: PURPLE }} />
                   </button>
                 </div>
                 {/* Delete */}
-                <div className="w-10 flex items-center justify-center shrink-0" style={{ borderRight: '1px solid #ccc' }}>
+                <div style={{ width: 40, minWidth: 40, maxWidth: 40, borderRight: '1px solid #ccc' }} className="flex items-center justify-center shrink-0">
                   <button onClick={() => setDeleteTarget(animal)} className="p-1.5 hover:bg-gray-100">
                     <Trash2 className="w-4 h-4 text-red-300 hover:text-red-500" />
                   </button>
