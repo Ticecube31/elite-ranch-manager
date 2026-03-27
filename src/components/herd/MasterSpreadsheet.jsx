@@ -949,6 +949,6 @@ export default function MasterSpreadsheet({ onBack, currentUser }) {
           )}
 
           {activeTab === 'seasons' && <CalvingSeasonSpreadsheet onBack={() => {}} />}
-          </div>
-          );
-          }
+        </div>
+      );
+    }
