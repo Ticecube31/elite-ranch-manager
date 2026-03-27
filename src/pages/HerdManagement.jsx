@@ -331,7 +331,7 @@ export default function HerdManagement() {
   // ── ALL ANIMALS VIEW ──────────────────────────────────────
   if (view === 'all-animals') {
     return (
-      <div className="min-h-screen" style={{ background: PURPLE_BG }}>
+      <div className="min-h-screen pb-[60px]" style={{ background: PURPLE_BG }}>
         <div className="sticky top-0 z-10" style={{ background: PURPLE_DARK }}>
           <div className="flex items-center justify-between px-4 h-14">
             <button onClick={() => setView('dashboard')} className="text-white/80 hover:text-white p-2 -ml-2">
@@ -439,7 +439,7 @@ export default function HerdManagement() {
 
   // ── DASHBOARD VIEW ────────────────────────────────────────
   return (
-    <div className="min-h-screen pb-10" style={{ background: PURPLE_BG }}>
+    <div className="min-h-screen pb-[60px]" style={{ background: PURPLE_BG }}>
 
       {/* Header */}
       <div className="px-4 pt-6 pb-5" style={{ background: `linear-gradient(135deg, ${PURPLE_DARK}, ${PURPLE})` }}>

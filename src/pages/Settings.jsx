@@ -61,7 +61,7 @@ export default function Settings() {
   };
 
   return (
-    <div className="max-w-2xl mx-auto">
+    <div className="max-w-2xl mx-auto pb-[60px]">
       {/* Page Header */}
       <div className="px-4 pt-6 pb-4">
         <h1 className="font-heading font-black text-2xl text-foreground">Settings</h1>

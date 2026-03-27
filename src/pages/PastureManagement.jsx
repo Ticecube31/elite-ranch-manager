@@ -3,7 +3,7 @@ import { TreePine, Construction } from 'lucide-react';
 
 export default function PastureManagement() {
   return (
-    <div className="px-4 py-6 max-w-2xl mx-auto">
+    <div className="px-4 py-6 max-w-2xl mx-auto pb-[60px]">
       <div className="text-center py-16 space-y-6">
         <div className="inline-flex items-center justify-center w-24 h-24 rounded-3xl bg-amber-100">
           <TreePine className="w-12 h-12 text-amber-700" />

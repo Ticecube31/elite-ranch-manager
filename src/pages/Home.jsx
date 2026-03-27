@@ -63,7 +63,7 @@ export default function Home() {
   const firstName = user?.full_name?.split(' ')[0] ?? user?.email?.split('@')[0] ?? 'Rancher';
 
   return (
-    <div className="px-4 py-5 max-w-2xl mx-auto space-y-5 pb-8">
+    <div className="px-4 py-5 max-w-2xl mx-auto space-y-5 pb-[60px]">
 
       {/* ── Hero ─────────────────────────────────────────────── */}
       <div className="space-y-1 pt-1">

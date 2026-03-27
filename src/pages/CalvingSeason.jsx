@@ -298,7 +298,7 @@ export default function CalvingSeason() {
 
   // ── MAIN VIEW ─────────────────────────────────────────────
   return (
-    <div className="min-h-screen pb-8" style={{ background: GREEN_BG }}>
+    <div className="min-h-screen pb-[60px]" style={{ background: GREEN_BG }}>
 
       {/* ── Season Header Bar ────────────────────────────── */}
       <div className="sticky top-0 z-10 px-4 py-3 shadow-md" style={{ background: GREEN_DARK }}>
