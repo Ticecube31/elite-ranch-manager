@@ -17,6 +17,7 @@ export default function QuickCalfForm({ animals = [], seasons = [], pastures = [
 
   const [sex, setSex] = useState('');
   const [motherId, setMotherId] = useState('');
+  const [motherTagInput, setMotherTagInput] = useState('');
   const [tagNumber, setTagNumber] = useState('');
   const [dateOfBirth, setDateOfBirth] = useState(new Date().toISOString().split('T')[0]);
   const [pastureId, setPastureId] = useState('');
@@ -25,16 +26,7 @@ export default function QuickCalfForm({ animals = [], seasons = [], pastures = [
   const [calvingSeasonId, setCalvingSeasonId] = useState(defaultSeasonId || '');
   const [saving, setSaving] = useState(false);
 
-  // Auto-fill tag number from selected mother
-  useEffect(() => {
-    if (motherId) {
-      const mother = validMothers.find(m => m.id === motherId);
-      if (mother) {
-        setTagNumber(mother.tag_number);
-        if (!pastureId && mother.pasture_id) setPastureId(mother.pasture_id);
-      }
-    }
-  }, [motherId]);
+
 
   // Auto-derive calving season from date
   useEffect(() => {
@@ -108,23 +100,34 @@ export default function QuickCalfForm({ animals = [], seasons = [], pastures = [
 
       {/* Mother */}
       <div>
-        <Label className="text-sm font-semibold">Mother *</Label>
-        {validMothers.length > 0 ? (
-          <Select value={motherId} onValueChange={setMotherId}>
-            <SelectTrigger className="h-14 text-base mt-1">
-              <SelectValue placeholder="Select mother cow..." />
-            </SelectTrigger>
-            <SelectContent>
-              {validMothers.map(m => (
-                <SelectItem key={m.id} value={m.id}>
-                  #{m.tag_number} — {m.animal_type}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        ) : (
-          <p className="text-sm text-gray-400 mt-1 bg-gray-50 rounded-xl px-4 py-3">
-            No cows found. Add cows first in Herd Management.
+        <Label className="text-sm font-semibold">Mother Tag # *</Label>
+        <Input
+          inputMode="numeric"
+          pattern="[0-9]*"
+          value={motherTagInput}
+          onChange={e => {
+            const val = e.target.value;
+            setMotherTagInput(val);
+            const match = validMothers.find(m => m.tag_number === val.trim());
+            if (match) {
+              setMotherId(match.id);
+              setTagNumber(match.tag_number);
+              if (!pastureId && match.pasture_id) setPastureId(match.pasture_id);
+            } else {
+              setMotherId('');
+            }
+          }}
+          placeholder="Type mother's tag number"
+          className={`h-14 text-2xl font-black mt-1 ${
+            motherTagInput && !motherId ? 'border-orange-400 bg-orange-50' : motherId ? 'border-green-400 bg-green-50' : ''
+          }`}
+        />
+        {motherTagInput && !motherId && (
+          <p className="text-xs text-orange-600 mt-1 font-semibold">⚠️ No cow found with tag #{motherTagInput}</p>
+        )}
+        {motherId && (
+          <p className="text-xs text-green-600 mt-1 font-semibold">
+            ✓ {validMothers.find(m => m.id === motherId)?.animal_type} found
           </p>
         )}
       </div>
