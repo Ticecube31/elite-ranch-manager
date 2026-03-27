@@ -181,28 +181,38 @@ export default function CalfSortingDashboard() {
           Start New Sorting Session
         </button>
 
-        {/* ── Quick Summary Cards ────────────────────────── */}
-        <div>
-          <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">Quick Summary</p>
-          <div className="grid grid-cols-2 gap-3 mb-3">
-            <SummaryCard emoji="📊" label="Sorted Today" value={todaySorted} accent={BLUE_DARK} />
-            <SummaryCard emoji="✅" label="This Season" value={totalSeasonSorted} accent="#1565C0" />
-          </div>
-          {currentSession && (
-            <div className="bg-white rounded-2xl border border-blue-100 shadow-sm px-5 py-4">
-              <div className="flex items-center justify-between mb-2">
-                <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide">Active Session</p>
-                <span className="text-xs font-bold px-3 py-1 rounded-full" style={{ background: BLUE_LIGHT, color: BLUE_DARK }}>
-                  Live
-                </span>
-              </div>
-              <p className="font-heading font-black text-2xl" style={{ color: BLUE_DARK }}>
-                {currentSession.session_name || 'Session'}
-              </p>
-              <p className="text-sm text-gray-500 mt-1">{currentSession.total_sorted || 0} calves sorted</p>
-            </div>
-          )}
-        </div>
+        {/* ── Active Session ────────────────────────── */}
+         {currentSession && (
+           <div className="bg-white rounded-2xl border border-blue-100 shadow-sm p-5">
+             <div className="flex items-center justify-between mb-4">
+               <h3 className="font-heading font-bold text-lg" style={{ color: BLUE_DARK }}>
+                 {currentSession.session_name}
+               </h3>
+               <span className="text-xs font-bold px-3 py-1 rounded-full" style={{ background: BLUE_LIGHT, color: BLUE_DARK }}>
+                 Live
+               </span>
+             </div>
+             <p className="text-sm text-gray-500 mb-4">{currentSession.total_sorted || 0} calves sorted</p>
+             <div className="flex gap-2">
+               <button
+                 onClick={() => handleResume(currentSession.id)}
+                 className="flex-1 h-10 rounded-lg font-bold text-sm text-white flex items-center justify-center gap-1"
+                 style={{ background: BLUE }}
+               >
+                 <Play className="w-4 h-4" />
+                 Resume
+               </button>
+               <button
+                 onClick={() => handleFinish(currentSession.id)}
+                 className="flex-1 h-10 rounded-lg font-bold text-sm text-white flex items-center justify-center gap-1"
+                 style={{ background: '#4CAF50' }}
+               >
+                 <Check className="w-4 h-4" />
+                 Complete
+               </button>
+             </div>
+           </div>
+         )}
 
         {/* ── Recent Sessions ────────────────────────────── */}
          {recentSessions.length > 0 && (
