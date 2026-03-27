@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Search, Filter, ArrowLeft, Edit2, ChevronRight, TableProperties, List, BarChart3, Tag } from 'lucide-react';
+import MasterSpreadsheet from '@/components/herd/MasterSpreadsheet';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
@@ -39,7 +40,7 @@ function SummaryCard({ emoji, label, value, accent }) {
 }
 
 export default function HerdManagement() {
-  const [view, setView] = useState('dashboard'); // 'dashboard' | 'all-animals' | 'detail' | 'edit'
+  const [view, setView] = useState('dashboard'); // 'dashboard' | 'spreadsheet' | 'all-animals' | 'detail' | 'edit'
   const [search, setSearch] = useState('');
   const [typeFilter, setTypeFilter] = useState('all');
   const [statusFilter, setStatusFilter] = useState('all');
@@ -156,6 +157,11 @@ export default function HerdManagement() {
     });
     return events;
   };
+
+  // ── SPREADSHEET VIEW ──────────────────────────────────────
+  if (view === 'spreadsheet') {
+    return <MasterSpreadsheet onBack={() => setView('dashboard')} currentUser={currentUser} />;
+  }
 
   // ── EDIT VIEW ─────────────────────────────────────────────
   if (view === 'edit' && selectedAnimal) {
@@ -437,7 +443,7 @@ export default function HerdManagement() {
         {/* Main Action — Open Master Spreadsheet */}
         <div>
           <button
-            onClick={() => toast.info('Master Spreadsheet Editor coming in Phase 5.2!')}
+            onClick={() => setView('spreadsheet')}
             className="w-full h-24 rounded-2xl font-heading font-black text-xl text-white shadow-xl active:scale-[0.98] transition-all flex items-center justify-center gap-3"
             style={{ background: `linear-gradient(135deg, ${PURPLE}, ${PURPLE_DARK})` }}
           >
