@@ -45,26 +45,39 @@ export default function QuickCalfForm({ animals = [], seasons = [], pastures = [
     if (!calfTagEdited && !unknownMother) setCalfTag(motherTag);
   }, [motherTag, unknownMother]);
 
-  // Mother lookup — use pendingMother (just-created) or search existing
-  // Only match Cow or 1st Calf Heifer — never match calves (same tag # from current/prior year)
+  // All matching cows for the typed tag
+  const motherMatches = motherTag.trim()
+    ? animals.filter(a =>
+        a.tag_number?.toLowerCase() === motherTag.trim().toLowerCase() &&
+        ['Cow', '1st Calf Heifer'].includes(a.animal_type)
+      )
+    : [];
+
+  const [selectedMotherIndex, setSelectedMotherIndex] = useState(null);
+
+  // Mother lookup — use pendingMother (just-created), or selected from disambiguation, or single match
   const mother = pendingMother
-    || (motherTag.trim()
-      ? animals.find(a =>
-          a.tag_number?.toLowerCase() === motherTag.trim().toLowerCase() &&
-          ['Cow', '1st Calf Heifer'].includes(a.animal_type)
-        )
-      : null);
-  
+    || (selectedMotherIndex !== null ? motherMatches[selectedMotherIndex] : null)
+    || (motherMatches.length === 1 ? motherMatches[0] : null);
+
+  // Reset selection when tag changes
+  useEffect(() => {
+    setSelectedMotherIndex(null);
+  }, [motherTag]);
+
   // Update motherId when mother is found
   useEffect(() => {
     if (mother && mother.id) {
       setMotherId(mother.id);
+    } else if (!mother) {
+      setMotherId(null);
     }
   }, [mother]);
 
-  const motherValid   = !!mother && ['Cow', '1st Calf Heifer'].includes(mother.animal_type);
-  const motherNotFound = !unknownMother && motherTag.trim().length > 0 && !mother;
-  const motherWrongType = !unknownMother && !!mother && !motherValid;
+  const motherValid    = !!mother && ['Cow', '1st Calf Heifer'].includes(mother.animal_type);
+  const motherAmbiguous = !pendingMother && motherMatches.length > 1 && selectedMotherIndex === null;
+  const motherNotFound = !unknownMother && motherTag.trim().length > 0 && motherMatches.length === 0 && !pendingMother;
+  const motherWrongType = false; // can't happen — matches are pre-filtered to valid types
 
   // Show "add new cow?" prompt when tag typed but not found
   useEffect(() => {
@@ -180,6 +193,7 @@ export default function QuickCalfForm({ animals = [], seasons = [], pastures = [
     setAddNewCowConfirm(false);
     setPendingMother(null);
     setMotherId(null);
+    setSelectedMotherIndex(null);
     setCalfTag('');
     setCalfTagEdited(false);
     setTwinPrompt(false);
@@ -253,19 +267,36 @@ export default function QuickCalfForm({ animals = [], seasons = [], pastures = [
             </>
           )}
 
-          {/* Valid mother */}
-          {!unknownMother && motherValid && (
-            <div className="mt-2 flex items-center gap-2 text-sm font-semibold rounded-xl px-4 py-3 bg-green-50 text-green-700 border border-green-200">
-              <CheckCircle2 className="w-5 h-5 shrink-0" />
-              Mother Found: {mother.animal_type} #{mother.tag_number} — Valid
+          {/* Ambiguous — multiple cows with same tag */}
+          {!unknownMother && motherAmbiguous && (
+            <div className="mt-2 rounded-xl border-2 border-amber-300 bg-amber-50 px-4 py-3 space-y-2">
+              <div className="flex items-start gap-2">
+                <AlertCircle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
+                <p className="text-sm font-semibold text-amber-800">
+                  Multiple cows tagged #{motherTag} — which one is the mother?
+                </p>
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                {motherMatches.map((m, i) => (
+                  <button
+                    key={m.id}
+                    type="button"
+                    onClick={() => setSelectedMotherIndex(i)}
+                    className="h-14 rounded-xl font-bold text-sm border-2 border-amber-300 bg-white text-amber-800 hover:bg-amber-100 active:scale-95 transition-all flex flex-col items-center justify-center gap-0.5"
+                  >
+                    <span className="text-xs text-amber-500 font-semibold">{m.animal_type}</span>
+                    <span className="text-lg font-black">Born {m.birth_year || '?'}</span>
+                  </button>
+                ))}
+              </div>
             </div>
           )}
 
-          {/* Wrong type */}
-          {motherWrongType && (
-            <div className="mt-2 flex items-center gap-2 text-sm font-semibold rounded-xl px-4 py-3 bg-red-50 text-red-600 border border-red-200">
-              <AlertCircle className="w-5 h-5 shrink-0" />
-              #{motherTag} is {mother.animal_type} — must be Cow or 1st Calf Heifer
+          {/* Valid mother */}
+          {!unknownMother && motherValid && !motherAmbiguous && (
+            <div className="mt-2 flex items-center gap-2 text-sm font-semibold rounded-xl px-4 py-3 bg-green-50 text-green-700 border border-green-200">
+              <CheckCircle2 className="w-5 h-5 shrink-0" />
+              Mother Found: {mother.animal_type} #{mother.tag_number} (Born {mother.birth_year}) — Valid
             </div>
           )}
 
