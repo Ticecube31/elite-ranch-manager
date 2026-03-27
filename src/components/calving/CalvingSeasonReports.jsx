@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { ArrowLeft, Download, ChevronDown } from 'lucide-react';
+import { ArrowLeft, Download } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth, eachWeekOfInterval, eachMonthOfInterval, getWeek } from 'date-fns';
 import jsPDF from 'jspdf';
@@ -9,7 +9,6 @@ const GREEN_DARK = '#2E7D32';
 const GREEN_BG = '#F1F8F1';
 
 export default function CalvingSeasonReports({ animals = [], seasons = [], pastures = [], selectedSeasonId, onBack }) {
-  const [showSeasonPicker, setShowSeasonPicker] = useState(false);
   const [pickedSeasonId, setPickedSeasonId] = useState(selectedSeasonId);
   const [dateRangeStart, setDateRangeStart] = useState('');
   const [dateRangeEnd, setDateRangeEnd] = useState('');
@@ -259,45 +258,21 @@ export default function CalvingSeasonReports({ animals = [], seasons = [], pastu
           <ArrowLeft className="w-6 h-6" />
         </button>
         <h1 className="font-heading font-black text-white text-lg">Calfing Season Reports</h1>
-        <button
-          onClick={() => setShowSeasonPicker(true)}
-          className="flex items-center gap-1 text-white/90 text-xs font-bold px-2 py-1 rounded-lg active:scale-95 transition-all"
+        <select
+          value={pickedSeasonId || ''}
+          onChange={e => { setPickedSeasonId(e.target.value); setDateRangeStart(''); setDateRangeEnd(''); }}
+          className="text-white text-xs font-bold px-2 py-1 rounded-lg border-0 outline-none cursor-pointer"
           style={{ background: 'rgba(255,255,255,0.2)' }}
         >
-          <span className="truncate max-w-[120px]">{seasonLabel}</span>
-          <ChevronDown className="w-4 h-4 shrink-0" />
-        </button>
+          {seasons.map(s => (
+            <option key={s.id} value={s.id} style={{ background: '#2E7D32', color: 'white' }}>
+              {s.label || `Calving Season ${s.year}`}
+            </option>
+          ))}
+        </select>
       </div>
 
-      {/* Season Picker */}
-      {showSeasonPicker && (
-        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/30 safe-bottom">
-          <div className="w-full max-w-lg bg-white rounded-t-3xl px-5 pt-4 pb-8 shadow-2xl max-h-96 overflow-y-auto">
-            <p className="font-heading font-bold text-lg text-gray-900 mb-3">Select Season</p>
-            <div className="space-y-2">
-              {seasons.map(s => (
-                <button
-                  key={s.id}
-                  onClick={() => {
-                    setPickedSeasonId(s.id);
-                    setDateRangeStart('');
-                    setDateRangeEnd('');
-                    setShowSeasonPicker(false);
-                  }}
-                  className={`w-full h-12 px-4 rounded-2xl font-bold text-base transition-all ${
-                    pickedSeasonId === s.id
-                      ? 'text-white'
-                      : 'bg-gray-50 text-gray-700 hover:bg-gray-100'
-                  }`}
-                  style={pickedSeasonId === s.id ? { background: GREEN_DARK } : {}}
-                >
-                  {s.label || `Calving Season ${s.year}`}
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
+
 
       {/* Date Range Picker */}
       <div className="px-5 py-4 space-y-2">
