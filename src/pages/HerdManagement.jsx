@@ -123,6 +123,12 @@ export default function HerdManagement() {
     await updateMutation.mutateAsync({ id: selectedAnimal.id, data });
   };
 
+  const handleRefresh = useCallback(async () => {
+    await queryClient.invalidateQueries({ queryKey: ['animals'] });
+  }, [queryClient]);
+
+  const { scrollableRef, isRefreshing, pullDistance, threshold } = usePullToRefresh(handleRefresh, 80);
+
   // ── Stats ─────────────────────────────────────────────────
   const total = animals.length;
   const alive = animals.filter(a => a.status === 'Alive').length;
@@ -333,12 +339,6 @@ export default function HerdManagement() {
 
   // ── ALL ANIMALS VIEW ──────────────────────────────────────
   if (view === 'all-animals') {
-    const handleRefresh = useCallback(async () => {
-      await queryClient.invalidateQueries({ queryKey: ['animals'] });
-    }, [queryClient]);
-
-    const { scrollableRef, isRefreshing, pullDistance, threshold } = usePullToRefresh(handleRefresh, 80);
-
     return (
       <div className="min-h-screen pb-[60px] bg-background" ref={scrollableRef}>
         <PullToRefreshIndicator pullDistance={pullDistance} threshold={threshold} isRefreshing={isRefreshing} />
