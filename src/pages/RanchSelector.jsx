@@ -132,7 +132,7 @@ export default function RanchSelector() {
 
   if (!user) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ background: `linear-gradient(135deg, ${PURPLE_DARK}, ${PURPLE})` }}>
+      <div className="min-h-screen flex items-center justify-center" style={{ background: `linear-gradient(135deg, ${RANCH_DARK}, ${RANCH_GREEN})` }}>
         <div className="text-center">
           <div className="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-6" style={{ background: RANCH_TAN }}>
             <span className="text-white font-heading font-black text-2xl">ER</span>
@@ -153,7 +153,7 @@ export default function RanchSelector() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ background: `linear-gradient(135deg, ${PURPLE_DARK}, ${PURPLE})` }}>
+      <div className="min-h-screen flex items-center justify-center" style={{ background: `linear-gradient(135deg, ${RANCH_DARK}, ${RANCH_GREEN})` }}>
         <div className="text-center text-white">
           <div className="w-12 h-12 border-4 border-white/20 border-t-white rounded-full animate-spin mb-4 mx-auto"></div>
           <p>Loading...</p>
