@@ -31,7 +31,6 @@ export default function QuickCalfForm({ animals = [], seasons = [], pastures = [
       const mother = validMothers.find(m => m.id === motherId);
       if (mother) {
         setTagNumber(mother.tag_number);
-        // Also inherit mother's pasture if not already set
         if (!pastureId && mother.pasture_id) setPastureId(mother.pasture_id);
       }
     }
@@ -46,7 +45,6 @@ export default function QuickCalfForm({ animals = [], seasons = [], pastures = [
     }
   }, [dateOfBirth, seasons]);
 
-  // Check for duplicate tag among existing calves (same tag + same mother = twins, which is allowed)
   const duplicates = animals.filter(
     a => a.tag_number === tagNumber && a.id !== undefined && !['Cow', '1st Calf Heifer', 'Bull'].includes(a.animal_type)
   );
