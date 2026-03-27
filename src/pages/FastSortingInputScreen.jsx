@@ -2,9 +2,12 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { ArrowLeft, ChevronLeft, ChevronRight, Plus } from 'lucide-react';
+import { ArrowLeft, ChevronLeft, ChevronRight, Plus, X } from 'lucide-react';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { Textarea } from '@/components/ui/textarea';
 
 const BLUE = '#2196F3';
 const BLUE_DARK = '#1565C0';
@@ -23,6 +26,8 @@ export default function FastSortingInputScreen() {
   const [noteSynced, setNoteSynced] = useState(false);
   const [duplicates, setDuplicates] = useState([]);
   const [showDuplicateSelector, setShowDuplicateSelector] = useState(false);
+  const [showNoteDialog, setShowNoteDialog] = useState(false);
+  const [noteText, setNoteText] = useState('');
 
   // Fetch session details
   const { data: session, isLoading: sessionLoading } = useQuery({
@@ -43,6 +48,14 @@ export default function FastSortingInputScreen() {
     mutationFn: ({ id, data }) => base44.entities.SortingSessions.update(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['sorting-session', sessionId] });
+    },
+  });
+
+  // Update animal mutation for notes
+  const updateAnimalMutation = useMutation({
+    mutationFn: ({ id, data }) => base44.entities.Animals.update(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['animals'] });
     },
   });
 
@@ -133,6 +146,26 @@ export default function FastSortingInputScreen() {
       data: { status: 'Completed', completed_at: new Date().toISOString() },
     });
     navigate('/sorting');
+  };
+
+  const handleAddNote = async () => {
+    if (!matchedAnimal || !noteText.trim()) {
+      toast.error('Please enter a note');
+      return;
+    }
+
+    const timestamp = new Date().toISOString();
+    const noteEntry = `[${format(new Date(), 'MMM d, yyyy h:mm a')}] ${noteText.trim()}`;
+    const currentNotes = matchedAnimal.notes ? `${matchedAnimal.notes}\n${noteEntry}` : noteEntry;
+
+    await updateAnimalMutation.mutateAsync({
+      id: matchedAnimal.id,
+      data: { notes: currentNotes },
+    });
+
+    toast.success(`✓ Note added to #${matchedAnimal.tag_number}`);
+    setShowNoteDialog(false);
+    setNoteText('');
   };
 
   if (sessionLoading || !session) {
@@ -272,14 +305,39 @@ export default function FastSortingInputScreen() {
             CLEAR & NEXT
           </button>
           <button
-            className="h-16 w-16 rounded-2xl flex items-center justify-center border-2 shadow-lg transition-all active:scale-[0.98]"
+            onClick={() => setShowNoteDialog(true)}
+            disabled={!matchedAnimal}
+            className="h-16 w-16 rounded-2xl flex items-center justify-center border-2 shadow-lg transition-all active:scale-[0.98] disabled:opacity-40 disabled:cursor-not-allowed"
             style={{ borderColor: BLUE, color: BLUE }}
-            title="Add note for this calf"
+            title="Add note for this cow"
           >
             <Plus className="w-6 h-6" />
           </button>
         </div>
       </div>
+
+      {/* ── NOTE DIALOG ──────────────────────────────────────── */}
+      <Dialog open={showNoteDialog} onOpenChange={setShowNoteDialog}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Add Note to #{matchedAnimal?.tag_number}</DialogTitle>
+          </DialogHeader>
+          <div className="py-2">
+            <Textarea
+              value={noteText}
+              onChange={(e) => setNoteText(e.target.value)}
+              placeholder="Enter note..."
+              className="min-h-24"
+              autoFocus
+            />
+            <p className="text-xs text-gray-400 mt-2">Timestamp will be added automatically</p>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowNoteDialog(false)}>Cancel</Button>
+            <Button onClick={handleAddNote} style={{ background: BLUE, border: 'none', color: 'white' }}>Add Note</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
