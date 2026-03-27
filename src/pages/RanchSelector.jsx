@@ -251,11 +251,11 @@ export default function RanchSelector() {
                         🐄
                       </div>
                     )}
-                    <div className="flex-1 min-w-0">
-                      <h3 className="font-heading font-black text-2xl break-words" style={{ color: PURPLE_DARK }}>
-                        {ranch.ranch_name}
+                    <div className="flex-1">
+                      <h3 className="font-heading font-black text-xl" style={{ color: PURPLE_DARK }}>
+                        {ranch.ranch_name || 'Unnamed Ranch'}
                       </h3>
-                      <p className="text-xs text-gray-500 capitalize">{ranch.userRole}</p>
+                      <p className="text-xs text-gray-500 capitalize mt-1">{ranch.userRole}</p>
                     </div>
                   </div>
                   <div className="text-sm font-bold" style={{ color: PURPLE_DARK }}>Enter Ranch →</div>
