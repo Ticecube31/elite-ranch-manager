@@ -3,8 +3,9 @@ import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   ArrowLeft, Plus, Download, Upload, Search, X, ChevronUp, ChevronDown,
-  Trash2, CheckSquare, Square, Camera, AlertTriangle
+  Trash2, CheckSquare, Square, Camera, AlertTriangle, ExternalLink
 } from 'lucide-react';
+import AnimalDetailView from '@/components/herd/AnimalDetailView';
 import { Input } from '@/components/ui/input';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
@@ -280,6 +281,7 @@ export default function MasterSpreadsheet({ onBack, currentUser }) {
   const [selected, setSelected] = useState(new Set());
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [showAddModal, setShowAddModal] = useState(false);
+  const [detailAnimalId, setDetailAnimalId] = useState(null);
   const importRef = useRef();
 
   const queryClient = useQueryClient();
@@ -388,6 +390,18 @@ export default function MasterSpreadsheet({ onBack, currentUser }) {
     if (sortCol === col) setSortDir(d => d === 'asc' ? 'desc' : 'asc');
     else { setSortCol(col); setSortDir('asc'); }
   };
+
+  // ── Detail view ───────────────────────────────────────────
+  if (detailAnimalId) {
+    return (
+      <AnimalDetailView
+        animalId={detailAnimalId}
+        onBack={() => setDetailAnimalId(null)}
+        onNavigateToAnimal={(id) => setDetailAnimalId(id)}
+        currentUser={currentUser}
+      />
+    );
+  }
 
   const SortIcon = ({ col }) => sortCol === col
     ? (sortDir === 'asc' ? <ChevronUp className="w-3 h-3 inline" /> : <ChevronDown className="w-3 h-3 inline" />)
@@ -629,6 +643,12 @@ export default function MasterSpreadsheet({ onBack, currentUser }) {
                 {/* Created (read-only) */}
                 <div style={{ minWidth: 80, width: 80 }} className="px-2 shrink-0 text-xs text-gray-400">
                   {animal.created_date ? format(new Date(animal.created_date), 'MM/dd/yy') : '—'}
+                </div>
+                {/* View detail */}
+                <div className="w-8 flex items-center justify-center shrink-0">
+                  <button onClick={() => setDetailAnimalId(animal.id)} className="p-1.5 rounded-lg hover:bg-purple-50" title="View Details">
+                    <ExternalLink className="w-4 h-4" style={{ color: PURPLE }} />
+                  </button>
                 </div>
                 {/* Delete */}
                 <div className="w-10 flex items-center justify-center shrink-0">

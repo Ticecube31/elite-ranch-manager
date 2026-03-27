@@ -3,6 +3,7 @@ import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Search, Filter, ArrowLeft, Edit2, ChevronRight, TableProperties, List, BarChart3, Tag } from 'lucide-react';
 import MasterSpreadsheet from '@/components/herd/MasterSpreadsheet';
+import AnimalDetailView from '@/components/herd/AnimalDetailView';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
@@ -161,6 +162,18 @@ export default function HerdManagement() {
   // ── SPREADSHEET VIEW ──────────────────────────────────────
   if (view === 'spreadsheet') {
     return <MasterSpreadsheet onBack={() => setView('dashboard')} currentUser={currentUser} />;
+  }
+
+  // ── ANIMAL DETAIL VIEW (from all-animals list) ────────────
+  if (view === 'detail' && selectedAnimal) {
+    return (
+      <AnimalDetailView
+        animalId={selectedAnimal.id}
+        onBack={() => setView('all-animals')}
+        onNavigateToAnimal={(id) => setSelectedAnimal(animals.find(a => a.id === id) || { id })}
+        currentUser={currentUser}
+      />
+    );
   }
 
   // ── EDIT VIEW ─────────────────────────────────────────────
@@ -365,7 +378,7 @@ export default function HerdManagement() {
             {filtered.map(animal => (
               <button
                 key={animal.id}
-                onClick={() => { setSelectedAnimal(animal); setView('detail'); }}
+                onClick={() => { setSelectedAnimal(animal); setView('detail'); }}  
                 className="w-full text-left bg-white rounded-2xl border border-purple-100 p-4 shadow-sm hover:shadow-md transition-all active:scale-[0.98]"
               >
                 <div className="flex items-start gap-3">
