@@ -81,6 +81,23 @@ export default function RanchSelector() {
     navigate('/');
   };
 
+  const handleJoinRanch = async (ranchId) => {
+    try {
+      // Create RanchUser record to give access
+      await base44.entities.RanchUser.create({
+        ranch_id: ranchId,
+        user_email: user.email,
+        role: 'user',
+        status: 'active'
+      });
+      toast.success('Joined ranch!');
+      await loadData();
+    } catch (error) {
+      console.error('Error joining ranch:', error);
+      toast.error('Failed to join ranch');
+    }
+  };
+
   const handleCreateRanch = async () => {
     if (!newRanchName.trim()) {
       toast.error('Ranch name required');
@@ -313,7 +330,7 @@ export default function RanchSelector() {
                     </h3>
                   </div>
                   <Button
-                    onClick={() => handleSelectRanch(ranch.id)}
+                    onClick={() => handleJoinRanch(ranch.id)}
                     className="w-full h-11 text-sm font-bold text-white"
                     style={{ background: `linear-gradient(135deg, ${PURPLE}, ${PURPLE_DARK})` }}
                   >
