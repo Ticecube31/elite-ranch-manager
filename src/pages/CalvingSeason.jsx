@@ -366,7 +366,7 @@ export default function CalvingSeason() {
                         <span className="ml-2 font-normal text-sm text-gray-500">— {animal.sex}</span>
                       </p>
                       {animal.mother_animal_number && (
-                        <p className="text-xs text-gray-400">Dam: #{animal.mother_animal_number}</p>
+                        <p className="text-xs text-gray-400">Mother: #{animal.mother_animal_number}</p>
                       )}
                     </div>
                   </div>

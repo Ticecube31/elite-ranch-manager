@@ -209,7 +209,7 @@ export default function HerdManagement() {
             {/* Mother Link */}
             {selectedAnimal.mother_animal_number && (
               <div className="mt-4 bg-muted rounded-xl p-3">
-                <p className="text-xs text-muted-foreground mb-1">Dam (Mother)</p>
+                <p className="text-xs text-muted-foreground mb-1">Mother Tag #</p>
                 {mother ? (
                   <button
                     onClick={() => setSelectedAnimal(mother)}
