@@ -215,6 +215,7 @@ export default function FastSortingInputScreen() {
             }}
           >
             <ChevronLeft className="w-16 h-16 stroke-[2.5px]" style={{ color: isMatchingLeft ? '#fff' : '#ccc' }} />
+            {matchedAnimal && <p className="font-heading font-black text-6xl" style={{ color: isMatchingLeft ? '#fff' : '#999' }}>LEFT</p>}
             <p className="font-heading font-black text-lg mt-2" style={{ color: isMatchingLeft ? '#fff' : '#999' }}>
               {session.left_pen_label || 'LEFT'}
             </p>
@@ -231,6 +232,7 @@ export default function FastSortingInputScreen() {
             }}
           >
             <ChevronRight className="w-16 h-16 stroke-[2.5px]" style={{ color: isMatchingRight ? '#fff' : '#ccc' }} />
+            {matchedAnimal && <p className="font-heading font-black text-6xl" style={{ color: isMatchingRight ? '#fff' : '#999' }}>RIGHT</p>}
             <p className="font-heading font-black text-lg mt-2" style={{ color: isMatchingRight ? '#fff' : '#999' }}>
               {session.right_pen_label || 'RIGHT'}
             </p>
