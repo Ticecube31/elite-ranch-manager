@@ -5,6 +5,7 @@ import { ArrowLeft, Camera, Edit2, Download, Archive, ChevronRight, Tag, MapPin,
 import { format } from 'date-fns';
 import { toast } from 'sonner';
 import AnimalForm from '@/components/calving/AnimalForm';
+import FamilyTree from '@/components/herd/FamilyTree';
 import { logTagHistory } from '@/lib/tagHistoryLogger';
 import { logAudit } from '@/lib/auditLogger';
 
@@ -374,6 +375,9 @@ export default function AnimalDetailView({ animalId, onBack, onNavigateToAnimal,
             </div>
           )}
         </Section>
+
+        {/* ── Family Tree ────────────────────────────────────── */}
+        <FamilyTree animal={animal} animals={animals} onNavigateToAnimal={onNavigateToAnimal} />
 
         {/* ── Lifecycle Timeline ─────────────────────────────── */}
         <Section title="Lifecycle" icon="📈">
