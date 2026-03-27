@@ -6,6 +6,7 @@ import {
   Trash2, CheckSquare, Square, Camera, AlertTriangle, ExternalLink
 } from 'lucide-react';
 import AnimalDetailView from '@/components/herd/AnimalDetailView';
+import ImportWizard from '@/components/herd/ImportWizard';
 import { Input } from '@/components/ui/input';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
@@ -281,6 +282,7 @@ export default function MasterSpreadsheet({ onBack, currentUser }) {
   const [selected, setSelected] = useState(new Set());
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [showAddModal, setShowAddModal] = useState(false);
+  const [showImportWizard, setShowImportWizard] = useState(false);
   const [detailAnimalId, setDetailAnimalId] = useState(null);
   const importRef = useRef();
 
@@ -424,32 +426,7 @@ export default function MasterSpreadsheet({ onBack, currentUser }) {
     URL.revokeObjectURL(url);
   };
 
-  // ── Import CSV ────────────────────────────────────────────
-  const handleImport = async (e) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    const text = await file.text();
-    const [headerLine, ...lines] = text.trim().split('\n');
-    const headers = headerLine.split(',').map(h => h.trim().toLowerCase().replace(/[^a-z_]/g, ''));
-    let count = 0;
-    for (const line of lines) {
-      if (!line.trim()) continue;
-      const vals = line.split(',');
-      const row = {};
-      headers.forEach((h, i) => { row[h] = (vals[i] || '').trim(); });
-      const tagNumber = row['tag'] || row['tag_number'] || row['animal_number'] || row['tag_'];
-      if (!tagNumber) continue;
-      const sex = row['sex'] || '';
-      const animal_type = row['type'] || row['animal_type'] || '';
-      const exists = animals.find(a => a.tag_number === tagNumber);
-      if (!exists) {
-        await createMutation.mutateAsync({ tag_number: tagNumber, sex, animal_type, status: row['status'] || 'Alive', notes: row['notes'] || '', date_of_birth: row['date_tagged'] || row['date_of_birth'] || '', is_archived: false });
-        count++;
-      }
-    }
-    toast.success(`Imported ${count} new animals`);
-    e.target.value = '';
-  };
+
 
   const COLS = [
     { key: 'tag_number', label: 'Tag #', width: 70 },
@@ -486,11 +463,10 @@ export default function MasterSpreadsheet({ onBack, currentUser }) {
               className="h-9 w-9 rounded-xl flex items-center justify-center" style={{ background: 'rgba(255,255,255,0.15)' }}>
               <Download className="w-4 h-4 text-white" />
             </button>
-            <button onClick={() => importRef.current?.click()} title="Import CSV"
+            <button onClick={() => setShowImportWizard(true)} title="Import CSV/Excel"
               className="h-9 w-9 rounded-xl flex items-center justify-center" style={{ background: 'rgba(255,255,255,0.15)' }}>
               <Upload className="w-4 h-4 text-white" />
             </button>
-            <input ref={importRef} type="file" accept=".csv" className="hidden" onChange={handleImport} />
           </div>
         </div>
 
@@ -686,6 +662,12 @@ export default function MasterSpreadsheet({ onBack, currentUser }) {
           currentUser={currentUser}
           onSave={async (data) => { await createMutation.mutateAsync(data); setShowAddModal(false); }}
           onClose={() => setShowAddModal(false)}
+        />
+      )}
+      {showImportWizard && (
+        <ImportWizard
+          onClose={() => setShowImportWizard(false)}
+          onSuccess={() => setShowImportWizard(false)}
         />
       )}
     </div>
