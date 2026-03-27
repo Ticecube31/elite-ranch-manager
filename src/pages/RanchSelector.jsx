@@ -3,9 +3,10 @@ import { base44 } from '@/api/base44Client';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Search, Plus, LogOut, Settings } from 'lucide-react';
+import { Search, Plus, LogOut, Settings, Moon, Sun } from 'lucide-react';
 import { toast } from 'sonner';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger, DropdownMenuSeparator, DropdownMenuItem } from '@/components/ui/dropdown-menu';
 
 const PURPLE = '#6B2D5E';
 const PURPLE_DARK = '#4A1F40';
@@ -21,6 +22,7 @@ export default function RanchSelector() {
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [newRanchName, setNewRanchName] = useState('');
   const [creating, setCreating] = useState(false);
+  const [isDark, setIsDark] = useState(document.documentElement.classList.contains('dark'));
 
   useEffect(() => {
     loadData();
@@ -125,6 +127,12 @@ export default function RanchSelector() {
     }
   };
 
+  const toggleTheme = () => {
+    const html = document.documentElement;
+    html.classList.toggle('dark');
+    setIsDark(!isDark);
+  };
+
   const discoverRanches = allRanches.filter(
     r => !userRanches.find(ur => ur.id === r.id) && r.status === 'active'
   ).filter(r => r.ranch_name.toLowerCase().includes(search.toLowerCase()));
@@ -155,22 +163,40 @@ export default function RanchSelector() {
             </div>
           </div>
           <div className="flex items-center gap-2">
-            {userRanches.length > 0 && (
-              <button
-                onClick={handleGoToSettings}
-                className="w-10 h-10 rounded-lg flex items-center justify-center hover:bg-white/10 transition-colors"
-                title="Settings"
-              >
-                <Settings className="w-5 h-5 text-white" />
-              </button>
-            )}
-            <button
-              onClick={handleLogout}
-              className="w-10 h-10 rounded-lg flex items-center justify-center hover:bg-white/10 transition-colors"
-              title="Logout"
-            >
-              <LogOut className="w-5 h-5 text-white" />
-            </button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button className="w-10 h-10 rounded-lg flex items-center justify-center hover:bg-white/10 transition-colors">
+                  <div className="w-8 h-8 rounded-full bg-white/20 border-2 border-white/30 flex items-center justify-center">
+                    <span className="text-xs font-bold text-white">
+                      {user?.full_name?.[0]?.toUpperCase() ?? user?.email?.[0]?.toUpperCase() ?? '?'}
+                    </span>
+                  </div>
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-48">
+                <div className="px-2 py-1.5">
+                  <p className="text-xs font-bold text-gray-500 uppercase">Account</p>
+                  <p className="text-sm font-semibold text-gray-900">{user?.full_name || 'User'}</p>
+                  <p className="text-xs text-gray-500">{user?.email}</p>
+                </div>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={toggleTheme} className="cursor-pointer">
+                  {isDark ? <Sun className="w-4 h-4 mr-2" /> : <Moon className="w-4 h-4 mr-2" />}
+                  {isDark ? 'Light Mode' : 'Dark Mode'}
+                </DropdownMenuItem>
+                {userRanches.length > 0 && (
+                  <DropdownMenuItem onClick={handleGoToSettings} className="cursor-pointer">
+                    <Settings className="w-4 h-4 mr-2" />
+                    Settings
+                  </DropdownMenuItem>
+                )}
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={handleLogout} className="cursor-pointer text-red-600">
+                  <LogOut className="w-4 h-4 mr-2" />
+                  Logout
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </div>
       </header>
