@@ -10,6 +10,65 @@ import { useQuery } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { allowedTypesForSex, validateSexType } from '@/lib/animalRules';
 
+function MotherInput({ validMothers, motherId, motherTagInput, onSelect, onInputChange }) {
+  const [showSuggestions, setShowSuggestions] = useState(false);
+
+  const filtered = validMothers.filter(m =>
+    !motherTagInput || m.tag_number.toLowerCase().includes(motherTagInput.toLowerCase())
+  );
+
+  const selectedMother = validMothers.find(m => m.id === motherId);
+
+  return (
+    <div>
+      <Label className="text-sm font-semibold">Mother Tag # *</Label>
+      <div className="relative mt-1">
+        <Input
+          inputMode="numeric"
+          value={motherTagInput || ''}
+          onChange={e => { onInputChange(e.target.value); setShowSuggestions(true); }}
+          onFocus={() => setShowSuggestions(true)}
+          onBlur={() => setTimeout(() => setShowSuggestions(false), 150)}
+          placeholder="Type mother's tag number..."
+          className={`h-14 text-lg ${motherId ? 'border-green-400 bg-green-50' : motherTagInput ? 'border-orange-400 bg-orange-50' : ''}`}
+        />
+        {showSuggestions && filtered.length > 0 && (
+          <div className="absolute z-20 w-full bg-white border border-gray-200 rounded-xl shadow-lg mt-1 overflow-hidden">
+            {filtered.map(m => (
+              <button
+                key={m.id}
+                type="button"
+                onMouseDown={() => { onSelect(m); setShowSuggestions(false); }}
+                className="w-full text-left px-4 py-3 hover:bg-green-50 active:bg-green-100 border-b border-gray-100 last:border-0"
+              >
+                <span className="font-bold text-base">#{m.tag_number}</span>
+                <span className="ml-2 text-sm text-gray-500">{m.animal_type}</span>
+                {m.birth_year && <span className="ml-2 text-xs text-gray-400">born {m.birth_year}</span>}
+                {m.date_of_birth && !m.birth_year && (
+                  <span className="ml-2 text-xs text-gray-400">born {new Date(m.date_of_birth).getFullYear()}</span>
+                )}
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+      {motherId && selectedMother && (
+        <p className="text-xs text-green-600 mt-1 font-semibold">
+          ✓ {selectedMother.animal_type} #{selectedMother.tag_number}
+          {(selectedMother.birth_year || selectedMother.date_of_birth) && (
+            <span className="ml-1 text-gray-400">
+              — born {selectedMother.birth_year || new Date(selectedMother.date_of_birth).getFullYear()}
+            </span>
+          )}
+        </p>
+      )}
+      {motherTagInput && !motherId && (
+        <p className="text-xs text-orange-600 mt-1 font-semibold">⚠️ No matching mother found</p>
+      )}
+    </div>
+  );
+}
+
 export default function AnimalForm({ animal, onSave, onCancel, existingAnimals = [], seasons = [], defaultSeasonId }) {
   const [form, setForm] = useState({
     tag_number: '',
@@ -206,30 +265,19 @@ export default function AnimalForm({ animal, onSave, onCancel, existingAnimals =
 
       {/* Mother (Calf types only) */}
       {['Calf - Steer', 'Calf - Heifer'].includes(form.animal_type) && (
-        <div>
-          <Label className="text-sm font-semibold">Mother *</Label>
-          {validMothers.length > 0 ? (
-            <Select value={form.mother_id || ''} onValueChange={(v) => update('mother_id', v)}>
-              <SelectTrigger className="h-14 text-base mt-1">
-                <SelectValue placeholder="Pick mother (Cow or 1st Calf Heifer)" />
-              </SelectTrigger>
-              <SelectContent>
-                {validMothers.map(m => (
-                  <SelectItem key={m.id} value={m.id}>
-                    #{m.tag_number} — {m.animal_type}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          ) : (
-            <Input
-              value={form.mother_animal_number}
-              onChange={(e) => update('mother_animal_number', e.target.value)}
-              placeholder="Mother's tag # (must be a Cow or 1st Calf Heifer)"
-              className="h-14 text-lg mt-1"
-            />
-          )}
-        </div>
+        <MotherInput
+          validMothers={validMothers}
+          motherId={form.mother_id}
+          motherTagInput={form.mother_animal_number}
+          onSelect={(m) => {
+            update('mother_id', m.id);
+            update('mother_animal_number', m.tag_number);
+          }}
+          onInputChange={(val) => {
+            update('mother_animal_number', val);
+            update('mother_id', '');
+          }}
+        />
       )}
 
       {/* Date of Birth */}
