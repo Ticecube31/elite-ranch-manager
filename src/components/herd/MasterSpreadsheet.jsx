@@ -10,6 +10,7 @@ import AnimalDetailView from '@/components/herd/AnimalDetailView';
 import ImportWizard from '@/components/herd/ImportWizard';
 import ChildrenCell from '@/components/herd/ChildrenCell';
 import CalvingSeasonSpreadsheet from '@/components/herd/CalvingSeasonSpreadsheet';
+import ColumnHeaderMenu from '@/components/herd/ColumnHeaderMenu';
 import { Input } from '@/components/ui/input';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
@@ -296,6 +297,7 @@ export default function MasterSpreadsheet({ onBack, currentUser }) {
   const [sortedAnimals, setSortedAnimals] = useState([]);
   const [colOrder, setColOrder] = useState(['tag_number', 'sex', 'animal_type', 'mother_animal_number', 'date_of_birth', 'birth_year', 'status', 'pasture_id', 'born_pasture_id', 'twin', 'children', 'notes', 'photo_url', 'is_archived', 'created_date']);
   const [draggedCol, setDraggedCol] = useState(null);
+  const [columnFilters, setColumnFilters] = useState({});
   const importRef = useRef();
 
   // Load saved layout on mount
@@ -431,9 +433,21 @@ export default function MasterSpreadsheet({ onBack, currentUser }) {
     }
   }, []);
 
-  const handleSort = (col) => {
-    if (sortCol === col) setSortDir(d => d === 'asc' ? 'desc' : 'asc');
-    else { setSortCol(col); setSortDir('asc'); }
+  const handleSort = (col, dir) => {
+    setSortCol(col);
+    setSortDir(dir);
+  };
+
+  const handleClearSort = (col) => {
+    if (sortCol === col) {
+      setSortCol('tag_number');
+      setSortDir('asc');
+    }
+    setColumnFilters(prev => {
+      const next = { ...prev };
+      delete next[col];
+      return next;
+    });
   };
 
   const handleDragEnd = (result) => {
@@ -714,52 +728,54 @@ export default function MasterSpreadsheet({ onBack, currentUser }) {
               </div>
 
               {colOrder.map(colKey => {
-                const col = COLS.find(c => c.key === colKey);
-                if (!col || !visibleCols.has(col.key)) return null;
-                const width = getColWidth(col.key);
-                return (
-                  <div
-                    key={col.key}
-                    style={{ width, minWidth: width, maxWidth: width, borderRight: '1px solid #ccc', opacity: draggedCol === col.key ? 0.5 : 1 }}
-                    className="relative shrink-0 group flex items-center cursor-move select-none"
-                    draggable
-                    onDragStart={(e) => handleColDragStart(e, col.key)}
-                    onDragOver={handleColDragOver}
-                    onDrop={(e) => handleColDrop(e, col.key)}
-                  >
-                    <button
-                      onClick={() => col.key !== 'photo_url' && col.key !== 'created_date' && handleSort(col.key)}
-                      className={`w-full text-left text-xs font-bold px-2 py-3 uppercase tracking-wide overflow-hidden ${col.key !== 'photo_url' && col.key !== 'created_date' ? 'cursor-pointer hover:bg-gray-100' : 'cursor-default'}`}
-                      style={{ color: PURPLE_DARK }}
-                    >
-                      {col.label} <SortIcon col={col.key} />
-                    </button>
-                    <div
-                      onMouseDown={(e) => {
-                        e.preventDefault();
-                        setResizing(col.key);
-                        const startX = e.clientX;
-                        const startW = width;
+                 const col = COLS.find(c => c.key === colKey);
+                 if (!col || !visibleCols.has(col.key)) return null;
+                 const width = getColWidth(col.key);
+                 return (
+                   <div
+                     key={col.key}
+                     style={{ width, minWidth: width, maxWidth: width, borderRight: '1px solid #ccc', opacity: draggedCol === col.key ? 0.5 : 1 }}
+                     className="relative shrink-0 group flex items-center cursor-move select-none bg-gray-50 hover:bg-gray-100 transition-colors"
+                     draggable
+                     onDragStart={(e) => handleColDragStart(e, col.key)}
+                     onDragOver={handleColDragOver}
+                     onDrop={(e) => handleColDrop(e, col.key)}
+                   >
+                     <ColumnHeaderMenu
+                       colKey={col.key}
+                       label={col.label}
+                       onSort={(dir) => handleSort(col.key, dir)}
+                       onClear={() => handleClearSort(col.key)}
+                       sortCol={sortCol}
+                       sortDir={sortDir}
+                       activeFilters={columnFilters}
+                     />
+                     <div
+                       onMouseDown={(e) => {
+                         e.preventDefault();
+                         setResizing(col.key);
+                         const startX = e.clientX;
+                         const startW = width;
 
-                        const onMove = (e) => {
-                          const delta = e.clientX - startX;
-                          handleColResize(col.key, startW + delta);
-                        };
+                         const onMove = (e) => {
+                           const delta = e.clientX - startX;
+                           handleColResize(col.key, startW + delta);
+                         };
 
-                        const onUp = () => {
-                          document.removeEventListener('mousemove', onMove);
-                          document.removeEventListener('mouseup', onUp);
-                          setResizing(null);
-                        };
+                         const onUp = () => {
+                           document.removeEventListener('mousemove', onMove);
+                           document.removeEventListener('mouseup', onUp);
+                           setResizing(null);
+                         };
 
-                        document.addEventListener('mousemove', onMove);
-                        document.addEventListener('mouseup', onUp);
-                      }}
-                      className="absolute right-0 top-0 h-full w-1 bg-gray-400 hover:bg-purple-500 cursor-col-resize opacity-0 group-hover:opacity-100 transition-opacity"
-                    />
-                  </div>
-                );
-              })}
+                         document.addEventListener('mousemove', onMove);
+                         document.addEventListener('mouseup', onUp);
+                       }}
+                       className="absolute right-0 top-0 h-full w-1 bg-gray-400 hover:bg-purple-500 cursor-col-resize opacity-0 group-hover:opacity-100 transition-opacity"
+                     />
+                   </div>
+                 );
+               })}
               <div style={{ width: 40, minWidth: 40, maxWidth: 40, borderRight: '1px solid #ccc' }} className="shrink-0" />
             </div>
 
