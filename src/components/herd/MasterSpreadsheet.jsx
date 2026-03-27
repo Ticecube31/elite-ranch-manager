@@ -535,11 +535,37 @@ export default function MasterSpreadsheet({ onBack, currentUser }) {
       {/* ── Count + Add ──────────────────────────────────────── */}
       <div className="flex items-center justify-between px-4 py-2 shrink-0">
         <p className="text-xs font-semibold text-gray-400">{filtered.length} animals{selected.size > 0 ? ` · ${selected.size} selected` : ''}</p>
-        <button onClick={() => setShowAddModal(true)}
-          className="flex items-center gap-1.5 h-9 px-4 rounded-xl text-white text-sm font-bold shadow-md"
-          style={{ background: `linear-gradient(135deg, ${PURPLE}, ${PURPLE_DARK})` }}>
-          <Plus className="w-4 h-4" /> Add Row
-        </button>
+        <div className="flex gap-2 items-center">
+          <div className="relative">
+            <button
+              onClick={() => setShowColMenu(!showColMenu)}
+              className="h-9 w-9 rounded-xl flex items-center justify-center text-sm font-bold hover:bg-gray-100 border border-gray-200"
+              title="Show/hide columns"
+            >
+              ⚙️
+            </button>
+            {showColMenu && (
+              <div className="absolute top-10 right-0 bg-white border border-gray-200 rounded-lg shadow-lg p-2 z-50 w-48">
+                {COLS.map(col => (
+                  <label key={col.key} className="flex items-center gap-2 px-2 py-1 cursor-pointer hover:bg-gray-50 rounded text-xs">
+                    <input
+                      type="checkbox"
+                      checked={visibleCols.has(col.key)}
+                      onChange={() => toggleColVisibility(col.key)}
+                      className="w-4 h-4 rounded"
+                    />
+                    {col.label}
+                  </label>
+                ))}
+              </div>
+            )}
+          </div>
+          <button onClick={() => setShowAddModal(true)}
+            className="flex items-center gap-1.5 h-9 px-4 rounded-xl text-white text-sm font-bold shadow-md"
+            style={{ background: `linear-gradient(135deg, ${PURPLE}, ${PURPLE_DARK})` }}>
+            <Plus className="w-4 h-4" /> Add Row
+          </button>
+        </div>
       </div>
 
       {/* ── Table ───────────────────────────────────────────── */}
@@ -567,31 +593,7 @@ export default function MasterSpreadsheet({ onBack, currentUser }) {
                 </button>
               </div>
 
-              {/* Column visibility menu */}
-              <div style={{ width: 40, minWidth: 40, maxWidth: 40, borderRight: '1px solid #ccc' }} className="relative flex items-center justify-center shrink-0">
-                <button
-                  onClick={() => setShowColMenu(!showColMenu)}
-                  className="px-3 text-xs font-bold text-gray-500 hover:bg-gray-100"
-                  title="Show/hide columns"
-                >
-                  ⚙️
-                </button>
-                {showColMenu && (
-                  <div className="absolute top-10 left-0 bg-white border border-gray-200 rounded-lg shadow-lg p-2 z-50 w-48">
-                    {COLS.map(col => (
-                      <label key={col.key} className="flex items-center gap-2 px-2 py-1 cursor-pointer hover:bg-gray-50 rounded text-xs">
-                        <input
-                          type="checkbox"
-                          checked={visibleCols.has(col.key)}
-                          onChange={() => toggleColVisibility(col.key)}
-                          className="w-4 h-4 rounded"
-                        />
-                        {col.label}
-                      </label>
-                    ))}
-                  </div>
-                )}
-              </div>
+
 
               {COLS.map(col => {
                 if (!visibleCols.has(col.key)) return null;
