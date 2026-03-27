@@ -36,6 +36,7 @@ export default function AppLayout() {
   const [ranchName, setRanchName] = useState('Elite Ranch Manager');
   const [logoUrl, setLogoUrl] = useState('');
   const [openCalvingAI, setOpenCalvingAI] = useState(null); // fn registered by CalvingSeason
+  const [openHerdAI, setOpenHerdAI] = useState(null); // fn registered by HerdManagement
 
   const isColoredHeader = !!headerStyle.background;
 
@@ -89,7 +90,7 @@ export default function AppLayout() {
 
           {/* AI Search Bar — takes remaining space */}
           <div className="flex-1">
-            <AISearchBar headerStyle={headerStyle} onCalvingAI={openCalvingAI || undefined} />
+            <AISearchBar headerStyle={headerStyle} onCalvingAI={openCalvingAI || undefined} onHerdAI={openHerdAI || undefined} />
           </div>
 
           {/* Desktop nav links */}
@@ -137,7 +138,7 @@ export default function AppLayout() {
 
       {/* ── Main Content ────────────────────────────────────── */}
       <main className="flex-1 pb-24">
-        <CalvingAIContext.Provider value={{ openCalvingAI, setOpenCalvingAI }}>
+        <CalvingAIContext.Provider value={{ openCalvingAI, setOpenCalvingAI, openHerdAI, setOpenHerdAI }}>
           <Outlet />
         </CalvingAIContext.Provider>
       </main>

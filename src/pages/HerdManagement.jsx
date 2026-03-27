@@ -1,8 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
+import { CalvingAIContext } from '@/components/layout/AppLayout';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Search, Filter, ArrowLeft, Edit2, ChevronRight, TableProperties, List, BarChart3, Tag } from 'lucide-react';
 import HerdReports from '@/components/herd/HerdReports';
+import HerdManagementAIAssistant from '@/components/herd/HerdManagementAIAssistant';
 import MasterSpreadsheet from '@/components/herd/MasterSpreadsheet';
 import AnimalDetailView from '@/components/herd/AnimalDetailView';
 import { Input } from '@/components/ui/input';
@@ -49,8 +51,15 @@ export default function HerdManagement() {
   const [showFilters, setShowFilters] = useState(false);
   const [selectedAnimal, setSelectedAnimal] = useState(null);
   const [currentUser, setCurrentUser] = useState(null);
+  const [showAIAssistant, setShowAIAssistant] = useState(false);
 
   const queryClient = useQueryClient();
+
+  const { setOpenHerdAI } = useContext(CalvingAIContext) || {};
+
+  useEffect(() => {
+    if (setOpenHerdAI) setOpenHerdAI(() => () => setShowAIAssistant(true));
+  }, [setOpenHerdAI]);
 
   useEffect(() => { base44.auth.me().then(setCurrentUser).catch(() => {}); }, []);
   useEffect(() => { window.scrollTo(0, 0); }, [view, selectedAnimal]);
@@ -168,6 +177,17 @@ export default function HerdManagement() {
   // ── REPORTS VIEW ──────────────────────────────────────────
   if (view === 'reports') {
     return <HerdReports onBack={() => setView('dashboard')} />;
+  }
+
+  // ── AI ASSISTANT ───────────────────────────────────────────
+  if (showAIAssistant) {
+    return (
+      <HerdManagementAIAssistant
+        onClose={() => setShowAIAssistant(false)}
+        onOpenDetail={(id) => { setShowAIAssistant(false); setSelectedAnimal(animals.find(a => a.id === id) || { id }); setView('detail'); }}
+        onOpenSpreadsheet={() => { setShowAIAssistant(false); setView('spreadsheet'); }}
+      />
+    );
   }
 
   // ── ANIMAL DETAIL VIEW (from all-animals list) ────────────

@@ -7,17 +7,20 @@ import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Sparkles, Search } from 'lucide-react';
 
-export default function AISearchBar({ headerStyle = {}, onCalvingAI }) {
+export default function AISearchBar({ headerStyle = {}, onCalvingAI, onHerdAI }) {
   const navigate  = useNavigate();
   const location  = useLocation();
   const [focused, setFocused] = useState(false);
 
   const isLight       = !headerStyle.background;
   const isCalvingPage = location.pathname.startsWith('/calving');
+  const isHerdPage    = location.pathname.startsWith('/herd');
 
   const handleClick = () => {
     if (isCalvingPage && onCalvingAI) {
       onCalvingAI();
+    } else if (isHerdPage && onHerdAI) {
+      onHerdAI();
     } else {
       navigate('/ai-assistant');
     }
@@ -42,7 +45,7 @@ export default function AISearchBar({ headerStyle = {}, onCalvingAI }) {
     >
       <Sparkles className="w-3.5 h-3.5 shrink-0 opacity-70" />
       <span className="truncate">
-        {isCalvingPage ? 'Ask about this season...' : 'Ask AI Ranch Assistant...'}
+        {isCalvingPage ? 'Ask about this season...' : isHerdPage ? 'Ask about this herd...' : 'Ask AI Ranch Assistant...'}
       </span>
       <Search className="w-3.5 h-3.5 shrink-0 opacity-50 ml-auto" />
     </button>
