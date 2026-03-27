@@ -176,8 +176,11 @@ export default function FastSortingInputScreen() {
     );
   }
 
-  const isMatchingLeft = matchedAnimal && matchedAnimal.sex === 'Male';
-  const isMatchingRight = matchedAnimal && matchedAnimal.sex === 'Female';
+  // Find the calf of the matched animal to determine pen direction based on baby's sex
+  const calf = matchedAnimal ? animals.find(a => a.mother_animal_number === matchedAnimal.tag_number) : null;
+  const calfSex = calf?.sex;
+  const isMatchingLeft = calfSex === 'Male';
+  const isMatchingRight = calfSex === 'Female';
 
   return (
     <div className="min-h-screen flex flex-col pb-[60px] bg-background">
