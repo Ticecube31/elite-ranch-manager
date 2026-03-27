@@ -705,23 +705,23 @@ export default function MasterSpreadsheet({ onBack, currentUser }) {
             {sortedAnimals.map((animal, idx) => (
               <Draggable key={animal.id} draggableId={animal.id} index={idx}>
                 {(provided, snapshot) => (
-              <div
-                ref={provided.innerRef}
-                {...provided.draggableProps}
-                {...provided.dragHandleProps}
-                className={`flex transition-all ${snapshot.isDragging ? 'bg-blue-100 shadow-lg' : selected.has(animal.id) ? 'bg-purple-100' : 'bg-white'}`}
-                style={{ borderBottom: '1px solid #ccc', ...provided.draggableProps.style }}
-              >
-                {/* Checkbox */}
-                <div style={{ width: 40, minWidth: 40, maxWidth: 40, borderRight: '1px solid #ccc' }} className="flex items-center justify-center shrink-0 py-2">
-                  <button onClick={() => toggleSelect(animal.id)}>
-                    {selected.has(animal.id)
-                      ? <CheckSquare className="w-5 h-5" style={{ color: PURPLE }} />
-                      : <Square className="w-5 h-5 text-gray-200" />}
-                  </button>
-                </div>
+                  <div
+                    ref={provided.innerRef}
+                    {...provided.draggableProps}
+                    {...provided.dragHandleProps}
+                    className={`flex transition-all ${snapshot.isDragging ? 'bg-blue-100 shadow-lg' : selected.has(animal.id) ? 'bg-purple-100' : 'bg-white'}`}
+                    style={{ borderBottom: '1px solid #ccc', ...provided.draggableProps.style }}
+                  >
+                    {/* Checkbox */}
+                    <div style={{ width: 40, minWidth: 40, maxWidth: 40, borderRight: '1px solid #ccc' }} className="flex items-center justify-center shrink-0 py-2">
+                      <button onClick={() => toggleSelect(animal.id)}>
+                        {selected.has(animal.id)
+                          ? <CheckSquare className="w-5 h-5" style={{ color: PURPLE }} />
+                          : <Square className="w-5 h-5 text-gray-200" />}
+                      </button>
+                    </div>
 
-                {/* Dynamic cells */}
+                    {/* Dynamic cells */}
                 {visibleCols.has('tag_number') && (
                   <div style={{ width: getColWidth('tag_number'), minWidth: getColWidth('tag_number'), maxWidth: getColWidth('tag_number'), borderRight: '1px solid #ccc', color: PURPLE_DARK }} className="px-2 py-2 shrink-0 font-bold text-sm overflow-hidden flex items-center">
                     <CellText value={animal.tag_number} onCommit={v => handleCellUpdate(animal, 'tag_number', v)} />
@@ -807,24 +807,22 @@ export default function MasterSpreadsheet({ onBack, currentUser }) {
                     <ExternalLink className="w-4 h-4" style={{ color: PURPLE }} />
                   </button>
                 </div>
-                {/* Delete */}
-                <div style={{ width: 40, minWidth: 40, maxWidth: 40, borderRight: '1px solid #ccc' }} className="flex items-center justify-center shrink-0">
-                  <button onClick={() => setDeleteTarget(animal)} className="p-1.5 hover:bg-gray-100">
-                    <Trash2 className="w-4 h-4 text-red-300 hover:text-red-500" />
-                  </button>
-                </div>
-              </div>
+                    {/* Delete */}
+                    <div style={{ width: 40, minWidth: 40, maxWidth: 40, borderRight: '1px solid #ccc' }} className="flex items-center justify-center shrink-0">
+                      <button onClick={() => setDeleteTarget(animal)} className="p-1.5 hover:bg-gray-100">
+                        <Trash2 className="w-4 h-4 text-red-300 hover:text-red-500" />
+                      </button>
+                    </div>
+                  </div>
                 )}
               </Draggable>
             ))}
-              {provided.placeholder}
+            {provided.placeholder}
                 </div>
               )}
-              </Droppable>
-              </div>
-              </DragDropContext>
-              )}
-              </div>
+            </Droppable>
+          </div>
+        </DragDropContext>
 
               {/* ── Bulk Action Bar ──────────────────────────────────── */}
       {selected.size > 0 && (
