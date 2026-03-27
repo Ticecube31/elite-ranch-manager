@@ -1,10 +1,13 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, createContext, useContext } from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
 import { Home, Baby, ArrowLeftRight, TreePine, HeartPulse, Rows3 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { base44 } from '@/api/base44Client';
 import { useTheme } from '@/lib/ThemeContext';
 import AISearchBar from '@/components/layout/AISearchBar';
+
+// Context so CalvingSeason page can register its AI open handler
+export const CalvingAIContext = createContext({ openCalvingAI: null, setOpenCalvingAI: () => {} });
 
 const bottomNavItems = [
   { path: '/',              icon: Home,           label: 'Home',    activeColor: 'text-primary',      activeBg: 'bg-primary/10'   },
@@ -32,6 +35,7 @@ export default function AppLayout() {
   const [user, setUser] = useState(null);
   const [ranchName, setRanchName] = useState('Elite Ranch Manager');
   const [logoUrl, setLogoUrl] = useState('');
+  const [openCalvingAI, setOpenCalvingAI] = useState(null); // fn registered by CalvingSeason
 
   const isColoredHeader = !!headerStyle.background;
 
@@ -85,7 +89,7 @@ export default function AppLayout() {
 
           {/* AI Search Bar — takes remaining space */}
           <div className="flex-1">
-            <AISearchBar headerStyle={headerStyle} />
+            <AISearchBar headerStyle={headerStyle} onCalvingAI={openCalvingAI || undefined} />
           </div>
 
           {/* Desktop nav links */}
@@ -133,7 +137,9 @@ export default function AppLayout() {
 
       {/* ── Main Content ────────────────────────────────────── */}
       <main className="flex-1 pb-24">
-        <Outlet />
+        <CalvingAIContext.Provider value={{ openCalvingAI, setOpenCalvingAI }}>
+          <Outlet />
+        </CalvingAIContext.Provider>
       </main>
 
       {/* ── Bottom Tab Bar ───────────────────────────────────── */}

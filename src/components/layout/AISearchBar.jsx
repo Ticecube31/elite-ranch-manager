@@ -1,20 +1,31 @@
 /**
  * AISearchBar — always-visible header search that opens the AI assistant.
- * Replaces floating AI button app-wide.
+ * When on /calving, calls onCalvingAI() to open the in-page calving AI.
+ * On all other pages, navigates to /ai-assistant.
  */
-import React, { useState, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { Sparkles, Search } from 'lucide-react';
 
-export default function AISearchBar({ headerStyle = {} }) {
-  const navigate = useNavigate();
+export default function AISearchBar({ headerStyle = {}, onCalvingAI }) {
+  const navigate  = useNavigate();
+  const location  = useLocation();
   const [focused, setFocused] = useState(false);
 
-  const isLight = !headerStyle.background; // home = light header
+  const isLight       = !headerStyle.background;
+  const isCalvingPage = location.pathname.startsWith('/calving');
+
+  const handleClick = () => {
+    if (isCalvingPage && onCalvingAI) {
+      onCalvingAI();
+    } else {
+      navigate('/ai-assistant');
+    }
+  };
 
   return (
     <button
-      onClick={() => navigate('/ai-assistant')}
+      onClick={handleClick}
       onFocus={() => setFocused(true)}
       onBlur={() => setFocused(false)}
       className={`
@@ -30,7 +41,9 @@ export default function AISearchBar({ headerStyle = {} }) {
       aria-label="Ask AI Ranch Assistant"
     >
       <Sparkles className="w-3.5 h-3.5 shrink-0 opacity-70" />
-      <span className="truncate">Ask AI Ranch Assistant...</span>
+      <span className="truncate">
+        {isCalvingPage ? 'Ask about this season...' : 'Ask AI Ranch Assistant...'}
+      </span>
       <Search className="w-3.5 h-3.5 shrink-0 opacity-50 ml-auto" />
     </button>
   );

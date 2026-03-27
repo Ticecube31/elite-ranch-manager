@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Plus, ChevronDown, ChevronRight, X } from 'lucide-react';
@@ -11,6 +11,8 @@ import QuickCalfForm from '@/components/calving/QuickCalfForm';
 import AnimalForm from '@/components/calving/AnimalForm';
 import AllCalvesView from '@/components/calving/AllCalvesView';
 import CalvingSeasonReports from '@/components/calving/CalvingSeasonReports';
+import CalvingAIAssistant from '@/components/calving/CalvingAIAssistant';
+import { CalvingAIContext } from '@/components/layout/AppLayout';
 import { logAudit } from '@/lib/auditLogger';
 import { format } from 'date-fns';
 
@@ -27,8 +29,17 @@ export default function CalvingSeason() {
   const [newSeasonYear, setNewSeasonYear] = useState(new Date().getFullYear());
   const [currentUser, setCurrentUser] = useState(null);
   const [lastAdded, setLastAdded] = useState(null); // for "add another" flow
+  const [showAI, setShowAI] = useState(false);
+
+  const { setOpenCalvingAI } = useContext(CalvingAIContext);
 
   useEffect(() => { base44.auth.me().then(setCurrentUser).catch(() => {}); }, []);
+
+  // Register AI opener with the layout header search bar
+  useEffect(() => {
+    setOpenCalvingAI(() => () => setShowAI(true));
+    return () => setOpenCalvingAI(null);
+  }, [setOpenCalvingAI]);
 
   const queryClient = useQueryClient();
 
@@ -241,6 +252,19 @@ export default function CalvingSeason() {
           />
         </div>
       </div>
+    );
+  }
+
+  // ── CALVING AI ASSISTANT OVERLAY ─────────────────────────
+  if (showAI) {
+    return (
+      <CalvingAIAssistant
+        animals={animals}
+        seasons={seasons}
+        pastures={pastures}
+        selectedSeasonId={selectedSeasonId !== 'all' ? selectedSeasonId : seasons[0]?.id}
+        onClose={() => setShowAI(false)}
+      />
     );
   }
 
