@@ -107,7 +107,7 @@ export default function PreSessionSetup() {
         <div className="w-10" />
       </div>
 
-      <div className="px-4 py-6 max-w-lg mx-auto w-full space-y-6">
+      <div className="px-4 py-6 max-w-lg mx-auto w-full space-y-6 pb-[60px]">
 
         {/* ── Session Name & Date ────────────────────────── */}
         <div className="space-y-3">
