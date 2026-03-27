@@ -34,6 +34,7 @@ export function RanchProvider({ children }) {
           });
           
           if (ranchUsers.length === 0) {
+            localStorage.removeItem('selectedRanchId');
             setLoading(false);
             return;
           }
@@ -59,7 +60,9 @@ export function RanchProvider({ children }) {
 
         setCurrentRanch(selected);
         setUserRole(selected.userRole);
-        localStorage.setItem('selectedRanchId', selected.id);
+        if (selected) {
+          localStorage.setItem('selectedRanchId', selected.id);
+        }
       } catch (error) {
         console.error('Error initializing ranch:', error);
       } finally {

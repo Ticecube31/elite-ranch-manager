@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -7,6 +7,7 @@ import { Search, Plus, LogOut, Settings, Moon, Sun } from 'lucide-react';
 import { toast } from 'sonner';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger, DropdownMenuSeparator, DropdownMenuItem } from '@/components/ui/dropdown-menu';
+import { RanchContext } from '@/lib/RanchContext';
 
 const PURPLE = '#6B2D5E';
 const PURPLE_DARK = '#4A1F40';
@@ -14,69 +15,44 @@ const PURPLE_LIGHT = '#F3E8F0';
 
 export default function RanchSelector() {
   const navigate = useNavigate();
+  const { currentRanch, userRanches, loading, switchRanch } = useContext(RanchContext);
   const [user, setUser] = useState(null);
-  const [userRanches, setUserRanches] = useState([]);
   const [allRanches, setAllRanches] = useState([]);
   const [search, setSearch] = useState('');
-  const [loading, setLoading] = useState(true);
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [newRanchName, setNewRanchName] = useState('');
   const [creating, setCreating] = useState(false);
   const [isDark, setIsDark] = useState(document.documentElement.classList.contains('dark'));
 
   useEffect(() => {
-    loadData();
+    const fetchUser = async () => {
+      try {
+        const currentUser = await base44.auth.me();
+        setUser(currentUser);
+      } catch (error) {
+        console.error('Error fetching user:', error);
+        setUser(null);
+      }
+    };
+    fetchUser();
   }, []);
 
-  const loadData = async () => {
-    try {
-      setLoading(true);
-      
-      // Get current user
-      const currentUser = await base44.auth.me();
-      if (!currentUser) {
-        setUser(null);
-        return;
-      }
-      
-      setUser(currentUser);
-
-      // Get user's ranches
-      const ranchUsers = await base44.entities.RanchUser.filter({
-        user_email: currentUser.email,
-        status: 'active'
-      });
-
-      const userRanchData = await Promise.all(
-        ranchUsers.map(async (ru) => {
-          try {
-            const ranch = await base44.entities.Ranch.read(ru.ranch_id);
-            return { ...ranch, userRole: ru.role };
-          } catch {
-            return null;
-          }
-        })
-      );
-
-      setUserRanches(userRanchData.filter(Boolean));
-
-      // Get all ranches for discovery
+  useEffect(() => {
+    const fetchAllRanches = async () => {
       try {
         const all = await base44.entities.Ranch.list();
         setAllRanches(all || []);
-      } catch {
-        setAllRanches([]);
+      } catch (error) {
+        console.error('Error loading all ranches:', error);
       }
-    } catch (error) {
-      console.error('Error loading data:', error);
-      toast.error('Failed to load ranches');
-    } finally {
-      setLoading(false);
-    }
-  };
+    };
+    fetchAllRanches();
+  }, []);
+
+
 
   const handleSelectRanch = (ranchId) => {
-    localStorage.setItem('selectedRanchId', ranchId);
+    switchRanch(ranchId);
     navigate('/');
   };
 
@@ -89,10 +65,8 @@ export default function RanchSelector() {
         status: 'active'
       });
       toast.success('Joined ranch!');
-      // Reload and immediately enter the ranch
-      await loadData();
-      localStorage.setItem('selectedRanchId', ranchId);
-      setTimeout(() => navigate('/'), 500);
+      switchRanch(ranchId);
+      navigate('/');
     } catch (error) {
       console.error('Error joining ranch:', error);
       toast.error('Failed to join ranch');
@@ -122,8 +96,7 @@ export default function RanchSelector() {
 
       setNewRanchName('');
       setShowCreateDialog(false);
-      await loadData();
-      localStorage.setItem('selectedRanchId', ranch.id);
+      switchRanch(ranch.id);
       navigate('/');
       toast.success('Ranch created!');
     } catch (error) {
@@ -139,8 +112,8 @@ export default function RanchSelector() {
   };
 
   const handleGoToSettings = async () => {
-    if (userRanches.length > 0) {
-      localStorage.setItem('selectedRanchId', userRanches[0].id);
+    if (currentRanch) {
+      switchRanch(currentRanch.id);
       navigate('/settings');
     } else {
       toast.error('No ranches available. Create or join one first.');
