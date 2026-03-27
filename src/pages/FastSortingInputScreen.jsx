@@ -2,24 +2,25 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { ArrowLeft, ChevronLeft, ChevronRight, Plus, X } from 'lucide-react';
+import { ArrowLeft, Plus } from 'lucide-react';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
+import NumericKeypad from '@/components/sorting/NumericKeypad';
 
 const BLUE = '#2196F3';
 const BLUE_DARK = '#1565C0';
 const BLUE_LIGHT = '#E3F2FD';
 const SKY_BLUE = '#81D4FA';
+const GREEN = '#4CAF50';
+const GREEN_DARK = '#2E7D32';
 
 export default function FastSortingInputScreen() {
   const navigate = useNavigate();
   const { sessionId } = useParams();
   const queryClient = useQueryClient();
-  
-  const inputRef = useRef(null);
   
   const [cowNumber, setCowNumber] = useState('');
   const [matchedAnimal, setMatchedAnimal] = useState(null);
@@ -60,12 +61,7 @@ export default function FastSortingInputScreen() {
     },
   });
 
-  // Auto-focus input on load
-  useEffect(() => {
-    setTimeout(() => inputRef.current?.focus(), 100);
-  }, []);
-
-  // Real-time lookup as user types
+  // Real-time lookup as user enters numbers
   useEffect(() => {
     if (!cowNumber.trim()) {
       setMatchedAnimal(null);
@@ -94,6 +90,14 @@ export default function FastSortingInputScreen() {
     if (!animal?.mother_animal_number) return null;
     const mother = animals.find(a => a.tag_number === animal.mother_animal_number);
     return mother?.birth_year || 'unknown';
+  };
+
+  const handleKeypadInput = (digit) => {
+    setCowNumber(prev => prev + digit);
+  };
+
+  const handleBackspace = () => {
+    setCowNumber(prev => prev.slice(0, -1));
   };
 
   const handleSort = async (direction) => {
@@ -136,7 +140,20 @@ export default function FastSortingInputScreen() {
     toast.success(`✓ #${matchedAnimal.tag_number} → ${direction}`);
     setCowNumber('');
     setNoteSynced(false);
-    setTimeout(() => inputRef.current?.focus(), 100);
+  };
+
+  const handleSortAndNext = async () => {
+    if (!matchedAnimal) return;
+    // Sort to the pen matching the calf's sex if available
+    const calf = animals.find(a => a.mother_animal_number === matchedAnimal.tag_number);
+    if (calf?.sex === 'Male') {
+      await handleSort('Left');
+    } else if (calf?.sex === 'Female') {
+      await handleSort('Right');
+    } else {
+      // No calf or no sex match — let user choose
+      toast.info('No matching calf found. Choose left or right.');
+    }
   };
 
   const handleEndSession = async (saveProgress) => {
@@ -155,7 +172,6 @@ export default function FastSortingInputScreen() {
       return;
     }
 
-    const timestamp = new Date().toISOString();
     const noteEntry = `[${format(new Date(), 'MMM d, yyyy h:mm a')}] ${noteText.trim()}`;
     const currentNotes = matchedAnimal.notes ? `${matchedAnimal.notes}\n${noteEntry}` : noteEntry;
 
@@ -177,152 +193,143 @@ export default function FastSortingInputScreen() {
     );
   }
 
-  // Find the calf of the matched animal to determine pen direction based on baby's sex
-  const calf = matchedAnimal ? animals.find(a => a.mother_animal_number === matchedAnimal.tag_number) : null;
-  const calfSex = calf?.sex;
-  const isMatchingLeft = calfSex === 'Male';
-  const isMatchingRight = calfSex === 'Female';
-
   return (
-    <div className="min-h-screen flex flex-col pb-[60px] bg-background">
+    <div className="min-h-screen flex flex-col pb-4" style={{ background: BLUE_LIGHT }}>
 
-      {/* ── TOP HEADER ──────────────────────────────────────── */}
-      <div className="sticky top-0 z-20 shrink-0 flex items-center justify-between px-4 h-12" style={{ background: BLUE_DARK }}>
+      {/* ── HEADER ──────────────────────────────────────────────── */}
+      <div className="sticky top-0 z-20 shrink-0 px-4 h-14 flex items-center justify-between" style={{ background: BLUE_DARK }}>
         <button
           onClick={() => setShowExitConfirm(true)}
           className="text-white/80 hover:text-white p-2 -ml-2 transition-colors"
         >
-          <ArrowLeft className="w-5 h-5" />
+          <ArrowLeft className="w-6 h-6" />
         </button>
-        <p className="font-heading font-bold text-white text-sm">{session.session_name || 'Session'}</p>
-        <p className="font-heading font-black text-white text-lg">{session.total_sorted || 0}</p>
+        <p className="font-heading font-bold text-white">{session.session_name || 'Session'}</p>
+        <p className="font-heading font-black text-white text-xl">{session.total_sorted || 0}</p>
       </div>
 
-      {/* ── MAIN CONTENT ────────────────────────────────────── */}
-      <div className="flex-1 flex flex-col overflow-hidden">
+      {/* ── MAIN LAYOUT (scrollable content) ──────────────────────────── */}
+      <div className="flex-1 overflow-y-auto px-4 py-5 max-w-lg mx-auto w-full space-y-4">
 
-        {/* ── SORTING ZONES (left/right split) ───────────────── */}
-        <div className="flex-1 flex overflow-hidden gap-0">
+        {/* ── COUNT DISPLAY ────────────────────────────────────────── */}
+        <div className="text-center">
+          <div className="bg-white rounded-2xl border-2 border-blue-300 p-3">
+            <p className="font-heading font-black text-sm text-gray-600 uppercase tracking-wider">Count</p>
+            <p className="font-heading font-black text-3xl" style={{ color: BLUE_DARK }}>{session.total_sorted || 0}</p>
+          </div>
+        </div>
 
-          {/* ── LEFT ZONE ────────────────────────────────────── */}
+        {/* ── PEN DIRECTION BUTTONS ────────────────────────────────── */}
+        <div className="flex gap-3">
           <button
-            onClick={() => handleSort('Left')}
+            onClick={() => matchedAnimal && handleSort('Left')}
             disabled={!matchedAnimal}
-            className={`flex-1 flex flex-col items-center justify-center transition-all active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed`}
-            style={{
-              background: isMatchingLeft ? '#0D47A1' : BLUE_LIGHT,
-              boxShadow: isMatchingLeft ? `0 0 30px ${BLUE}, inset 0 0 50px ${BLUE}60` : 'none',
-            }}
+            className="flex-1 h-20 rounded-2xl font-heading font-black text-2xl text-white shadow-lg transition-all active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center"
+            style={{ background: BLUE_DARK }}
+            title={`${session.left_pen_label || 'LEFT'}`}
           >
-            <ChevronLeft className="w-16 h-16 stroke-[2.5px]" style={{ color: isMatchingLeft ? '#fff' : '#ccc' }} />
-            {matchedAnimal && <p className="font-heading font-black text-6xl" style={{ color: isMatchingLeft ? '#fff' : '#999' }}>LEFT</p>}
-            <p className="font-heading font-black text-lg mt-2" style={{ color: isMatchingLeft ? '#fff' : '#999' }}>
-              {session.left_pen_label || 'LEFT'}
-            </p>
+            ← {session.left_pen_label || 'LEFT'}
           </button>
-
-          {/* ── RIGHT ZONE ───────────────────────────────────── */}
           <button
-            onClick={() => handleSort('Right')}
+            onClick={() => matchedAnimal && handleSort('Right')}
             disabled={!matchedAnimal}
-            className={`flex-1 flex flex-col items-center justify-center transition-all active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed`}
-            style={{
-              background: isMatchingRight ? '#0D47A1' : BLUE_LIGHT,
-              boxShadow: isMatchingRight ? `0 0 30px ${BLUE}, inset 0 0 50px ${BLUE}60` : 'none',
-            }}
+            className="flex-1 h-20 rounded-2xl font-heading font-black text-2xl text-white shadow-lg transition-all active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center"
+            style={{ background: BLUE_DARK }}
+            title={`${session.right_pen_label || 'RIGHT'}`}
           >
-            <ChevronRight className="w-16 h-16 stroke-[2.5px]" style={{ color: isMatchingRight ? '#fff' : '#ccc' }} />
-            {matchedAnimal && <p className="font-heading font-black text-6xl" style={{ color: isMatchingRight ? '#fff' : '#999' }}>RIGHT</p>}
-            <p className="font-heading font-black text-lg mt-2" style={{ color: isMatchingRight ? '#fff' : '#999' }}>
-              {session.right_pen_label || 'RIGHT'}
-            </p>
+            {session.right_pen_label || 'RIGHT'} →
           </button>
         </div>
-      </div>
 
-      {/* ── COW NUMBER INPUT + INFO ────────────────────────── */}
-      <div className="shrink-0 px-4 pt-4 pb-2 flex flex-col gap-3">
-        <input
-          ref={inputRef}
-          type="number"
-          value={cowNumber}
-          onChange={(e) => setCowNumber(e.target.value)}
-          placeholder="Enter Cow #"
-          inputMode="numeric"
-          className="w-full h-20 text-center text-5xl font-heading font-black border-0 rounded-2xl shadow-md"
-          style={{
-            background: 'white',
-            color: matchedAnimal ? BLUE_DARK : '#999',
-            outline: `3px solid ${matchedAnimal ? SKY_BLUE : '#ddd'}`,
-            outlineOffset: '-3px',
-          }}
-        />
-        
-        {/* Duplicate selector */}
+        {/* ── COW TAG INPUT + YEAR DISPLAY ─────────────────────────── */}
+        <div className="grid grid-cols-3 gap-3">
+          <div className="col-span-2">
+            <div className="bg-white rounded-2xl border-2 border-blue-300 p-3 text-center">
+              <p className="text-xs text-gray-500 font-semibold mb-1">Cow Tag #</p>
+              <p className="font-heading font-black text-3xl" style={{ color: matchedAnimal ? BLUE_DARK : '#ccc' }}>
+                {cowNumber || '—'}
+              </p>
+            </div>
+          </div>
+          <div>
+            <div className="bg-white rounded-2xl border-2 border-blue-300 p-3 text-center h-full flex flex-col items-center justify-center">
+              <p className="text-xs text-gray-500 font-semibold">Year</p>
+              <p className="font-heading font-black text-2xl" style={{ color: BLUE_DARK }}>
+                {matchedAnimal?.birth_year || '—'}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* ── MATCHED ANIMAL DISPLAY ────────────────────────────────── */}
         {showDuplicateSelector && duplicates.length > 1 && (
           <div className="bg-white rounded-2xl border-2 p-3 space-y-2" style={{ borderColor: SKY_BLUE }}>
-            <p className="text-xs font-bold text-gray-600 text-center">Multiple cows found. Select one:</p>
-            {duplicates.map(dup => {
-              const motherYear = getMotherBirthYear(dup);
-              return (
-                <button
-                  key={dup.id}
-                  onClick={() => {
-                    setMatchedAnimal(dup);
-                    setShowDuplicateSelector(false);
-                  }}
-                  className="w-full px-3 py-2 rounded-xl text-sm font-bold bg-blue-50 border border-blue-200 hover:bg-blue-100 text-left"
-                >
-                  #{dup.tag_number} {dup.animal_type} {motherYear && `(Mom: ${motherYear})`}
-                </button>
-              );
-            })}
+            <p className="text-xs font-bold text-gray-600 text-center">Multiple cows found:</p>
+            {duplicates.map(dup => (
+              <button
+                key={dup.id}
+                onClick={() => {
+                  setMatchedAnimal(dup);
+                  setShowDuplicateSelector(false);
+                }}
+                className="w-full px-3 py-2 rounded-xl text-sm font-bold bg-blue-50 border border-blue-200 text-left"
+              >
+                #{dup.tag_number} {dup.animal_type} {getMotherBirthYear(dup) && `(Mom: ${getMotherBirthYear(dup)})`}
+              </button>
+            ))}
           </div>
         )}
 
-        {/* Sex Display */}
         {matchedAnimal && (
-          <div className="text-center bg-white rounded-2xl p-3">
-            <p className="font-heading font-black text-2xl" style={{ color: BLUE_DARK }}>
-              Cow #{matchedAnimal.tag_number} · {matchedAnimal.birth_year || '—'}
+          <div className="text-center bg-white rounded-2xl border-2 border-green-300 p-4">
+            <p className="font-heading font-black text-lg" style={{ color: GREEN_DARK }}>
+              ✓ #{matchedAnimal.tag_number}
             </p>
-            <p className="text-lg font-bold mt-1" style={{ color: BLUE }}>
-              {matchedAnimal.animal_type}
-            </p>
-            {getMotherBirthYear(matchedAnimal) && (
-              <p className="text-sm text-gray-600 mt-1">Mom born: {getMotherBirthYear(matchedAnimal)}</p>
-            )}
+            <p className="text-sm text-gray-600 mt-1">{matchedAnimal.animal_type}</p>
           </div>
         )}
 
         {cowNumber.trim() && !matchedAnimal && !showDuplicateSelector && (
-          <p className="font-heading font-black text-xl text-red-500 text-center">❌ No matching cow found</p>
+          <div className="text-center bg-white rounded-2xl border-2 border-red-300 p-4">
+            <p className="font-heading font-black text-lg text-red-500">❌ Not Found</p>
+          </div>
         )}
-      </div>
 
-      {/* ── BOTTOM ACTION BAR ────────────────────────────────── */}
-      <div className="px-4 pt-2 pb-4 bg-white border-t-2" style={{ borderColor: BLUE_LIGHT }}>
-        <div className="max-w-2xl mx-auto flex gap-3">
+        {/* ── NUMERIC KEYPAD ───────────────────────────────────────── */}
+        <div>
+          <NumericKeypad
+            value={cowNumber}
+            onInput={handleKeypadInput}
+            onBackspace={handleBackspace}
+            onSubmit={handleSortAndNext}
+            disabled={false}
+          />
+        </div>
+
+        {/* ── SORT & NEXT + NOTE BUTTON ────────────────────────────── */}
+        <div className="flex gap-3">
           <button
-            onClick={() => { setCowNumber(''); inputRef.current?.focus(); }}
-            className="flex-1 h-16 rounded-2xl font-heading font-black text-base text-white shadow-lg transition-all active:scale-[0.98]"
-            style={{ background: `linear-gradient(135deg, ${BLUE}, ${BLUE_DARK})` }}
+            onClick={handleSortAndNext}
+            disabled={!matchedAnimal}
+            className="flex-1 h-14 rounded-2xl font-heading font-black text-lg text-white shadow-lg transition-all active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed"
+            style={{ background: GREEN_DARK }}
           >
-            SORT & NEXT
+            Sort & Next
           </button>
           <button
             onClick={() => setShowNoteDialog(true)}
             disabled={!matchedAnimal}
-            className="h-16 w-16 rounded-2xl flex items-center justify-center border-2 shadow-lg transition-all active:scale-[0.98] disabled:opacity-40 disabled:cursor-not-allowed"
+            className="h-14 w-14 rounded-2xl flex items-center justify-center border-2 shadow-lg transition-all active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed bg-white"
             style={{ borderColor: BLUE, color: BLUE }}
-            title="Add note for this cow"
+            title="Add note"
           >
             <Plus className="w-6 h-6" />
           </button>
         </div>
+
       </div>
 
-      {/* ── NOTE DIALOG ──────────────────────────────────────── */}
+      {/* ── NOTE DIALOG ──────────────────────────────────────────────── */}
       <Dialog open={showNoteDialog} onOpenChange={setShowNoteDialog}>
         <DialogContent className="max-w-sm">
           <DialogHeader>
@@ -336,7 +343,7 @@ export default function FastSortingInputScreen() {
               className="min-h-24"
               autoFocus
             />
-            <p className="text-xs text-gray-400 mt-2">Timestamp will be added automatically</p>
+            <p className="text-xs text-gray-400 mt-2">Timestamp added automatically</p>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowNoteDialog(false)}>Cancel</Button>
@@ -345,18 +352,18 @@ export default function FastSortingInputScreen() {
         </DialogContent>
       </Dialog>
 
-      {/* ── EXIT CONFIRMATION DIALOG ──────────────────────────── */}
+      {/* ── EXIT CONFIRMATION DIALOG ──────────────────────────────── */}
       <Dialog open={showExitConfirm} onOpenChange={setShowExitConfirm}>
         <DialogContent className="max-w-sm">
           <DialogHeader>
             <DialogTitle>Exit Sorting Session?</DialogTitle>
           </DialogHeader>
           <p className="text-gray-600 py-2">Save your progress before leaving.</p>
-          <DialogFooter className="flex gap-2 flex-col items-center">
-            <Button onClick={() => handleEndSession(true)} className="h-12 w-full" style={{ background: BLUE, border: 'none', color: 'white', fontSize: '16px', fontWeight: 'bold' }}>
+          <DialogFooter className="flex gap-2 flex-col">
+            <Button onClick={() => handleEndSession(true)} style={{ background: BLUE, border: 'none', color: 'white' }}>
               Exit and Save
             </Button>
-            <Button onClick={() => handleEndSession(false)} className="h-9 w-full text-sm" style={{ background: '#EF4444', border: 'none', color: 'white' }}>
+            <Button onClick={() => handleEndSession(false)} variant="outline">
               Exit Without Saving
             </Button>
           </DialogFooter>
