@@ -9,6 +9,7 @@ import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 import AnimalDetailView from '@/components/herd/AnimalDetailView';
 import ImportWizard from '@/components/herd/ImportWizard';
 import ChildrenCell from '@/components/herd/ChildrenCell';
+import CalvingSeasonSpreadsheet from '@/components/herd/CalvingSeasonSpreadsheet';
 import { Input } from '@/components/ui/input';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
@@ -278,6 +279,7 @@ function AddRowModal({ pastures, seasons, existingAnimals, onSave, onClose, curr
 // ── Main Component ────────────────────────────────────────────────────────────
 
 export default function MasterSpreadsheet({ onBack, currentUser }) {
+  const [activeTab, setActiveTab] = useState('animals'); // 'animals' | 'seasons'
   const [search, setSearch] = useState('');
   const [filterChip, setFilterChip] = useState('All');
   const [sortCol, setSortCol] = useState('tag_number');
@@ -499,6 +501,11 @@ export default function MasterSpreadsheet({ onBack, currentUser }) {
     );
   }
 
+  // ── Calving Seasons Tab ────────────────────────────────────
+  if (activeTab === 'seasons') {
+    return <CalvingSeasonSpreadsheet onBack={() => {}} />;
+  }
+
   const SortIcon = ({ col }) => sortCol === col
     ? (sortDir === 'asc' ? <ChevronUp className="w-3 h-3 inline" /> : <ChevronDown className="w-3 h-3 inline" />)
     : <span className="w-3 h-3 inline-block" />;
@@ -591,14 +598,26 @@ export default function MasterSpreadsheet({ onBack, currentUser }) {
 
         {/* Entity type selector */}
         <div className="px-4 pb-2 flex gap-2">
-          <div className="h-9 px-4 rounded-xl text-sm font-bold flex items-center" style={{ background: 'rgba(255,255,255,0.25)', color: 'white' }}>
+          <button
+            onClick={() => setActiveTab('animals')}
+            className="h-9 px-4 rounded-xl text-sm font-bold flex items-center transition-all"
+            style={activeTab === 'animals'
+              ? { background: 'rgba(255,255,255,0.25)', color: 'white' }
+              : { background: 'rgba(0,0,0,0.1)', color: 'rgba(255,255,255,0.4)' }
+            }
+          >
             🐄 Animals
-          </div>
-          {['Pastures', 'Calving Seasons', 'Sorting Sessions', 'Tag History'].map(e => (
-            <div key={e} className="h-9 px-3 rounded-xl text-xs font-semibold flex items-center text-white/40 border border-white/10 whitespace-nowrap">
-              {e}
-            </div>
-          ))}
+          </button>
+          <button
+            onClick={() => setActiveTab('seasons')}
+            className="h-9 px-4 rounded-xl text-sm font-bold flex items-center transition-all"
+            style={activeTab === 'seasons'
+              ? { background: 'rgba(255,255,255,0.25)', color: 'white' }
+              : { background: 'rgba(0,0,0,0.1)', color: 'rgba(255,255,255,0.4)' }
+            }
+          >
+            📅 Calving Seasons
+          </button>
         </div>
 
         {/* Search */}

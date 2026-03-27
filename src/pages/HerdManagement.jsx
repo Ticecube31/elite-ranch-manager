@@ -45,7 +45,7 @@ function SummaryCard({ emoji, label, value, accent }) {
 }
 
 export default function HerdManagement() {
-  const [view, setView] = useState('dashboard'); // 'dashboard' | 'spreadsheet' | 'all-animals' | 'detail' | 'edit' | 'seasons'
+  const [view, setView] = useState('dashboard'); // 'dashboard' | 'spreadsheet' | 'all-animals' | 'detail' | 'edit'
   const [search, setSearch] = useState('');
   const [typeFilter, setTypeFilter] = useState('all');
   const [statusFilter, setStatusFilter] = useState('all');
@@ -173,11 +173,6 @@ export default function HerdManagement() {
   // ── SPREADSHEET VIEW ──────────────────────────────────────
   if (view === 'spreadsheet') {
     return <MasterSpreadsheet onBack={() => setView('dashboard')} currentUser={currentUser} />;
-  }
-
-  // ── CALVING SEASONS VIEW ───────────────────────────────────
-  if (view === 'seasons') {
-    return <CalvingSeasonSpreadsheet onBack={() => setView('dashboard')} />;
   }
 
   // ── REPORTS VIEW ──────────────────────────────────────────
@@ -507,13 +502,6 @@ export default function HerdManagement() {
           >
             <List className="w-5 h-5" />
             View All Animals
-          </button>
-          <button
-            onClick={() => setView('seasons')}
-            className="h-16 rounded-2xl font-heading font-bold text-base border-2 bg-white active:scale-[0.98] transition-all flex items-center justify-center gap-2"
-            style={{ borderColor: PURPLE, color: PURPLE }}
-          >
-            📅 Calving Seasons
           </button>
           <button
             onClick={() => setView('reports')}
