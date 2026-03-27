@@ -137,7 +137,7 @@ export default function AppLayout() {
       </header>
 
       {/* ── Main Content ────────────────────────────────────── */}
-      <main className="flex-1 pb-32 md:pb-24">
+      <main className="flex-1 pb-56 md:pb-6">
         <CalvingAIContext.Provider value={{ openCalvingAI, setOpenCalvingAI, openHerdAI, setOpenHerdAI }}>
           <Outlet />
         </CalvingAIContext.Provider>
