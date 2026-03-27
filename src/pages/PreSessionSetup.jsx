@@ -139,14 +139,14 @@ export default function PreSessionSetup() {
           <div className="grid grid-cols-2 gap-4">
             {/* Left Pen */}
             <div className="space-y-3">
-              <p className="text-sm font-bold text-gray-600">Left Pen</p>
+              <p className="text-sm font-bold text-gray-600 text-center">Left Pen</p>
               <SexButton sex="Male" selected={leftSex === 'Male'} onTap={handleLeftSexChange} />
               <SexButton sex="Female" selected={leftSex === 'Female'} onTap={handleLeftSexChange} />
             </div>
 
             {/* Right Pen */}
             <div className="space-y-3">
-              <p className="text-sm font-bold text-gray-600">Right Pen</p>
+              <p className="text-sm font-bold text-gray-600 text-center">Right Pen</p>
               <SexButton sex="Male" selected={rightSex === 'Male'} onTap={handleRightSexChange} />
               <SexButton sex="Female" selected={rightSex === 'Female'} onTap={handleRightSexChange} />
             </div>
