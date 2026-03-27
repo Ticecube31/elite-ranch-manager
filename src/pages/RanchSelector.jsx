@@ -172,7 +172,7 @@ export default function RanchSelector() {
               <span className="text-white font-heading font-black text-lg">ER</span>
             </div>
             <div>
-              <p className="text-white font-heading font-bold">Elite Ranch Manager</p>
+              <p className="text-white font-heading font-bold">{currentRanch?.ranch_name || 'Elite Ranch Manager'}</p>
               <p className="text-white/60 text-xs">{user?.full_name || user?.email}</p>
             </div>
           </div>
