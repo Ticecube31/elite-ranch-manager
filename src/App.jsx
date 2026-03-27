@@ -17,7 +17,7 @@ import AppLayout from '@/components/layout/AppLayout';
 import { ThemeProvider } from '@/lib/ThemeContext';
 import Home from '@/pages/Home';
 import CalvingSeason from '@/pages/CalvingSeason.jsx';
-import CalfSorting from '@/pages/CalfSorting';
+import CalfSortingDashboard from '@/pages/CalfSortingDashboard';
 import PastureManagement from '@/pages/PastureManagement';
 import Settings from '@/pages/Settings';
 import AIAssistant from '@/pages/AIAssistant';
@@ -54,7 +54,7 @@ const AuthenticatedApp = () => {
       <Route element={<AppLayout />}>
         <Route path="/" element={<Home />} />
         <Route path="/calving" element={<CalvingSeason />} />
-        <Route path="/sorting" element={<CalfSorting />} />
+        <Route path="/sorting" element={<CalfSortingDashboard />} />
         <Route path="/pastures" element={<PastureManagement />} />
         <Route path="/settings" element={<Settings />} />
         <Route path="/ai-assistant" element={<AIAssistant />} />
