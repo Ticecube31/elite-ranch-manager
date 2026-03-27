@@ -36,12 +36,14 @@ export default function PreSessionSetup() {
   const [sessionDate, setSessionDate] = useState(today);
   const [leftSex, setLeftSex] = useState(null);
   const [rightSex, setRightSex] = useState(null);
+  const [leftLabel, setLeftLabel] = useState('Left');
+  const [rightLabel, setRightLabel] = useState('Right');
   const [notes, setNotes] = useState('');
   const [saving, setSaving] = useState(false);
 
-  // Derive labels
-  const leftLabel = leftSex || '(unassigned)';
-  const rightLabel = rightSex || '(unassigned)';
+  // Display current sex assignment
+  const leftSexDisplay = leftSex === 'Male' ? '♂ Male / Steer' : '♀ Female / Heifer';
+  const rightSexDisplay = rightSex === 'Male' ? '♂ Male / Steer' : '♀ Female / Heifer';
 
   const createMutation = useMutation({
     mutationFn: (data) => base44.entities.SortingSessions.create(data),
@@ -85,8 +87,8 @@ export default function PreSessionSetup() {
       session_name: sessionName,
       session_date: sessionDate,
       status: 'Active',
-      left_pen_label: `${leftSex === 'Male' ? '♂ Male / Steer' : '♀ Female / Heifer'}`,
-      right_pen_label: `${rightSex === 'Male' ? '♂ Male / Steer' : '♀ Female / Heifer'}`,
+      left_pen_label: leftLabel,
+      right_pen_label: rightLabel,
       sorted_animals: [],
       total_sorted: 0,
       left_count: 0,
@@ -152,15 +154,46 @@ export default function PreSessionSetup() {
             </div>
           </div>
 
-          {/* Live Preview */}
-          <div className="mt-4 rounded-2xl p-4 border-2 border-blue-200" style={{ background: BLUE_LIGHT }}>
-            <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Preview</p>
-            <p className="font-heading font-bold text-base" style={{ color: BLUE_DARK }}>
-              Left = {leftLabel}
-            </p>
-            <p className="font-heading font-bold text-base mt-1" style={{ color: BLUE_DARK }}>
-              Right = {rightLabel}
-            </p>
+          {/* Custom Labels */}
+          <div className="space-y-4 mt-6 pt-6 border-t border-blue-200">
+            <p className="text-sm font-bold text-gray-600">Custom pen names (optional)</p>
+            
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Left Pen</label>
+                <input
+                  type="text"
+                  value={leftLabel}
+                  onChange={(e) => setLeftLabel(e.target.value)}
+                  placeholder="Left"
+                  maxLength="20"
+                  className="w-full h-10 px-3 rounded-xl border border-blue-200 bg-white text-sm font-medium placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Right Pen</label>
+                <input
+                  type="text"
+                  value={rightLabel}
+                  onChange={(e) => setRightLabel(e.target.value)}
+                  placeholder="Right"
+                  maxLength="20"
+                  className="w-full h-10 px-3 rounded-xl border border-blue-200 bg-white text-sm font-medium placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                />
+              </div>
+            </div>
+
+            {/* Live Preview */}
+            <div className="mt-3 rounded-2xl p-4 border-2 border-blue-200" style={{ background: BLUE_LIGHT }}>
+              <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Preview</p>
+              <p className="font-heading font-bold text-base" style={{ color: BLUE_DARK }}>
+                {leftLabel} = {leftSexDisplay}
+              </p>
+              <p className="font-heading font-bold text-base mt-1" style={{ color: BLUE_DARK }}>
+                {rightLabel} = {rightSexDisplay}
+              </p>
+            </div>
           </div>
         </div>
 
