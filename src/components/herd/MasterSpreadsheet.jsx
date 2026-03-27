@@ -31,19 +31,20 @@ function CellText({ value, onCommit, placeholder = '—' }) {
   const [editing, setEditing] = useState(false);
   const [val, setVal] = useState(value || '');
   if (editing) return (
-    <input
+    <textarea
       autoFocus
       value={val}
       onChange={e => setVal(e.target.value)}
       onBlur={() => { setEditing(false); onCommit(val); }}
-      onKeyDown={e => { if (e.key === 'Enter') { setEditing(false); onCommit(val); } if (e.key === 'Escape') setEditing(false); }}
-      className="w-full h-8 px-1 text-sm border border-purple-400 rounded outline-none bg-white"
+      onKeyDown={e => { if (e.key === 'Escape') setEditing(false); }}
+      className="w-full px-1 text-sm border border-purple-400 rounded outline-none bg-white resize-none"
       style={{ minWidth: 60 }}
+      rows={3}
     />
   );
   return (
     <button onClick={() => { setVal(value || ''); setEditing(true); }}
-      className="w-full text-left text-sm truncate px-1 py-1 rounded hover:bg-purple-50 active:bg-purple-100 min-h-[32px]">
+      className="w-full text-left text-sm whitespace-pre-wrap break-words px-1 py-1 rounded hover:bg-purple-50 active:bg-purple-100">
       {value || <span className="text-gray-300">{placeholder}</span>}
     </button>
   );
@@ -65,7 +66,7 @@ function CellSelect({ value, options, onCommit }) {
   );
   return (
     <button onClick={() => setEditing(true)}
-      className="w-full text-left text-sm truncate px-1 py-1 rounded hover:bg-purple-50 active:bg-purple-100 min-h-[32px]">
+      className="w-full text-left text-sm whitespace-pre-wrap break-words px-1 py-1 rounded hover:bg-purple-50 active:bg-purple-100">
       {value || <span className="text-gray-300">—</span>}
     </button>
   );
@@ -285,7 +286,7 @@ export default function MasterSpreadsheet({ onBack, currentUser }) {
   const [showImportWizard, setShowImportWizard] = useState(false);
   const [detailAnimalId, setDetailAnimalId] = useState(null);
   const [colWidths, setColWidths] = useState({});
-  const [visibleCols, setVisibleCols] = useState(new Set(['tag_number', 'sex', 'animal_type', 'mother_animal_number', 'date_of_birth', 'status', 'pasture_id', 'notes', 'photo_url']));
+  const [visibleCols, setVisibleCols] = useState(new Set(['tag_number', 'sex', 'animal_type', 'mother_animal_number', 'date_of_birth', 'status', 'pasture_id', 'notes']));
   const [showColMenu, setShowColMenu] = useState(false);
   const [resizing, setResizing] = useState(null);
   const importRef = useRef();
@@ -434,8 +435,8 @@ export default function MasterSpreadsheet({ onBack, currentUser }) {
 
   const DEFAULT_WIDTHS = {
     tag_number: 70, sex: 60, animal_type: 100, mother_animal_number: 80,
-    date_of_birth: 90, status: 70, pasture_id: 90, notes: 120,
-    photo_url: 44, created_date: 80,
+    date_of_birth: 90, birth_year: 70, status: 70, pasture_id: 90, born_pasture_id: 90,
+    twin: 50, notes: 120, photo_url: 44, is_archived: 70, created_date: 80,
   };
 
   const COLS = [
@@ -444,10 +445,14 @@ export default function MasterSpreadsheet({ onBack, currentUser }) {
     { key: 'animal_type', label: 'Type' },
     { key: 'mother_animal_number', label: 'Mother #' },
     { key: 'date_of_birth', label: 'Date Tagged' },
+    { key: 'birth_year', label: 'Birth Year' },
     { key: 'status', label: 'Status' },
     { key: 'pasture_id', label: 'Location' },
+    { key: 'born_pasture_id', label: 'Born Pasture' },
+    { key: 'twin', label: 'Twin' },
     { key: 'notes', label: 'Notes' },
     { key: 'photo_url', label: '📷' },
+    { key: 'is_archived', label: 'Archived' },
     { key: 'created_date', label: 'Created' },
   ];
 
@@ -644,7 +649,7 @@ export default function MasterSpreadsheet({ onBack, currentUser }) {
             {filtered.map((animal, idx) => (
               <div
                 key={animal.id}
-                className={`flex items-center transition-colors ${selected.has(animal.id) ? 'bg-purple-100' : 'bg-white'}`}
+                className={`flex transition-colors ${selected.has(animal.id) ? 'bg-purple-100' : 'bg-white'}`}
                 style={{ borderBottom: '1px solid #ccc' }}
               >
                 {/* Checkbox */}
@@ -682,6 +687,11 @@ export default function MasterSpreadsheet({ onBack, currentUser }) {
                     <CellDate value={animal.date_of_birth} onCommit={v => handleCellUpdate(animal, 'date_of_birth', v)} />
                   </div>
                 )}
+                {visibleCols.has('birth_year') && (
+                  <div style={{ width: getColWidth('birth_year'), minWidth: getColWidth('birth_year'), maxWidth: getColWidth('birth_year'), borderRight: '1px solid #ccc' }} className="px-2 py-2 shrink-0 text-sm overflow-hidden flex items-center">
+                    <span className="text-sm">{animal.birth_year || '—'}</span>
+                  </div>
+                )}
                 {visibleCols.has('status') && (
                   <div style={{ width: getColWidth('status'), minWidth: getColWidth('status'), maxWidth: getColWidth('status'), borderRight: '1px solid #ccc' }} className="px-2 py-2 shrink-0 text-sm overflow-hidden flex items-center">
                     <div className={`text-xs font-bold px-2 py-0.5 rounded-full inline-block ${statusBadgeColor(animal.status)}`}>
@@ -701,6 +711,16 @@ export default function MasterSpreadsheet({ onBack, currentUser }) {
                     />
                   </div>
                 )}
+                {visibleCols.has('born_pasture_id') && (
+                  <div style={{ width: getColWidth('born_pasture_id'), minWidth: getColWidth('born_pasture_id'), maxWidth: getColWidth('born_pasture_id'), borderRight: '1px solid #ccc' }} className="px-2 py-2 shrink-0 text-sm overflow-hidden flex items-center">
+                    <span className="text-sm">{getPastureName(animal.born_pasture_id) || '—'}</span>
+                  </div>
+                )}
+                {visibleCols.has('twin') && (
+                  <div style={{ width: getColWidth('twin'), minWidth: getColWidth('twin'), maxWidth: getColWidth('twin'), borderRight: '1px solid #ccc' }} className="px-2 py-2 shrink-0 text-sm overflow-hidden flex items-center">
+                    <span className="text-sm">{animal.twin ? '✓' : '—'}</span>
+                  </div>
+                )}
                 {visibleCols.has('notes') && (
                   <div style={{ width: getColWidth('notes'), minWidth: getColWidth('notes'), maxWidth: getColWidth('notes'), borderRight: '1px solid #ccc' }} className="px-2 py-2 shrink-0 text-sm overflow-hidden flex items-center">
                     <CellText value={animal.notes} onCommit={v => handleCellUpdate(animal, 'notes', v)} placeholder="—" />
@@ -709,6 +729,11 @@ export default function MasterSpreadsheet({ onBack, currentUser }) {
                 {visibleCols.has('photo_url') && (
                   <div style={{ width: getColWidth('photo_url'), minWidth: getColWidth('photo_url'), maxWidth: getColWidth('photo_url'), borderRight: '1px solid #ccc' }} className="px-2 py-2 shrink-0 flex items-center justify-center overflow-hidden">
                     <CellPhoto value={animal.photo_url} onCommit={v => handleCellUpdate(animal, 'photo_url', v)} />
+                  </div>
+                )}
+                {visibleCols.has('is_archived') && (
+                  <div style={{ width: getColWidth('is_archived'), minWidth: getColWidth('is_archived'), maxWidth: getColWidth('is_archived'), borderRight: '1px solid #ccc' }} className="px-2 py-2 shrink-0 text-sm overflow-hidden flex items-center">
+                    <span className="text-sm">{animal.is_archived ? '✓' : '—'}</span>
                   </div>
                 )}
                 {visibleCols.has('created_date') && (
