@@ -284,6 +284,10 @@ export default function MasterSpreadsheet({ onBack, currentUser }) {
   const [showAddModal, setShowAddModal] = useState(false);
   const [showImportWizard, setShowImportWizard] = useState(false);
   const [detailAnimalId, setDetailAnimalId] = useState(null);
+  const [colWidths, setColWidths] = useState({});
+  const [visibleCols, setVisibleCols] = useState(new Set(['tag_number', 'sex', 'animal_type', 'mother_animal_number', 'date_of_birth', 'status', 'pasture_id', 'notes', 'photo_url']));
+  const [showColMenu, setShowColMenu] = useState(false);
+  const [resizing, setResizing] = useState(null);
   const importRef = useRef();
 
   const queryClient = useQueryClient();
@@ -428,18 +432,38 @@ export default function MasterSpreadsheet({ onBack, currentUser }) {
 
 
 
+  const DEFAULT_WIDTHS = {
+    tag_number: 70, sex: 60, animal_type: 100, mother_animal_number: 80,
+    date_of_birth: 90, status: 70, pasture_id: 90, notes: 120,
+    photo_url: 44, created_date: 80,
+  };
+
   const COLS = [
-    { key: 'tag_number', label: 'Tag #', width: 70 },
-    { key: 'sex', label: 'Sex', width: 60 },
-    { key: 'animal_type', label: 'Type', width: 100 },
-    { key: 'mother_animal_number', label: 'Mother #', width: 80 },
-    { key: 'date_of_birth', label: 'Date Tagged', width: 90 },
-    { key: 'status', label: 'Status', width: 70 },
-    { key: 'pasture_id', label: 'Location', width: 90 },
-    { key: 'notes', label: 'Notes', width: 120 },
-    { key: 'photo_url', label: '📷', width: 44 },
-    { key: 'created_date', label: 'Created', width: 80 },
+    { key: 'tag_number', label: 'Tag #' },
+    { key: 'sex', label: 'Sex' },
+    { key: 'animal_type', label: 'Type' },
+    { key: 'mother_animal_number', label: 'Mother #' },
+    { key: 'date_of_birth', label: 'Date Tagged' },
+    { key: 'status', label: 'Status' },
+    { key: 'pasture_id', label: 'Location' },
+    { key: 'notes', label: 'Notes' },
+    { key: 'photo_url', label: '📷' },
+    { key: 'created_date', label: 'Created' },
   ];
+
+  const getColWidth = (key) => colWidths[key] || DEFAULT_WIDTHS[key] || 80;
+
+  const handleColResize = (key, newWidth) => {
+    setColWidths(prev => ({ ...prev, [key]: Math.max(50, newWidth) }));
+  };
+
+  const toggleColVisibility = (key) => {
+    setVisibleCols(prev => {
+      const next = new Set(prev);
+      next.has(key) ? next.delete(key) : next.add(key);
+      return next;
+    });
+  };
 
   const statusBadgeColor = (s) => {
     if (s === 'Alive') return 'bg-emerald-100 text-emerald-700';
@@ -533,7 +557,7 @@ export default function MasterSpreadsheet({ onBack, currentUser }) {
         ) : (
           <div className="rounded-2xl overflow-hidden border border-purple-100 shadow-sm bg-white">
             {/* Column headers */}
-            <div className="flex items-center border-b-2 border-purple-100 sticky top-0 bg-white z-10" style={{ minWidth: 900 }}>
+            <div className="flex items-center border-b-2 border-purple-100 sticky top-0 bg-white z-10">
               {/* Select-all checkbox */}
               <div className="w-10 flex items-center justify-center px-2 py-3 shrink-0">
                 <button onClick={toggleAll}>
@@ -542,16 +566,75 @@ export default function MasterSpreadsheet({ onBack, currentUser }) {
                     : <Square className="w-5 h-5 text-gray-300" />}
                 </button>
               </div>
-              {COLS.map(col => (
+
+              {/* Column visibility menu */}
+              <div className="relative">
                 <button
-                  key={col.key}
-                  onClick={() => col.key !== 'photo_url' && col.key !== 'created_date' && handleSort(col.key)}
-                  style={{ minWidth: col.width, width: col.width }}
-                  className={`text-left text-xs font-bold px-2 py-3 uppercase tracking-wide shrink-0 ${col.key !== 'photo_url' && col.key !== 'created_date' ? 'cursor-pointer hover:bg-purple-50' : 'cursor-default'}`}
-                  style={{ minWidth: col.width, color: PURPLE_DARK }}>
-                  {col.label} <SortIcon col={col.key} />
+                  onClick={() => setShowColMenu(!showColMenu)}
+                  className="h-9 px-3 text-xs font-bold text-gray-500 hover:bg-purple-50"
+                  title="Show/hide columns"
+                >
+                  ⚙️
                 </button>
-              ))}
+                {showColMenu && (
+                  <div className="absolute top-10 left-0 bg-white border border-gray-200 rounded-lg shadow-lg p-2 z-50 w-48">
+                    {COLS.map(col => (
+                      <label key={col.key} className="flex items-center gap-2 px-2 py-1 cursor-pointer hover:bg-gray-50 rounded text-xs">
+                        <input
+                          type="checkbox"
+                          checked={visibleCols.has(col.key)}
+                          onChange={() => toggleColVisibility(col.key)}
+                          className="w-4 h-4 rounded"
+                        />
+                        {col.label}
+                      </label>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {COLS.map(col => {
+                if (!visibleCols.has(col.key)) return null;
+                const width = getColWidth(col.key);
+                return (
+                  <div
+                    key={col.key}
+                    style={{ width }}
+                    className="relative shrink-0 group"
+                  >
+                    <button
+                      onClick={() => col.key !== 'photo_url' && col.key !== 'created_date' && handleSort(col.key)}
+                      className={`w-full text-left text-xs font-bold px-2 py-3 uppercase tracking-wide ${col.key !== 'photo_url' && col.key !== 'created_date' ? 'cursor-pointer hover:bg-purple-50' : 'cursor-default'}`}
+                      style={{ color: PURPLE_DARK }}
+                    >
+                      {col.label} <SortIcon col={col.key} />
+                    </button>
+                    <div
+                      onMouseDown={(e) => {
+                        e.preventDefault();
+                        setResizing(col.key);
+                        const startX = e.clientX;
+                        const startW = width;
+
+                        const onMove = (e) => {
+                          const delta = e.clientX - startX;
+                          handleColResize(col.key, startW + delta);
+                        };
+
+                        const onUp = () => {
+                          document.removeEventListener('mousemove', onMove);
+                          document.removeEventListener('mouseup', onUp);
+                          setResizing(null);
+                        };
+
+                        document.addEventListener('mousemove', onMove);
+                        document.addEventListener('mouseup', onUp);
+                      }}
+                      className="absolute right-0 top-0 h-full w-1 bg-gray-200 hover:bg-purple-400 cursor-col-resize opacity-0 group-hover:opacity-100 transition-opacity"
+                    />
+                  </div>
+                );
+              })}
               <div className="w-10 shrink-0" />
             </div>
 
@@ -560,7 +643,6 @@ export default function MasterSpreadsheet({ onBack, currentUser }) {
               <div
                 key={animal.id}
                 className={`flex items-center border-b border-gray-50 transition-colors ${selected.has(animal.id) ? 'bg-purple-50' : idx % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'}`}
-                style={{ minWidth: 900 }}
               >
                 {/* Checkbox */}
                 <div className="w-10 flex items-center justify-center px-2 shrink-0">
@@ -571,55 +653,66 @@ export default function MasterSpreadsheet({ onBack, currentUser }) {
                   </button>
                 </div>
 
-                {/* Tag # */}
-                <div style={{ minWidth: 70, width: 70 }} className="px-1 shrink-0 font-bold" style={{ minWidth: 70, color: PURPLE_DARK }}>
-                  <CellText value={animal.tag_number} onCommit={v => handleCellUpdate(animal, 'tag_number', v)} />
-                </div>
-                {/* Sex */}
-                <div style={{ minWidth: 60, width: 60 }} className="px-1 shrink-0">
-                  <CellSelect value={animal.sex} options={['Male', 'Female']} onCommit={v => handleCellUpdate(animal, 'sex', v)} />
-                </div>
-                {/* Type */}
-                <div style={{ minWidth: 100, width: 100 }} className="px-1 shrink-0">
-                  <CellSelect value={animal.animal_type} options={ANIMAL_TYPES} onCommit={v => handleCellUpdate(animal, 'animal_type', v)} />
-                </div>
-                {/* Mother # */}
-                <div style={{ minWidth: 80, width: 80 }} className="px-1 shrink-0">
-                  <CellText value={animal.mother_animal_number} onCommit={v => handleCellUpdate(animal, 'mother_animal_number', v)} placeholder="—" />
-                </div>
-                {/* Date Tagged */}
-                <div style={{ minWidth: 90, width: 90 }} className="px-1 shrink-0">
-                  <CellDate value={animal.date_of_birth} onCommit={v => handleCellUpdate(animal, 'date_of_birth', v)} />
-                </div>
-                {/* Status */}
-                <div style={{ minWidth: 70, width: 70 }} className="px-1 shrink-0">
-                  <div className={`text-xs font-bold px-2 py-0.5 rounded-full inline-block ${statusBadgeColor(animal.status)}`}>
-                    <CellSelect value={animal.status} options={STATUSES} onCommit={v => handleCellUpdate(animal, 'status', v)} />
+                {/* Dynamic cells */}
+                {visibleCols.has('tag_number') && (
+                  <div style={{ width: getColWidth('tag_number') }} className="px-2 py-2 shrink-0 font-bold text-sm" style={{ color: PURPLE_DARK, wordWrap: 'break-word', whiteSpace: 'pre-wrap' }}>
+                    <CellText value={animal.tag_number} onCommit={v => handleCellUpdate(animal, 'tag_number', v)} />
                   </div>
-                </div>
-                {/* Location */}
-                <div style={{ minWidth: 90, width: 90 }} className="px-1 shrink-0">
-                  <CellSelect
-                    value={getPastureName(animal.pasture_id)}
-                    options={pastures.map(p => p.pasture_name)}
-                    onCommit={v => {
-                      const p = pastures.find(p => p.pasture_name === v);
-                      handleCellUpdate(animal, 'pasture_id', p?.id || '');
-                    }}
-                  />
-                </div>
-                {/* Notes */}
-                <div style={{ minWidth: 120, width: 120 }} className="px-1 shrink-0">
-                  <CellText value={animal.notes} onCommit={v => handleCellUpdate(animal, 'notes', v)} placeholder="—" />
-                </div>
-                {/* Photo */}
-                <div style={{ minWidth: 44, width: 44 }} className="px-1 shrink-0">
-                  <CellPhoto value={animal.photo_url} onCommit={v => handleCellUpdate(animal, 'photo_url', v)} />
-                </div>
-                {/* Created (read-only) */}
-                <div style={{ minWidth: 80, width: 80 }} className="px-2 shrink-0 text-xs text-gray-400">
-                  {animal.created_date ? format(new Date(animal.created_date), 'MM/dd/yy') : '—'}
-                </div>
+                )}
+                {visibleCols.has('sex') && (
+                  <div style={{ width: getColWidth('sex') }} className="px-2 py-2 shrink-0 text-sm" style={{ wordWrap: 'break-word', whiteSpace: 'pre-wrap' }}>
+                    <CellSelect value={animal.sex} options={['Male', 'Female']} onCommit={v => handleCellUpdate(animal, 'sex', v)} />
+                  </div>
+                )}
+                {visibleCols.has('animal_type') && (
+                  <div style={{ width: getColWidth('animal_type') }} className="px-2 py-2 shrink-0 text-sm" style={{ wordWrap: 'break-word', whiteSpace: 'pre-wrap' }}>
+                    <CellSelect value={animal.animal_type} options={ANIMAL_TYPES} onCommit={v => handleCellUpdate(animal, 'animal_type', v)} />
+                  </div>
+                )}
+                {visibleCols.has('mother_animal_number') && (
+                  <div style={{ width: getColWidth('mother_animal_number') }} className="px-2 py-2 shrink-0 text-sm" style={{ wordWrap: 'break-word', whiteSpace: 'pre-wrap' }}>
+                    <CellText value={animal.mother_animal_number} onCommit={v => handleCellUpdate(animal, 'mother_animal_number', v)} placeholder="—" />
+                  </div>
+                )}
+                {visibleCols.has('date_of_birth') && (
+                  <div style={{ width: getColWidth('date_of_birth') }} className="px-2 py-2 shrink-0 text-sm" style={{ wordWrap: 'break-word', whiteSpace: 'pre-wrap' }}>
+                    <CellDate value={animal.date_of_birth} onCommit={v => handleCellUpdate(animal, 'date_of_birth', v)} />
+                  </div>
+                )}
+                {visibleCols.has('status') && (
+                  <div style={{ width: getColWidth('status') }} className="px-2 py-2 shrink-0 text-sm" style={{ wordWrap: 'break-word', whiteSpace: 'pre-wrap' }}>
+                    <div className={`text-xs font-bold px-2 py-0.5 rounded-full inline-block ${statusBadgeColor(animal.status)}`}>
+                      <CellSelect value={animal.status} options={STATUSES} onCommit={v => handleCellUpdate(animal, 'status', v)} />
+                    </div>
+                  </div>
+                )}
+                {visibleCols.has('pasture_id') && (
+                  <div style={{ width: getColWidth('pasture_id') }} className="px-2 py-2 shrink-0 text-sm" style={{ wordWrap: 'break-word', whiteSpace: 'pre-wrap' }}>
+                    <CellSelect
+                      value={getPastureName(animal.pasture_id)}
+                      options={pastures.map(p => p.pasture_name)}
+                      onCommit={v => {
+                        const p = pastures.find(p => p.pasture_name === v);
+                        handleCellUpdate(animal, 'pasture_id', p?.id || '');
+                      }}
+                    />
+                  </div>
+                )}
+                {visibleCols.has('notes') && (
+                  <div style={{ width: getColWidth('notes') }} className="px-2 py-2 shrink-0 text-sm" style={{ wordWrap: 'break-word', whiteSpace: 'pre-wrap' }}>
+                    <CellText value={animal.notes} onCommit={v => handleCellUpdate(animal, 'notes', v)} placeholder="—" />
+                  </div>
+                )}
+                {visibleCols.has('photo_url') && (
+                  <div style={{ width: getColWidth('photo_url') }} className="px-2 py-2 shrink-0 flex items-center justify-center">
+                    <CellPhoto value={animal.photo_url} onCommit={v => handleCellUpdate(animal, 'photo_url', v)} />
+                  </div>
+                )}
+                {visibleCols.has('created_date') && (
+                  <div style={{ width: getColWidth('created_date') }} className="px-2 py-2 shrink-0 text-xs text-gray-400" style={{ wordWrap: 'break-word', whiteSpace: 'pre-wrap' }}>
+                    {animal.created_date ? format(new Date(animal.created_date), 'MM/dd/yy') : '—'}
+                  </div>
+                )}
                 {/* View detail */}
                 <div className="w-8 flex items-center justify-center shrink-0">
                   <button onClick={() => setDetailAnimalId(animal.id)} className="p-1.5 rounded-lg hover:bg-purple-50" title="View Details">
