@@ -24,6 +24,8 @@ export default function QuickCalfForm({ animals = [], seasons = [], pastures = [
   const [notes, setNotes] = useState('');
   const [twin, setTwin] = useState(isTwinDefault);
   const [calvingSeasonId, setCalvingSeasonId] = useState(defaultSeasonId || '');
+  const [pastureInput, setPastureInput] = useState('');
+  const [showPastureSuggestions, setShowPastureSuggestions] = useState(false);
   const [saving, setSaving] = useState(false);
 
 
@@ -112,7 +114,11 @@ export default function QuickCalfForm({ animals = [], seasons = [], pastures = [
             if (match) {
               setMotherId(match.id);
               setTagNumber(match.tag_number);
-              if (!pastureId && match.pasture_id) setPastureId(match.pasture_id);
+              if (!pastureId && match.pasture_id) {
+                setPastureId(match.pasture_id);
+                const matchedPasture = pastures.find(p => p.id === match.pasture_id);
+                if (matchedPasture) setPastureInput(matchedPasture.pasture_name);
+              }
             } else {
               setMotherId('');
             }
@@ -182,19 +188,43 @@ export default function QuickCalfForm({ animals = [], seasons = [], pastures = [
 
       {/* Pasture */}
       {pastures.length > 0 && (
-        <div>
+        <div className="relative">
           <Label className="text-sm font-semibold">Pasture / Location</Label>
-          <Select value={pastureId} onValueChange={v => setPastureId(v === '__none__' ? '' : v)}>
-            <SelectTrigger className="h-14 text-base mt-1">
-              <SelectValue placeholder="Select pasture..." />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="__none__">— No pasture —</SelectItem>
-              {pastures.map(p => (
-                <SelectItem key={p.id} value={p.id}>{p.pasture_name}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <Input
+            value={pastureInput}
+            onChange={e => {
+              setPastureInput(e.target.value);
+              setPastureId('');
+              setShowPastureSuggestions(true);
+            }}
+            onFocus={() => setShowPastureSuggestions(true)}
+            onBlur={() => setTimeout(() => setShowPastureSuggestions(false), 150)}
+            placeholder="Type or select pasture..."
+            className="h-14 text-base mt-1"
+          />
+          {showPastureSuggestions && (
+            <div className="absolute z-20 w-full bg-white border border-gray-200 rounded-xl shadow-lg mt-1 overflow-hidden">
+              {pastures
+                .filter(p => !pastureInput || p.pasture_name.toLowerCase().includes(pastureInput.toLowerCase()))
+                .map(p => (
+                  <button
+                    key={p.id}
+                    type="button"
+                    onMouseDown={() => {
+                      setPastureId(p.id);
+                      setPastureInput(p.pasture_name);
+                      setShowPastureSuggestions(false);
+                    }}
+                    className="w-full text-left px-4 py-3 text-base hover:bg-green-50 active:bg-green-100 border-b border-gray-100 last:border-0"
+                  >
+                    {p.pasture_name}
+                  </button>
+                ))}
+            </div>
+          )}
+          {pastureInput && !pastureId && (
+            <p className="text-xs text-orange-500 mt-1">⚠️ No matching pasture — select from the list</p>
+          )}
         </div>
       )}
 
