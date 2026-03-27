@@ -2,23 +2,25 @@ import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
-import { LogOut, Trash2, Palette, Users, Smartphone, Database, ClipboardList, Info } from 'lucide-react';
+import { LogOut, Trash2, Palette, Users, Smartphone, Database, ClipboardList, Info, Bell } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 
-import BrandingSection      from '@/components/settings/BrandingSection';
-import UserManagementSection from '@/components/settings/UserManagementSection';
-import AppStoreSection       from '@/components/settings/AppStoreSection';
-import DataBackupSection     from '@/components/settings/DataBackupSection';
-import AuditLogSection       from '@/components/settings/AuditLogSection';
+import BrandingSection        from '@/components/settings/BrandingSection';
+import UserManagementSection  from '@/components/settings/UserManagementSection';
+import AppStoreSection        from '@/components/settings/AppStoreSection';
+import DataBackupSection      from '@/components/settings/DataBackupSection';
+import AuditLogSection        from '@/components/settings/AuditLogSection';
+import NotificationsSection   from '@/components/settings/NotificationsSection';
 
 const TABS = [
-  { id: 'branding',  icon: Palette,       label: 'Branding'  },
-  { id: 'users',     icon: Users,         label: 'Users'     },
-  { id: 'appstore',  icon: Smartphone,    label: 'App Store' },
-  { id: 'data',      icon: Database,      label: 'Data'      },
-  { id: 'audit',     icon: ClipboardList, label: 'Audit Log' },
+  { id: 'notifications', icon: Bell,           label: 'Notifications' },
+  { id: 'branding',      icon: Palette,       label: 'Branding'      },
+  { id: 'users',         icon: Users,         label: 'Users'         },
+  { id: 'appstore',      icon: Smartphone,    label: 'App Store'     },
+  { id: 'data',          icon: Database,      label: 'Data'          },
+  { id: 'audit',         icon: ClipboardList, label: 'Audit Log'     },
 ];
 
 export default function Settings() {
@@ -108,23 +110,26 @@ export default function Settings() {
       </div>
 
       {/* Tab Content */}
-      <div className="px-4 py-6 space-y-4">
-        {activeTab === 'branding' && (
-          <BrandingSection
-            settings={settings}
-            onSave={handleSave}
-            uploading={uploading}
-            onLogoUpload={handleLogoUpload}
-          />
-        )}
-        {activeTab === 'users' && <UserManagementSection />}
-        {activeTab === 'appstore' && (
-          <AppStoreSection settings={settings} onSave={handleSave} />
-        )}
-        {activeTab === 'data' && (
-          <DataBackupSection settings={settings} onSave={handleSave} />
-        )}
-        {activeTab === 'audit' && <AuditLogSection />}
+       <div className="px-4 py-6 space-y-4">
+         {activeTab === 'notifications' && (
+           <NotificationsSection settings={settings} onSave={handleSave} />
+         )}
+         {activeTab === 'branding' && (
+           <BrandingSection
+             settings={settings}
+             onSave={handleSave}
+             uploading={uploading}
+             onLogoUpload={handleLogoUpload}
+           />
+         )}
+         {activeTab === 'users' && <UserManagementSection />}
+         {activeTab === 'appstore' && (
+           <AppStoreSection settings={settings} onSave={handleSave} />
+         )}
+         {activeTab === 'data' && (
+           <DataBackupSection settings={settings} onSave={handleSave} />
+         )}
+         {activeTab === 'audit' && <AuditLogSection />}
 
         {/* Account Actions — always visible */}
         <div className="pt-4 border-t border-border space-y-3">
