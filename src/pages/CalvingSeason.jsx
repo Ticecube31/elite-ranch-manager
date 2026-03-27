@@ -283,38 +283,6 @@ export default function CalvingSeason() {
 
       <div className="px-4 py-5 max-w-lg mx-auto space-y-6">
 
-        {/* ── TWIN TOGGLE ─────────────────────────────── */}
-        <div className="flex items-center justify-between bg-white rounded-2xl border border-green-100 px-4 py-3 shadow-sm">
-          <div>
-            <p className="font-semibold text-sm text-gray-700">Is this a twin?</p>
-            <p className="text-xs text-gray-400">Pre-marks next calf as twin</p>
-          </div>
-          <div className="flex gap-2">
-            <button
-              type="button"
-              onClick={() => setIsTwinDefault(false)}
-              className={`px-4 py-1.5 rounded-xl font-bold text-sm border-2 transition-all ${
-                !isTwinDefault
-                  ? 'border-green-500 bg-green-500 text-white'
-                  : 'border-gray-200 bg-white text-gray-400'
-              }`}
-            >
-              No
-            </button>
-            <button
-              type="button"
-              onClick={() => setIsTwinDefault(true)}
-              className={`px-4 py-1.5 rounded-xl font-bold text-sm border-2 transition-all ${
-                isTwinDefault
-                  ? 'border-purple-500 bg-purple-500 text-white'
-                  : 'border-gray-200 bg-white text-gray-400'
-              }`}
-            >
-              👯 Twin
-            </button>
-          </div>
-        </div>
-
         {/* ── BIG ADD CALF BUTTON ─────────────────────── */}
         <button
           onClick={() => setView('add-calf')}
