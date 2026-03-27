@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { Input } from '@/components/ui/input';
-import { ArrowLeft, Download, X, ChevronRight } from 'lucide-react';
+import { ArrowLeft, Download, X, ChevronRight, ChevronDown } from 'lucide-react';
 import { format } from 'date-fns';
 
 const GREEN = '#4CAF50';
@@ -264,74 +264,67 @@ export default function AllCalvesView({ calves = [], pastures = [], seasons = []
             ♀ Female
           </button>
 
-          {/* Location chip */}
-          <button
-            onClick={() => setShowLocationPicker(true)}
-            className={`shrink-0 h-10 px-4 rounded-full text-sm font-bold transition-all whitespace-nowrap flex items-center gap-1 ${
-              locationFilter ? 'text-white shadow' : 'bg-gray-100 text-gray-600'
-            }`}
-            style={locationFilter ? { background: GREEN_DARK } : {}}
-          >
-            📍 {activeLocationLabel ? activeLocationLabel : 'By Location'}
-            {locationFilter && (
-              <span
-                onClick={e => { e.stopPropagation(); setLocationFilter(null); setPage(1); }}
-                className="ml-1 w-4 h-4 rounded-full bg-white/30 flex items-center justify-center text-white text-xs font-black"
-              >×</span>
-            )}
-          </button>
-        </div>
-      </div>
-
-      {/* Location picker modal */}
-      {showLocationPicker && (
-        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/30">
-          <div className="w-full max-w-lg bg-white rounded-t-3xl px-5 pt-4 pb-10 shadow-2xl">
-            <div className="flex items-center justify-between mb-4">
-              <p className="font-heading font-black text-lg text-gray-900">Filter by Location</p>
-              <button onClick={() => setShowLocationPicker(false)}>
-                <X className="w-6 h-6 text-gray-400" />
-              </button>
-            </div>
-            <div className="space-y-2 max-h-72 overflow-y-auto">
-              {/* Unknown bucket */}
-              {pastureOptions.hasUnknown && (
-                <button
-                  onClick={() => { setLocationFilter('__unknown__'); setPage(1); setShowLocationPicker(false); }}
-                  className={`w-full text-left h-14 px-5 rounded-2xl font-bold text-base transition-all ${
-                    locationFilter === '__unknown__' ? 'text-white' : 'bg-gray-50 text-gray-500 italic hover:bg-gray-100'
-                  }`}
-                  style={locationFilter === '__unknown__' ? { background: GREEN_DARK } : {}}
-                >
-                  Unknown (no location assigned)
-                </button>
-              )}
-              {/* Named pastures */}
-              {pastureOptions.list.map(p => (
-                <button
-                  key={p.id}
-                  onClick={() => { setLocationFilter(p.id); setPage(1); setShowLocationPicker(false); }}
-                  className={`w-full text-left h-14 px-5 rounded-2xl font-bold text-base transition-all ${
-                    locationFilter === p.id ? 'text-white' : 'bg-gray-50 text-gray-800 hover:bg-gray-100'
-                  }`}
-                  style={locationFilter === p.id ? { background: GREEN_DARK } : {}}
-                >
-                  {p.pasture_name}
-                </button>
-              ))}
-              {!pastureOptions.hasUnknown && pastureOptions.list.length === 0 && (
-                <p className="text-gray-400 text-center py-6">No locations assigned to calves yet.</p>
-              )}
-            </div>
+          {/* Location chip with inline dropdown */}
+          <div className="relative shrink-0">
             <button
-              onClick={() => { setLocationFilter(null); setPage(1); setShowLocationPicker(false); }}
-              className="w-full mt-4 h-12 rounded-2xl border-2 border-gray-200 text-gray-500 font-semibold"
+              onClick={() => setShowLocationPicker(v => !v)}
+              className={`h-10 px-4 rounded-full text-sm font-bold transition-all whitespace-nowrap flex items-center gap-1 ${
+                locationFilter ? 'text-white shadow' : 'bg-gray-100 text-gray-600'
+              }`}
+              style={locationFilter ? { background: GREEN_DARK } : {}}
             >
-              Clear Location Filter
+              📍 {activeLocationLabel ? activeLocationLabel : 'By Location'}
+              {locationFilter ? (
+                <span
+                  onClick={e => { e.stopPropagation(); setLocationFilter(null); setPage(1); setShowLocationPicker(false); }}
+                  className="ml-1 w-4 h-4 rounded-full bg-white/30 flex items-center justify-center text-white text-xs font-black"
+                >×</span>
+              ) : (
+                <ChevronDown className="w-3 h-3 ml-0.5 opacity-60" />
+              )}
             </button>
+
+            {showLocationPicker && (
+              <div className="absolute left-0 top-12 z-50 w-56 bg-white border border-gray-200 rounded-2xl shadow-xl overflow-hidden">
+                {pastureOptions.hasUnknown && (
+                  <button
+                    onClick={() => { setLocationFilter('__unknown__'); setPage(1); setShowLocationPicker(false); }}
+                    className={`w-full text-left px-4 py-3 text-sm font-semibold transition-colors border-b border-gray-100 italic ${
+                      locationFilter === '__unknown__' ? 'text-white' : 'text-gray-500 hover:bg-gray-50'
+                    }`}
+                    style={locationFilter === '__unknown__' ? { background: GREEN_DARK } : {}}
+                  >
+                    Unknown location
+                  </button>
+                )}
+                {pastureOptions.list.map(p => (
+                  <button
+                    key={p.id}
+                    onClick={() => { setLocationFilter(p.id); setPage(1); setShowLocationPicker(false); }}
+                    className={`w-full text-left px-4 py-3 text-sm font-semibold transition-colors border-b border-gray-100 last:border-0 ${
+                      locationFilter === p.id ? 'text-white' : 'text-gray-800 hover:bg-gray-50'
+                    }`}
+                    style={locationFilter === p.id ? { background: GREEN_DARK } : {}}
+                  >
+                    {p.pasture_name}
+                  </button>
+                ))}
+                {!pastureOptions.hasUnknown && pastureOptions.list.length === 0 && (
+                  <p className="text-gray-400 text-center py-4 text-sm">No locations yet.</p>
+                )}
+                {(locationFilter) && (
+                  <button
+                    onClick={() => { setLocationFilter(null); setPage(1); setShowLocationPicker(false); }}
+                    className="w-full px-4 py-3 text-sm font-semibold text-red-500 hover:bg-red-50 border-t border-gray-100 transition-colors"
+                  >
+                    Clear Filter
+                  </button>
+                )}
+              </div>
+            )}
           </div>
         </div>
-      )}
+      </div>
 
       {/* ── Count ───────────────────────────────────────── */}
       <p className="px-4 pt-3 pb-1 text-sm text-gray-400 font-semibold shrink-0">
