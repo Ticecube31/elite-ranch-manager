@@ -71,7 +71,7 @@ export default function Home() {
           {greeting()}, <span className="text-foreground font-semibold">{firstName}</span> 👋
         </p>
         <h1 className="font-heading font-black text-3xl sm:text-4xl text-foreground leading-tight">
-          Elite Ranch Manager
+          {ranchName}
         </h1>
         <p className="text-muted-foreground text-[14px] leading-relaxed max-w-md">
           Tag calves. Sort them fast. Manage pastures. Check pregnancies. Track your herd.
