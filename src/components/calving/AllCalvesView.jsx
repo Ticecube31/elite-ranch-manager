@@ -365,7 +365,7 @@ export default function AllCalvesView({ calves = [], pastures = [], seasons = []
                         #{a.tag_number}
                       </span>
                       {a.mother_animal_number && (
-                        <span className="text-sm text-gray-400 font-medium">Dam: #{a.mother_animal_number}</span>
+                        <span className="text-sm text-gray-400 font-medium">Mother: #{a.mother_animal_number}</span>
                       )}
                       {/* Highlight when calf tag matches mother tag — expected for new calves per ranch rules */}
                       {a.tag_number && a.mother_animal_number && a.tag_number === a.mother_animal_number && (
