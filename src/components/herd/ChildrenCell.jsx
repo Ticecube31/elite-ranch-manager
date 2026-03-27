@@ -10,12 +10,10 @@ export default function ChildrenCell({ animalId, animals, onAddChild, onRemoveCh
   // Find all calves with this animal as parent
   const calves = animals.filter(a => a.mother_id === animalId || (a.mother_animal_number && animals.find(p => p.id === animalId)?.tag_number === a.mother_animal_number));
   
-  // Get potential children (animals born after this one that could be offspring)
-  const parentAnimal = animals.find(a => a.id === animalId);
+  // Get potential children (animals not already linked as calves)
   const potentialChildren = animals.filter(a => 
     a.id !== animalId && 
-    !calves.find(c => c.id === a.id) &&
-    a.mother_animal_number !== parentAnimal?.tag_number
+    !calves.find(c => c.id === a.id)
   );
 
   const handleAddChild = (childId) => {
@@ -61,23 +59,21 @@ export default function ChildrenCell({ animalId, animals, onAddChild, onRemoveCh
       </div>
 
       {/* Dropdown menu */}
-      {showMenu && potentialChildren.length > 0 && (
+      {showMenu && (
         <div className="absolute top-full left-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg p-2 z-[9999] max-h-48 overflow-y-auto min-w-[200px]">
-          {potentialChildren.map(child => (
-            <button
-              key={child.id}
-              onClick={() => handleAddChild(child.id)}
-              className="w-full text-left px-2 py-1 text-xs hover:bg-purple-50 rounded text-gray-700 whitespace-nowrap"
-            >
-              #{child.tag_number} ({child.animal_type})
-            </button>
-          ))}
-        </div>
-      )}
-      
-      {showMenu && potentialChildren.length === 0 && (
-        <div className="absolute top-full left-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg p-2 z-[9999] text-xs text-gray-400 min-w-[150px]">
-          No available animals
+          {potentialChildren.length > 0 ? (
+            potentialChildren.map(child => (
+              <button
+                key={child.id}
+                onClick={() => handleAddChild(child.id)}
+                className="w-full text-left px-2 py-1 text-xs hover:bg-purple-50 rounded text-gray-700 whitespace-nowrap"
+              >
+                #{child.tag_number} ({child.animal_type})
+              </button>
+            ))
+          ) : (
+            <p className="text-xs text-gray-400 px-2 py-1">No available animals</p>
+          )}
         </div>
       )}
     </div>
