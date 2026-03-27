@@ -24,20 +24,15 @@ export default function NumericInput({ value, onChange, placeholder, className, 
     <div className="relative">
       <input
         ref={inputRef}
-        type={showQwerty ? 'text' : 'number'}
-        inputMode="numeric"
+        type="number"
+        inputMode="none"
         pattern="[0-9]*"
         value={value}
         onChange={onChange}
-        onFocus={() => {
-          // On mobile, show numeric keypad; on desktop, use native numeric input
-          if (window.innerWidth < 640) {
-            setShowKeypad(true);
-          }
-        }}
-        onBlur={() => setTimeout(() => setShowKeypad(false), 150)}
+        onFocus={() => setShowKeypad(true)}
         placeholder={placeholder}
-        className={`h-14 text-base mt-1 ${className}`}
+        className={`h-14 text-base mt-1 cursor-pointer ${className}`}
+        readOnly
       />
 
       {/* Numeric Keypad Modal */}
