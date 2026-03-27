@@ -16,6 +16,7 @@ import CalvingAIAssistant from '@/components/calving/CalvingAIAssistant';
 import { CalvingAIContext } from '@/components/layout/AppLayout';
 import { logAudit } from '@/lib/auditLogger';
 import { format } from 'date-fns';
+import CalfSuccessAnimation from '@/components/calving/CalfSuccessAnimation';
 
 const GREEN = '#4CAF50';
 const GREEN_DARK = '#2E7D32';
@@ -160,30 +161,11 @@ export default function CalvingSeason() {
   // ── SUCCESS VIEW ──────────────────────────────────────────
   if (view === 'success' && lastAdded) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center px-6 text-center" style={{ background: GREEN_BG }}>
-        <div className="w-24 h-24 rounded-full flex items-center justify-center text-5xl mb-6 shadow-lg" style={{ background: GREEN }}>
-          🐄
-        </div>
-        <h1 className="font-heading font-black text-3xl text-gray-900 mb-2">Calf Added!</h1>
-        <p className="text-xl font-bold mb-1" style={{ color: GREEN_DARK }}>#{lastAdded.animal_number}</p>
-        <p className="text-gray-500 text-base mb-10">{lastAdded.sex} · {lastAdded.animal_type}</p>
-
-        <div className="w-full max-w-xs space-y-4">
-          <button
-            onClick={() => { setView('add-calf'); }}
-            className="w-full h-16 rounded-2xl font-heading font-black text-xl text-white shadow-lg active:scale-[0.98] transition-all"
-            style={{ background: `linear-gradient(135deg, ${GREEN}, ${GREEN_DARK})` }}
-          >
-            + Add Another Calf
-          </button>
-          <button
-            onClick={() => setView('main')}
-            className="w-full h-14 rounded-2xl font-semibold text-base border-2 border-gray-300 bg-white text-gray-700 active:scale-[0.98] transition-all"
-          >
-            Back to Season
-          </button>
-        </div>
-      </div>
+      <CalfSuccessAnimation
+        calfData={lastAdded}
+        onAddAnother={() => setView('add-calf')}
+        onBack={() => setView('main')}
+      />
     );
   }
 
