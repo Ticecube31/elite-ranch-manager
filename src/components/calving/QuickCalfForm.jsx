@@ -46,9 +46,13 @@ export default function QuickCalfForm({ animals = [], seasons = [], pastures = [
   }, [motherTag, unknownMother]);
 
   // Mother lookup — use pendingMother (just-created) or search existing
+  // Only match Cow or 1st Calf Heifer — never match calves (same tag # from current/prior year)
   const mother = pendingMother
     || (motherTag.trim()
-      ? animals.find(a => a.tag_number?.toLowerCase() === motherTag.trim().toLowerCase())
+      ? animals.find(a =>
+          a.tag_number?.toLowerCase() === motherTag.trim().toLowerCase() &&
+          ['Cow', '1st Calf Heifer'].includes(a.animal_type)
+        )
       : null);
   
   // Update motherId when mother is found
