@@ -81,6 +81,7 @@ const AuthenticatedApp = () => {
 
   return (
     <Routes>
+      <Route path="/ranch-selector" element={<RanchSelector />} />
       <Route element={<AppLayout />}>
         <Route path="/" element={<RouteTransition><Home /></RouteTransition>} />
         <Route path="/calving/*" element={<RouteTransition><CalvingSeason /></RouteTransition>} />

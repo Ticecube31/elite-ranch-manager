@@ -1,6 +1,6 @@
 import React, { useEffect, useState, createContext, useContext } from 'react';
-import { Outlet, Link, useLocation } from 'react-router-dom';
-import { Home, Baby, ArrowLeftRight, TreePine, HeartPulse, Rows3, Moon, Sun, Settings, LogOut, User, ChevronDown } from 'lucide-react';
+import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
+import { Home, Baby, ArrowLeftRight, TreePine, HeartPulse, Rows3, Moon, Sun, Settings, LogOut, User, ChevronDown, Building2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { base44 } from '@/api/base44Client';
 import { useTheme } from '@/lib/ThemeContext';
@@ -33,6 +33,7 @@ function UserAvatar({ user }) {
 
 export default function AppLayout() {
   const location = useLocation();
+  const navigate = useNavigate();
   const { sectionTheme, headerStyle, isDark, toggleTheme } = useTheme();
   const ranchContext = useContext(RanchContext);
   const { currentRanch, userRanches, switchRanch } = ranchContext || {};
@@ -44,6 +45,10 @@ export default function AppLayout() {
 
   const handleLogout = async () => {
     await base44.auth.logout();
+  };
+
+  const handleChangeRanch = () => {
+    navigate('/ranch-selector');
   };
 
   useEffect(() => {
@@ -151,6 +156,10 @@ export default function AppLayout() {
                     <Settings className="w-4 h-4 mr-2" />
                     Settings
                   </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={handleChangeRanch} className="cursor-pointer">
+                  <Building2 className="w-4 h-4 mr-2" />
+                  Change Ranch
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 {userRanches && userRanches.length > 1 && (
