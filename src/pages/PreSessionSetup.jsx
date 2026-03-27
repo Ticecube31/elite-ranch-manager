@@ -48,7 +48,7 @@ export default function PreSessionSetup() {
     onSuccess: (newSession) => {
       queryClient.invalidateQueries({ queryKey: ['sorting-sessions'] });
       toast.success('Session created!');
-      navigate(`/sorting/session/${newSession.id}`);
+      navigate(`/sorting/${newSession.id}`);
     },
     onError: () => {
       toast.error('Failed to create session');

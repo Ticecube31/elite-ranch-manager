@@ -19,6 +19,7 @@ import Home from '@/pages/Home';
 import CalvingSeason from '@/pages/CalvingSeason.jsx';
 import CalfSortingDashboard from '@/pages/CalfSortingDashboard';
 import PreSessionSetup from '@/pages/PreSessionSetup';
+import FastSortingInputScreen from '@/pages/FastSortingInputScreen';
 import PastureManagement from '@/pages/PastureManagement';
 import Settings from '@/pages/Settings';
 import AIAssistant from '@/pages/AIAssistant';
@@ -57,6 +58,7 @@ const AuthenticatedApp = () => {
         <Route path="/calving" element={<CalvingSeason />} />
         <Route path="/sorting" element={<CalfSortingDashboard />} />
         <Route path="/sorting/setup" element={<PreSessionSetup />} />
+        <Route path="/sorting/:sessionId" element={<FastSortingInputScreen />} />
         <Route path="/pastures" element={<PastureManagement />} />
         <Route path="/settings" element={<Settings />} />
         <Route path="/ai-assistant" element={<AIAssistant />} />
