@@ -252,7 +252,7 @@ export default function RanchSelector() {
                       </div>
                     )}
                     <div className="flex-1">
-                      <h3 className="font-heading font-bold text-lg" style={{ color: PURPLE_DARK }}>
+                      <h3 className="font-heading font-black text-2xl" style={{ color: PURPLE_DARK }}>
                         {ranch.ranch_name}
                       </h3>
                       <p className="text-xs text-gray-500 capitalize">{ranch.userRole}</p>
