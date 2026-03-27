@@ -3,87 +3,78 @@ import { base44 } from '@/api/base44Client';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Search, Plus, LogOut, Plus as PlusIcon } from 'lucide-react';
+import { Search, Plus, LogOut, Settings } from 'lucide-react';
 import { toast } from 'sonner';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 
 const PURPLE = '#6B2D5E';
 const PURPLE_DARK = '#4A1F40';
+const PURPLE_LIGHT = '#F3E8F0';
 
 export default function RanchSelector() {
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
   const [userRanches, setUserRanches] = useState([]);
-  const [availableRanches, setAvailableRanches] = useState([]);
+  const [allRanches, setAllRanches] = useState([]);
   const [search, setSearch] = useState('');
-  const [showRequestForm, setShowRequestForm] = useState(false);
-  const [requestingRanchId, setRequestingRanchId] = useState(null);
   const [loading, setLoading] = useState(true);
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [newRanchName, setNewRanchName] = useState('');
   const [creating, setCreating] = useState(false);
 
   useEffect(() => {
-    const loadRanches = async () => {
-      try {
-        const currentUser = await base44.auth.me();
-        setUser(currentUser);
+    loadData();
+  }, []);
 
-        // Get user's existing ranches
-        const userRanches = await base44.entities.RanchUser.filter({
-          user_email: currentUser.email,
-          status: 'active'
-        });
+  const loadData = async () => {
+    try {
+      setLoading(true);
+      
+      // Get current user
+      const currentUser = await base44.auth.me();
+      if (!currentUser) {
+        await base44.auth.redirectToLogin();
+        return;
+      }
+      setUser(currentUser);
 
-        const ranches = await Promise.all(
-          userRanches.map(async (ru) => {
+      // Get user's ranches
+      const ranchUsers = await base44.entities.RanchUser.filter({
+        user_email: currentUser.email,
+        status: 'active'
+      });
+
+      const userRanchData = await Promise.all(
+        ranchUsers.map(async (ru) => {
+          try {
             const ranch = await base44.entities.Ranch.read(ru.ranch_id);
             return { ...ranch, userRole: ru.role };
-          })
-        );
+          } catch {
+            return null;
+          }
+        })
+      );
 
-        setUserRanches(ranches);
+      setUserRanches(userRanchData.filter(Boolean));
 
-        // Get all available ranches for discovery
-        const allRanches = await base44.entities.Ranch.list();
-        const available = allRanches.filter(
-          r => !ranches.find(ur => ur.id === r.id) && r.status === 'active'
-        );
-        setAvailableRanches(available);
-      } catch (error) {
-        console.error('Error loading ranches:', error);
-        toast.error('Failed to load ranches');
-      } finally {
-        setLoading(false);
+      // Get all ranches for discovery
+      try {
+        const all = await base44.entities.Ranch.list();
+        setAllRanches(all || []);
+      } catch {
+        setAllRanches([]);
       }
-    };
-
-    loadRanches();
-  }, []);
+    } catch (error) {
+      console.error('Error loading data:', error);
+      toast.error('Failed to load ranches');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleSelectRanch = (ranchId) => {
     localStorage.setItem('selectedRanchId', ranchId);
     navigate('/');
-  };
-
-  const handleRequestJoin = async (ranchId) => {
-    try {
-      // Create pending RanchUser record
-      await base44.entities.RanchUser.create({
-        ranch_id: ranchId,
-        user_email: user.email,
-        role: 'user',
-        status: 'invited',
-      });
-      toast.success('Join request sent to ranch admin');
-      setRequestingRanchId(null);
-    } catch (error) {
-      toast.error('Failed to request join');
-    }
-  };
-
-  const handleLogout = async () => {
-    await base44.auth.logout();
   };
 
   const handleCreateRanch = async () => {
@@ -109,6 +100,7 @@ export default function RanchSelector() {
 
       setNewRanchName('');
       setShowCreateDialog(false);
+      await loadData();
       localStorage.setItem('selectedRanchId', ranch.id);
       navigate('/');
       toast.success('Ranch created!');
@@ -120,12 +112,29 @@ export default function RanchSelector() {
     }
   };
 
+  const handleLogout = async () => {
+    await base44.auth.logout('/');
+  };
+
+  const handleGoToSettings = async () => {
+    if (userRanches.length > 0) {
+      localStorage.setItem('selectedRanchId', userRanches[0].id);
+      navigate('/settings');
+    } else {
+      toast.error('No ranches available. Create or join one first.');
+    }
+  };
+
+  const discoverRanches = allRanches.filter(
+    r => !userRanches.find(ur => ur.id === r.id) && r.status === 'active'
+  ).filter(r => r.ranch_name.toLowerCase().includes(search.toLowerCase()));
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center" style={{ background: `linear-gradient(135deg, ${PURPLE_DARK}, ${PURPLE})` }}>
         <div className="text-center text-white">
           <div className="w-12 h-12 border-4 border-white/20 border-t-white rounded-full animate-spin mb-4 mx-auto"></div>
-          <p>Loading your ranches...</p>
+          <p>Loading...</p>
         </div>
       </div>
     );
@@ -133,146 +142,178 @@ export default function RanchSelector() {
 
   return (
     <div className="min-h-screen" style={{ background: `linear-gradient(135deg, ${PURPLE_DARK}, ${PURPLE})` }}>
-      <div className="max-w-2xl mx-auto px-4 py-8">
-        {/* Header */}
-        <div className="text-white text-center mb-8">
-          <h1 className="font-heading font-black text-4xl mb-2">Elite Ranch Manager</h1>
-          <p className="text-white/70">Select a ranch to continue</p>
+      {/* Header */}
+      <header className="border-b border-white/10 bg-black/20 backdrop-blur-sm">
+        <div className="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{ background: 'rgba(255,255,255,0.15)' }}>
+              <span className="text-white font-heading font-black text-lg">ER</span>
+            </div>
+            <div>
+              <p className="text-white font-heading font-bold">Elite Ranch Manager</p>
+              <p className="text-white/60 text-xs">{user?.full_name || user?.email}</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            {userRanches.length > 0 && (
+              <button
+                onClick={handleGoToSettings}
+                className="w-10 h-10 rounded-lg flex items-center justify-center hover:bg-white/10 transition-colors"
+                title="Settings"
+              >
+                <Settings className="w-5 h-5 text-white" />
+              </button>
+            )}
+            <button
+              onClick={handleLogout}
+              className="w-10 h-10 rounded-lg flex items-center justify-center hover:bg-white/10 transition-colors"
+              title="Logout"
+            >
+              <LogOut className="w-5 h-5 text-white" />
+            </button>
+          </div>
         </div>
+      </header>
 
-        {/* My Ranches */}
-        <div className="mb-8">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-white font-heading font-bold text-xl">My Ranches</h2>
+      {/* Main Content */}
+      <div className="max-w-4xl mx-auto px-4 py-8">
+        {/* My Ranches Section */}
+        <div className="mb-12">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-white font-heading font-black text-2xl">My Ranches</h2>
             <Button
               onClick={() => setShowCreateDialog(true)}
-              className="h-10 px-4 text-sm font-bold text-white"
+              className="h-11 px-4 text-sm font-bold text-white"
               style={{ background: `linear-gradient(135deg, ${PURPLE}, ${PURPLE_DARK})` }}
             >
-              <Plus className="w-4 h-4 mr-1" /> New Ranch
+              <Plus className="w-4 h-4 mr-2" /> New Ranch
             </Button>
           </div>
+
           {userRanches.length === 0 ? (
-            <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20">
-              <p className="text-white/70 text-center">You don't have any ranches yet. Request to join one below or ask an admin to add you.</p>
+            <div className="bg-white/10 backdrop-blur-sm rounded-3xl p-8 border border-white/20 text-center">
+              <p className="text-white/70 mb-4">You don't have access to any ranches yet.</p>
+              <p className="text-white/50 text-sm">Create a new ranch or explore available ones below.</p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {userRanches.map(ranch => (
                 <button
                   key={ranch.id}
                   onClick={() => handleSelectRanch(ranch.id)}
-                  className="bg-white rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all active:scale-[0.98] text-left"
+                  className="bg-white rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all active:scale-[0.98] text-left group"
                 >
-                  <div className="flex items-start gap-3">
+                  <div className="flex items-start gap-3 mb-3">
                     {ranch.logo_url ? (
                       <img src={ranch.logo_url} alt="" className="w-12 h-12 rounded-lg object-cover" />
                     ) : (
-                      <div className="w-12 h-12 rounded-lg flex items-center justify-center" style={{ background: `${PURPLE_LIGHT}` }}>
-                        <span className="text-2xl">🐄</span>
+                      <div className="w-12 h-12 rounded-lg flex items-center justify-center text-2xl" style={{ background: PURPLE_LIGHT }}>
+                        🐄
                       </div>
                     )}
                     <div className="flex-1">
-                      <h3 className="font-heading font-bold text-lg" style={{ color: PURPLE_DARK }}>{ranch.ranch_name}</h3>
-                      <p className="text-xs text-gray-500 mt-0.5">{ranch.userRole} • Click to enter</p>
+                      <h3 className="font-heading font-bold text-lg" style={{ color: PURPLE_DARK }}>
+                        {ranch.ranch_name}
+                      </h3>
+                      <p className="text-xs text-gray-500 capitalize">{ranch.userRole} • Click to enter</p>
                     </div>
                   </div>
+                  <div className="text-xs text-gray-400">Enter Ranch →</div>
                 </button>
               ))}
             </div>
           )}
         </div>
 
-        {/* Discover Ranches */}
+        {/* Discover Ranches Section */}
         <div>
-          <h2 className="text-white font-heading font-bold text-xl mb-4">Discover Ranches</h2>
-          <div className="relative mb-4">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+          <h2 className="text-white font-heading font-black text-2xl mb-6">Discover Ranches</h2>
+          
+          <div className="relative mb-6">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
             <input
               value={search}
               onChange={e => setSearch(e.target.value)}
               placeholder="Search ranches..."
-              className="w-full pl-10 pr-4 h-12 rounded-xl border-0 outline-none text-sm"
+              className="w-full pl-12 pr-4 h-12 rounded-2xl border-0 outline-none text-sm"
             />
           </div>
 
-          {availableRanches.filter(r => r.ranch_name.toLowerCase().includes(search.toLowerCase())).length === 0 ? (
-            <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20">
-              <p className="text-white/70 text-center">No ranches available to join.</p>
+          {discoverRanches.length === 0 ? (
+            <div className="bg-white/10 backdrop-blur-sm rounded-3xl p-8 border border-white/20 text-center">
+              <p className="text-white/70">
+                {allRanches.length === 0
+                  ? 'No other ranches available at the moment.'
+                  : 'No ranches match your search.'}
+              </p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {availableRanches.filter(r => r.ranch_name.toLowerCase().includes(search.toLowerCase())).map(ranch => (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {discoverRanches.map(ranch => (
                 <div key={ranch.id} className="bg-white rounded-2xl p-6 shadow-lg">
                   <div className="flex items-start gap-3 mb-4">
                     {ranch.logo_url ? (
                       <img src={ranch.logo_url} alt="" className="w-12 h-12 rounded-lg object-cover" />
                     ) : (
-                      <div className="w-12 h-12 rounded-lg flex items-center justify-center" style={{ background: `${PURPLE}20` }}>
-                        <span className="text-2xl">🐄</span>
+                      <div className="w-12 h-12 rounded-lg flex items-center justify-center text-2xl" style={{ background: PURPLE_LIGHT }}>
+                        🐄
                       </div>
                     )}
-                    <h3 className="font-heading font-bold text-lg" style={{ color: PURPLE_DARK }}>{ranch.ranch_name}</h3>
+                    <h3 className="font-heading font-bold text-lg" style={{ color: PURPLE_DARK }}>
+                      {ranch.ranch_name}
+                    </h3>
                   </div>
                   <Button
-                    onClick={() => handleRequestJoin(ranch.id)}
-                    className="w-full h-10 text-sm font-bold text-white"
+                    onClick={() => handleSelectRanch(ranch.id)}
+                    className="w-full h-11 text-sm font-bold text-white"
                     style={{ background: `linear-gradient(135deg, ${PURPLE}, ${PURPLE_DARK})` }}
                   >
-                    <Plus className="w-4 h-4 mr-2" /> Request to Join
+                    <Plus className="w-4 h-4 mr-2" /> Join Ranch
                   </Button>
                 </div>
               ))}
             </div>
           )}
         </div>
-
-        {/* Logout button */}
-        <div className="mt-8 flex justify-center">
-          <button
-            onClick={handleLogout}
-            className="flex items-center gap-2 px-6 py-2 rounded-xl bg-white/20 text-white font-semibold hover:bg-white/30 transition-colors"
-          >
-            <LogOut className="w-4 h-4" /> Logout
-          </button>
-        </div>
-
-        {/* Create Ranch Dialog */}
-        <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
-          <DialogContent className="max-w-sm">
-            <DialogHeader>
-              <DialogTitle>Create New Ranch</DialogTitle>
-            </DialogHeader>
-            <div className="py-4 space-y-3">
-              <Input
-                value={newRanchName}
-                onChange={(e) => setNewRanchName(e.target.value)}
-                placeholder="Ranch name"
-                className="h-12"
-                onKeyDown={(e) => e.key === 'Enter' && handleCreateRanch()}
-              />
-            </div>
-            <DialogFooter>
-              <Button
-                variant="outline"
-                onClick={() => setShowCreateDialog(false)}
-              >
-                Cancel
-              </Button>
-              <Button
-                onClick={handleCreateRanch}
-                disabled={creating}
-                className="text-white"
-                style={{ background: `linear-gradient(135deg, ${PURPLE}, ${PURPLE_DARK})` }}
-              >
-                {creating ? 'Creating...' : 'Create Ranch'}
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
       </div>
+
+      {/* Create Ranch Dialog */}
+      <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Create New Ranch</DialogTitle>
+          </DialogHeader>
+          <div className="py-4">
+            <Input
+              value={newRanchName}
+              onChange={(e) => setNewRanchName(e.target.value)}
+              placeholder="Ranch name"
+              className="h-12 text-base"
+              onKeyDown={(e) => e.key === 'Enter' && handleCreateRanch()}
+              autoFocus
+            />
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setShowCreateDialog(false);
+                setNewRanchName('');
+              }}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleCreateRanch}
+              disabled={creating || !newRanchName.trim()}
+              className="text-white"
+              style={{ background: `linear-gradient(135deg, ${PURPLE}, ${PURPLE_DARK})` }}
+            >
+              {creating ? 'Creating...' : 'Create'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
-
-const PURPLE_LIGHT = '#F3E8F0';
