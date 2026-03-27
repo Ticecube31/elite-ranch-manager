@@ -173,15 +173,14 @@ export default function FastSortingInputScreen() {
             disabled={!matchedAnimal}
             className={`flex-1 flex flex-col items-center justify-center transition-all active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed`}
             style={{
-              background: isMatchingLeft ? `linear-gradient(135deg, ${SKY_BLUE}, ${BLUE_LIGHT})` : BLUE_LIGHT,
-              boxShadow: isMatchingLeft ? `inset 0 0 40px ${BLUE}40` : 'none',
+              background: isMatchingLeft ? '#0D47A1' : BLUE_LIGHT,
+              boxShadow: isMatchingLeft ? `0 0 30px ${BLUE}, inset 0 0 50px ${BLUE}60` : 'none',
             }}
           >
-            <ChevronLeft className="w-24 h-24 stroke-[1.5px]" style={{ color: isMatchingLeft ? BLUE_DARK : '#ccc' }} />
-            <p className="font-heading font-black text-2xl mt-4" style={{ color: isMatchingLeft ? BLUE_DARK : '#999' }}>
+            <ChevronLeft className="w-16 h-16 stroke-[2.5px]" style={{ color: isMatchingLeft ? '#fff' : '#ccc' }} />
+            <p className="font-heading font-black text-lg mt-2" style={{ color: isMatchingLeft ? '#fff' : '#999' }}>
               {session.left_pen_label || 'LEFT'}
             </p>
-            <p className="text-sm font-semibold mt-2 text-gray-400">{session.left_count || 0} sorted</p>
           </button>
 
           {/* ── RIGHT ZONE ───────────────────────────────────── */}
@@ -190,15 +189,14 @@ export default function FastSortingInputScreen() {
             disabled={!matchedAnimal}
             className={`flex-1 flex flex-col items-center justify-center transition-all active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed`}
             style={{
-              background: isMatchingRight ? `linear-gradient(135deg, ${SKY_BLUE}, ${BLUE_LIGHT})` : BLUE_LIGHT,
-              boxShadow: isMatchingRight ? `inset 0 0 40px ${BLUE}40` : 'none',
+              background: isMatchingRight ? '#0D47A1' : BLUE_LIGHT,
+              boxShadow: isMatchingRight ? `0 0 30px ${BLUE}, inset 0 0 50px ${BLUE}60` : 'none',
             }}
           >
-            <ChevronRight className="w-24 h-24 stroke-[1.5px]" style={{ color: isMatchingRight ? BLUE_DARK : '#ccc' }} />
-            <p className="font-heading font-black text-2xl mt-4" style={{ color: isMatchingRight ? BLUE_DARK : '#999' }}>
+            <ChevronRight className="w-16 h-16 stroke-[2.5px]" style={{ color: isMatchingRight ? '#fff' : '#ccc' }} />
+            <p className="font-heading font-black text-lg mt-2" style={{ color: isMatchingRight ? '#fff' : '#999' }}>
               {session.right_pen_label || 'RIGHT'}
             </p>
-            <p className="text-sm font-semibold mt-2 text-gray-400">{session.right_count || 0} sorted</p>
           </button>
         </div>
       </div>
