@@ -501,11 +501,6 @@ export default function MasterSpreadsheet({ onBack, currentUser }) {
     );
   }
 
-  // ── Calving Seasons Tab ────────────────────────────────────
-  if (activeTab === 'seasons') {
-    return <CalvingSeasonSpreadsheet onBack={() => {}} />;
-  }
-
   const SortIcon = ({ col }) => sortCol === col
     ? (sortDir === 'asc' ? <ChevronUp className="w-3 h-3 inline" /> : <ChevronDown className="w-3 h-3 inline" />)
     : <span className="w-3 h-3 inline-block" />;
@@ -645,6 +640,9 @@ export default function MasterSpreadsheet({ onBack, currentUser }) {
           ))}
         </div>
       </div>
+
+      {activeTab === 'animals' && (
+      <>
 
       {/* ── Count + Add ──────────────────────────────────────── */}
       <div className="flex items-center justify-between px-4 py-2 shrink-0">
@@ -947,6 +945,10 @@ export default function MasterSpreadsheet({ onBack, currentUser }) {
           onSuccess={() => setShowImportWizard(false)}
           />
           )}
+          </>
+          )}
+
+          {activeTab === 'seasons' && <CalvingSeasonSpreadsheet onBack={() => {}} />}
           </div>
           );
           }
