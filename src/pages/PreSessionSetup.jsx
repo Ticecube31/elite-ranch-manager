@@ -178,7 +178,7 @@ export default function PreSessionSetup() {
       </div>
 
       {/* ── Bottom Action Bar ──────────────────────────── */}
-      <div className="fixed bottom-0 left-0 right-0 z-50 px-4 pb-6 pt-3 bg-white border-t border-blue-100 shadow-2xl safe-bottom">
+      <div className="fixed bottom-0 left-0 right-0 px-4 pb-6 pt-3 bg-white border-t border-blue-100 shadow-2xl">
         <div className="max-w-lg mx-auto">
           <button
             onClick={handleStart}
