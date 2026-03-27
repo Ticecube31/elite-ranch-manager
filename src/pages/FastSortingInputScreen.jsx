@@ -59,7 +59,8 @@ export default function FastSortingInputScreen() {
       setShowDuplicateSelector(false);
       return;
     }
-    const matches = animals.filter(a => a.tag_number === cowNumber.trim());
+    const cowTypes = ['Cow', '1st Calf Heifer'];
+    const matches = animals.filter(a => a.tag_number === cowNumber.trim() && cowTypes.includes(a.animal_type));
     if (matches.length === 1) {
       setMatchedAnimal(matches[0]);
       setDuplicates([]);
@@ -78,7 +79,7 @@ export default function FastSortingInputScreen() {
   const getMotherBirthYear = (animal) => {
     if (!animal?.mother_animal_number) return null;
     const mother = animals.find(a => a.tag_number === animal.mother_animal_number);
-    return mother?.birth_year || null;
+    return mother?.birth_year || 'unknown';
   };
 
   const handleSort = async (direction) => {
