@@ -292,6 +292,8 @@ export default function MasterSpreadsheet({ onBack, currentUser }) {
   const [showColMenu, setShowColMenu] = useState(false);
   const [resizing, setResizing] = useState(null);
   const [sortedAnimals, setSortedAnimals] = useState([]);
+  const [colOrder, setColOrder] = useState(['tag_number', 'sex', 'animal_type', 'mother_animal_number', 'date_of_birth', 'birth_year', 'status', 'pasture_id', 'born_pasture_id', 'twin', 'children', 'notes', 'photo_url', 'is_archived', 'created_date']);
+  const [draggedCol, setDraggedCol] = useState(null);
   const importRef = useRef();
 
   // Load saved layout on mount
@@ -416,6 +418,17 @@ export default function MasterSpreadsheet({ onBack, currentUser }) {
     setSortedAnimals([...filtered]);
   }, [filtered]);
 
+  // Load saved column order on mount
+  useEffect(() => {
+    const saved = localStorage.getItem('masterSpreadsheet_layout');
+    if (saved) {
+      try {
+        const { colOrder: savedOrder } = JSON.parse(saved);
+        if (savedOrder) setColOrder(savedOrder);
+      } catch (e) {}
+    }
+  }, []);
+
   const handleSort = (col) => {
     if (sortCol === col) setSortDir(d => d === 'asc' ? 'desc' : 'asc');
     else { setSortCol(col); setSortDir('asc'); }
@@ -436,12 +449,42 @@ export default function MasterSpreadsheet({ onBack, currentUser }) {
     const layout = {
       colWidths,
       visibleCols: Array.from(visibleCols),
+      colOrder,
       filterChip,
       sortCol,
       sortDir,
     };
     localStorage.setItem('masterSpreadsheet_layout', JSON.stringify(layout));
     toast.success('Layout saved as default');
+  };
+
+  const handleColDragStart = (e, colKey) => {
+    setDraggedCol(colKey);
+    e.dataTransfer.effectAllowed = 'move';
+  };
+
+  const handleColDragOver = (e) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+  };
+
+  const handleColDrop = (e, targetColKey) => {
+    e.preventDefault();
+    if (!draggedCol || draggedCol === targetColKey) {
+      setDraggedCol(null);
+      return;
+    }
+    const fromIdx = colOrder.indexOf(draggedCol);
+    const toIdx = colOrder.indexOf(targetColKey);
+    if (fromIdx === -1 || toIdx === -1) {
+      setDraggedCol(null);
+      return;
+    }
+    const newOrder = [...colOrder];
+    newOrder.splice(fromIdx, 1);
+    newOrder.splice(toIdx, 0, draggedCol);
+    setColOrder(newOrder);
+    setDraggedCol(null);
   };
 
   // ── Detail view ───────────────────────────────────────────
@@ -653,16 +696,19 @@ export default function MasterSpreadsheet({ onBack, currentUser }) {
                 </button>
               </div>
 
-
-
-              {COLS.map(col => {
-                if (!visibleCols.has(col.key)) return null;
+              {colOrder.map(colKey => {
+                const col = COLS.find(c => c.key === colKey);
+                if (!col || !visibleCols.has(col.key)) return null;
                 const width = getColWidth(col.key);
                 return (
                   <div
                     key={col.key}
-                    style={{ width, minWidth: width, maxWidth: width, borderRight: '1px solid #ccc' }}
-                    className="relative shrink-0 group flex items-center"
+                    style={{ width, minWidth: width, maxWidth: width, borderRight: '1px solid #ccc', opacity: draggedCol === col.key ? 0.5 : 1 }}
+                    className="relative shrink-0 group flex items-center cursor-move select-none"
+                    draggable
+                    onDragStart={(e) => handleColDragStart(e, col.key)}
+                    onDragOver={handleColDragOver}
+                    onDrop={(e) => handleColDrop(e, col.key)}
                   >
                     <button
                       onClick={() => col.key !== 'photo_url' && col.key !== 'created_date' && handleSort(col.key)}
