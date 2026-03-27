@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Search, Filter, ArrowLeft, Edit2, ChevronRight, TableProperties, List, BarChart3, Tag } from 'lucide-react';
+import HerdReports from '@/components/herd/HerdReports';
 import MasterSpreadsheet from '@/components/herd/MasterSpreadsheet';
 import AnimalDetailView from '@/components/herd/AnimalDetailView';
 import { Input } from '@/components/ui/input';
@@ -162,6 +163,11 @@ export default function HerdManagement() {
   // ── SPREADSHEET VIEW ──────────────────────────────────────
   if (view === 'spreadsheet') {
     return <MasterSpreadsheet onBack={() => setView('dashboard')} currentUser={currentUser} />;
+  }
+
+  // ── REPORTS VIEW ──────────────────────────────────────────
+  if (view === 'reports') {
+    return <HerdReports onBack={() => setView('dashboard')} />;
   }
 
   // ── ANIMAL DETAIL VIEW (from all-animals list) ────────────
@@ -477,7 +483,7 @@ export default function HerdManagement() {
             View All Animals
           </button>
           <button
-            onClick={() => toast.info('Herd Reports coming soon!')}
+            onClick={() => setView('reports')}
             className="h-16 rounded-2xl font-heading font-bold text-base border-2 bg-white active:scale-[0.98] transition-all flex items-center justify-center gap-2"
             style={{ borderColor: PURPLE, color: PURPLE }}
           >
