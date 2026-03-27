@@ -234,14 +234,22 @@ export default function QuickCalfForm({ animals = [], seasons = [], pastures = [
           ) : (
             <>
               <p className="text-sm text-gray-400 mb-2">Mother's ear-tag number</p>
-              <Input
-                ref={motherInputRef}
-                value={motherTag}
-                onChange={e => { setMotherTag(e.target.value); setPendingMother(null); }}
-                placeholder="e.g. 934"
-                inputMode="text"
-                className="h-16 text-3xl font-bold tracking-widest border-2 rounded-2xl focus-visible:ring-0 focus-visible:border-green-500 placeholder:text-gray-300"
-              />
+              <div className="flex items-center gap-3">
+                <Input
+                  ref={motherInputRef}
+                  value={motherTag}
+                  onChange={e => { setMotherTag(e.target.value); setPendingMother(null); }}
+                  placeholder="e.g. 934"
+                  inputMode="text"
+                  className="h-16 text-3xl font-bold tracking-widest border-2 rounded-2xl focus-visible:ring-0 focus-visible:border-green-500 placeholder:text-gray-300"
+                />
+                {mother && mother.birth_year && (
+                  <div className="flex flex-col items-center justify-center h-16 px-4 rounded-2xl bg-gray-100 border-2 border-gray-200 shrink-0">
+                    <span className="text-xs text-gray-400 font-semibold">Born</span>
+                    <span className="text-xl font-black text-gray-700">{mother.birth_year}</span>
+                  </div>
+                )}
+              </div>
             </>
           )}
 
