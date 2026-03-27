@@ -28,6 +28,7 @@ export default function FastSortingInputScreen() {
   const [showDuplicateSelector, setShowDuplicateSelector] = useState(false);
   const [showNoteDialog, setShowNoteDialog] = useState(false);
   const [noteText, setNoteText] = useState('');
+  const [showExitConfirm, setShowExitConfirm] = useState(false);
 
   // Fetch session details
   const { data: session, isLoading: sessionLoading } = useQuery({
@@ -138,13 +139,13 @@ export default function FastSortingInputScreen() {
     setTimeout(() => inputRef.current?.focus(), 100);
   };
 
-  const handleEndSession = async () => {
-    const confirmed = window.confirm('End sorting session and save progress?');
-    if (!confirmed) return;
-    await updateSessionMutation.mutateAsync({
-      id: session.id,
-      data: { status: 'Completed', completed_at: new Date().toISOString() },
-    });
+  const handleEndSession = async (saveProgress) => {
+    if (saveProgress) {
+      await updateSessionMutation.mutateAsync({
+        id: session.id,
+        data: { status: 'Completed', completed_at: new Date().toISOString() },
+      });
+    }
     navigate('/sorting');
   };
 
@@ -188,7 +189,7 @@ export default function FastSortingInputScreen() {
       {/* ── TOP HEADER ──────────────────────────────────────── */}
       <div className="sticky top-0 z-20 shrink-0 flex items-center justify-between px-4 h-12" style={{ background: BLUE_DARK }}>
         <button
-          onClick={handleEndSession}
+          onClick={() => setShowExitConfirm(true)}
           className="text-white/80 hover:text-white p-2 -ml-2 transition-colors"
         >
           <ArrowLeft className="w-5 h-5" />
@@ -338,6 +339,27 @@ export default function FastSortingInputScreen() {
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowNoteDialog(false)}>Cancel</Button>
             <Button onClick={handleAddNote} style={{ background: BLUE, border: 'none', color: 'white' }}>Add Note</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* ── EXIT CONFIRMATION DIALOG ──────────────────────────── */}
+      <Dialog open={showExitConfirm} onOpenChange={setShowExitConfirm}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Exit Sorting Session?</DialogTitle>
+          </DialogHeader>
+          <p className="text-gray-600 py-2">What would you like to do with your progress?</p>
+          <DialogFooter className="flex gap-2 flex-col">
+            <Button variant="outline" onClick={() => setShowExitConfirm(false)}>
+              No, Return to Sorting
+            </Button>
+            <Button onClick={() => handleEndSession(false)} style={{ background: '#FF9800', border: 'none', color: 'white' }}>
+              Yes, Exit Without Saving
+            </Button>
+            <Button onClick={() => handleEndSession(true)} style={{ background: BLUE, border: 'none', color: 'white' }}>
+              Yes, Exit and Save
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
