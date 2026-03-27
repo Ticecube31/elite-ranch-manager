@@ -364,14 +364,14 @@ export default function MasterSpreadsheet({ onBack, currentUser }) {
   const toggleSelect = (id) => setSelected(prev => { const n = new Set(prev); n.has(id) ? n.delete(id) : n.add(id); return n; });
   const toggleAll = () => setSelected(prev => prev.size === filtered.length ? new Set() : new Set(filtered.map(a => a.id)));
 
-  const FILTER_CHIPS = ['All', 'Cows', 'Heifers', 'Calves', 'Steers', 'Bulls', 'Alive', 'Sold', 'Died'];
+  const FILTER_CHIPS = ['All', 'Cows', '1st Calf Heifers', 'Calf - Heifer', 'Calf - Steer', 'Bulls', 'Alive', 'Sold', 'Died'];
 
   const chipMatch = (a) => {
     if (filterChip === 'All') return true;
     if (filterChip === 'Cows') return a.animal_type === 'Cow';
-    if (filterChip === 'Heifers') return ['1st Calf Heifer', 'Calf - Heifer'].includes(a.animal_type);
-    if (filterChip === 'Calves') return ['Calf - Heifer', 'Calf - Steer'].includes(a.animal_type);
-    if (filterChip === 'Steers') return a.animal_type === 'Calf - Steer';
+    if (filterChip === '1st Calf Heifers') return a.animal_type === '1st Calf Heifer';
+    if (filterChip === 'Calf - Heifer') return a.animal_type === 'Calf - Heifer';
+    if (filterChip === 'Calf - Steer') return a.animal_type === 'Calf - Steer';
     if (filterChip === 'Bulls') return a.animal_type === 'Bull';
     return a.status === filterChip;
   };
