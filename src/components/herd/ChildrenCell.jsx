@@ -7,6 +7,7 @@ const PURPLE_DARK = '#4A1F40';
 export default function ChildrenCell({ animalId, animals, onAddChild, onRemoveChild }) {
   const [showMenu, setShowMenu] = useState(false);
   const [menuPos, setMenuPos] = useState({ top: 0, left: 0 });
+  const [search, setSearch] = useState('');
   const buttonRef = useRef(null);
   
   // Find all calves with this animal as parent
@@ -16,6 +17,11 @@ export default function ChildrenCell({ animalId, animals, onAddChild, onRemoveCh
   const potentialChildren = animals.filter(a => 
     a.id !== animalId && 
     !calves.find(c => c.id === a.id)
+  );
+
+  // Filter by search
+  const filteredChildren = potentialChildren.filter(a =>
+    a.tag_number.toString().includes(search) || a.animal_type.toLowerCase().includes(search.toLowerCase())
   );
 
   const handleAddChild = (childId) => {
@@ -73,20 +79,33 @@ export default function ChildrenCell({ animalId, animals, onAddChild, onRemoveCh
 
       {/* Dropdown menu */}
       {showMenu && (
-        <div className="fixed bg-white border border-gray-200 rounded-lg shadow-lg p-2 z-[9999] max-h-48 overflow-y-auto min-w-[200px]" style={{ top: `${menuPos.top}px`, left: `${menuPos.left}px` }}>
-          {potentialChildren.length > 0 ? (
-            potentialChildren.map(child => (
-              <button
-                key={child.id}
-                onClick={() => handleAddChild(child.id)}
-                className="w-full text-left px-2 py-1 text-xs hover:bg-purple-50 rounded text-gray-700 whitespace-nowrap"
-              >
-                #{child.tag_number} ({child.animal_type})
-              </button>
-            ))
-          ) : (
-            <p className="text-xs text-gray-400 px-2 py-1">No available animals</p>
-          )}
+        <div className="fixed bg-white border border-gray-200 rounded-lg shadow-lg z-[9999] min-w-[240px]" style={{ top: `${menuPos.top}px`, left: `${menuPos.left}px` }}>
+          <input
+            autoFocus
+            type="text"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search..."
+            className="w-full px-3 py-2 text-xs border-b border-gray-200 outline-none focus:bg-purple-50"
+          />
+          <div className="max-h-48 overflow-y-auto p-2">
+            {filteredChildren.length > 0 ? (
+              filteredChildren.map(child => (
+                <button
+                  key={child.id}
+                  onClick={() => {
+                    handleAddChild(child.id);
+                    setSearch('');
+                  }}
+                  className="w-full text-left px-2 py-1 text-xs hover:bg-purple-50 rounded text-gray-700 whitespace-nowrap"
+                >
+                  #{child.tag_number} ({child.animal_type}) ({child.birth_year || '—'})
+                </button>
+              ))
+            ) : (
+              <p className="text-xs text-gray-400 px-2 py-1">No animals found</p>
+            )}
+          </div>
         </div>
       )}
     </div>
