@@ -308,7 +308,7 @@ export default function FastSortingInputScreen() {
             className="flex-1 h-16 rounded-2xl font-heading font-black text-base text-white shadow-lg transition-all active:scale-[0.98]"
             style={{ background: `linear-gradient(135deg, ${BLUE}, ${BLUE_DARK})` }}
           >
-            CLEAR & NEXT
+            SORT & NEXT
           </button>
           <button
             onClick={() => setShowNoteDialog(true)}
