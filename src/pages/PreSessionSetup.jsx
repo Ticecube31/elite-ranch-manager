@@ -107,7 +107,7 @@ export default function PreSessionSetup() {
         <div className="w-10" />
       </div>
 
-      <div className="px-4 py-6 max-w-lg mx-auto w-full space-y-6 pb-56 md:pb-6">
+      <div className="px-4 py-6 max-w-lg mx-auto w-full space-y-6">
 
         {/* ── Session Name & Date ────────────────────────── */}
         <div className="space-y-3">
@@ -175,25 +175,24 @@ export default function PreSessionSetup() {
           />
         </div>
 
-      </div>
-
-      {/* ── Bottom Action Bar ──────────────────────────── */}
-      <div className="fixed bottom-0 left-0 right-0 px-4 pb-6 pt-3 bg-white border-t border-blue-100 shadow-2xl">
-        <div className="max-w-lg mx-auto">
-          <button
-            onClick={handleStart}
-            disabled={!isReady || saving}
-            className={`w-full h-14 rounded-2xl font-heading font-bold text-base text-white shadow-lg active:scale-[0.98] transition-all flex items-center justify-center gap-2 ${
-              isReady ? 'opacity-100' : 'opacity-50 cursor-not-allowed'
-            }`}
-            style={{ background: isReady ? `linear-gradient(135deg, ${BLUE}, ${BLUE_DARK})` : '#BDBDBD' }}
-          >
-            {saving ? 'Creating Session...' : 'Start Sorting Session'}
-            {!saving && <ChevronRight className="w-5 h-5" />}
-          </button>
-          {!isReady && (
-            <p className="text-center text-xs text-gray-500 mt-2">Assign both left and right pens to start</p>
-          )}
+        {/* ── Bottom Action Bar (in scroll) ──────────────── */}
+        <div className="px-0 pb-6 pt-6 bg-white border-t border-blue-100 rounded-t-3xl">
+          <div className="px-4">
+            <button
+              onClick={handleStart}
+              disabled={!isReady || saving}
+              className={`w-full h-14 rounded-2xl font-heading font-bold text-base text-white shadow-lg active:scale-[0.98] transition-all flex items-center justify-center gap-2 ${
+                isReady ? 'opacity-100' : 'opacity-50 cursor-not-allowed'
+              }`}
+              style={{ background: isReady ? `linear-gradient(135deg, ${BLUE}, ${BLUE_DARK})` : '#BDBDBD' }}
+            >
+              {saving ? 'Creating Session...' : 'Start Sorting Session'}
+              {!saving && <ChevronRight className="w-5 h-5" />}
+            </button>
+            {!isReady && (
+              <p className="text-center text-xs text-gray-500 mt-2">Assign both left and right pens to start</p>
+            )}
+          </div>
         </div>
       </div>
     </div>
