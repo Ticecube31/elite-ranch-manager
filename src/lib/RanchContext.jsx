@@ -45,7 +45,8 @@ export function RanchProvider({ children }) {
 
         const ranches = await Promise.all(
           latestRanchUsers.map(async (ru) => {
-            const ranch = await base44.entities.Ranch.read(ru.ranch_id);
+            const ranchResults = await base44.entities.Ranch.filter({ id: ru.ranch_id });
+            const ranch = ranchResults[0];
             return { ...ranch, userRole: ru.role };
           })
         );
