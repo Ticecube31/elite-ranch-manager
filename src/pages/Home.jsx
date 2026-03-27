@@ -1,8 +1,9 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useContext } from 'react';
 import { Baby, ArrowLeftRight, Beef, Settings, TreePine, HeartPulse, Rows3 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
+import { RanchContext } from '@/lib/RanchContext';
 
 import HeroStats from '@/components/home/HeroStats';
 import SectionCard from '@/components/home/SectionCard';
@@ -10,13 +11,10 @@ import RecentActivity from '@/components/home/RecentActivity';
 
 export default function Home() {
   const [user, setUser] = useState(null);
-  const [ranchName, setRanchName] = useState('Elite Ranch Manager');
+  const { currentRanch } = useContext(RanchContext);
 
   useEffect(() => {
     base44.auth.me().then(setUser).catch(() => {});
-    base44.entities.RanchSettings.list().then(list => {
-      if (list.length > 0 && list[0].ranch_name) setRanchName(list[0].ranch_name);
-    }).catch(() => {});
   }, []);
 
   const { data: animals = [] } = useQuery({
@@ -71,7 +69,7 @@ export default function Home() {
           {greeting()}, <span className="text-foreground font-semibold">{firstName}</span> 👋
         </p>
         <h1 className="font-heading font-black text-3xl sm:text-4xl text-foreground leading-tight">
-          {ranchName}
+          {currentRanch?.ranch_name || 'Elite Ranch Manager'}
         </h1>
         <p className="text-muted-foreground text-[14px] leading-relaxed max-w-md">
           Tag calves. Sort them fast. Manage pastures. Check pregnancies. Track your herd.
