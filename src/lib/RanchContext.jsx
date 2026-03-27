@@ -18,20 +18,34 @@ export function RanchProvider({ children }) {
           return;
         }
 
-        // Fetch all ranches for this user
+        // Initialize default ranch if user has none
         const ranchUsers = await base44.entities.RanchUser.filter({
           user_email: user.email,
           status: 'active'
         });
 
         if (ranchUsers.length === 0) {
-          setLoading(false);
-          return;
+          // Create default ranch for this user
+          await base44.functions.invoke('initializeDefaultRanch', {});
+          // Re-fetch after initialization
+          const newRanchUsers = await base44.entities.RanchUser.filter({
+            user_email: user.email,
+            status: 'active'
+          });
+          
+          if (newRanchUsers.length === 0) {
+            setLoading(false);
+            return;
+          }
         }
 
-        // Get ranch details for each
+        // Get ranch details for each (refetch after potential init)
+        const latestRanchUsers = ranchUsers.length === 0 
+          ? await base44.entities.RanchUser.filter({ user_email: user.email, status: 'active' })
+          : ranchUsers;
+
         const ranches = await Promise.all(
-          ranchUsers.map(async (ru) => {
+          latestRanchUsers.map(async (ru) => {
             const ranch = await base44.entities.Ranch.read(ru.ranch_id);
             return { ...ranch, userRole: ru.role };
           })
