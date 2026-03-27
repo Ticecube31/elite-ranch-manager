@@ -62,7 +62,7 @@ export default function ChildrenCell({ animalId, animals, onAddChild, onRemoveCh
 
       {/* Dropdown menu */}
       {showMenu && potentialChildren.length > 0 && (
-        <div className="absolute top-full left-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg p-2 z-50 max-h-48 overflow-y-auto min-w-[200px]">
+        <div className="absolute top-full left-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg p-2 z-[9999] max-h-48 overflow-y-auto min-w-[200px]">
           {potentialChildren.map(child => (
             <button
               key={child.id}
@@ -76,7 +76,7 @@ export default function ChildrenCell({ animalId, animals, onAddChild, onRemoveCh
       )}
       
       {showMenu && potentialChildren.length === 0 && (
-        <div className="absolute top-full left-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg p-2 z-50 text-xs text-gray-400 min-w-[150px]">
+        <div className="absolute top-full left-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg p-2 z-[9999] text-xs text-gray-400 min-w-[150px]">
           No available animals
         </div>
       )}
