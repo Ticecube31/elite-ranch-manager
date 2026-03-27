@@ -135,66 +135,49 @@ export default function PreSessionSetup() {
         </div>
 
         {/* ── Assign Pens to Sexes (MAIN SECTION) ────────── */}
-        <div className="space-y-4">
-          <h2 className="font-heading font-black text-xl" style={{ color: BLUE_DARK }}>Assign pens to sexes</h2>
-          
-          <div className="grid grid-cols-2 gap-4">
-            {/* Left Pen */}
-            <div className="space-y-3">
-              <p className="text-sm font-bold text-gray-600 text-center">Left Pen</p>
-              <SexButton sex="Male" selected={leftSex === 'Male'} onTap={handleLeftSexChange} />
-              <SexButton sex="Female" selected={leftSex === 'Female'} onTap={handleLeftSexChange} />
-            </div>
+         <div className="space-y-4">
+           <h2 className="font-heading font-black text-xl" style={{ color: BLUE_DARK }}>Assign pens to sexes</h2>
 
-            {/* Right Pen */}
-            <div className="space-y-3">
-              <p className="text-sm font-bold text-gray-600 text-center">Right Pen</p>
-              <SexButton sex="Male" selected={rightSex === 'Male'} onTap={handleRightSexChange} />
-              <SexButton sex="Female" selected={rightSex === 'Female'} onTap={handleRightSexChange} />
-            </div>
-          </div>
+           <div className="grid grid-cols-2 gap-4">
+             {/* Left Pen */}
+             <div className="space-y-3">
+               <input
+                 type="text"
+                 value={leftLabel}
+                 onChange={(e) => setLeftLabel(e.target.value)}
+                 placeholder="Left"
+                 maxLength="20"
+                 className="w-full h-9 px-3 rounded-xl border border-blue-200 bg-white text-sm font-semibold text-center placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400"
+               />
+               <SexButton sex="Male" selected={leftSex === 'Male'} onTap={handleLeftSexChange} />
+               <SexButton sex="Female" selected={leftSex === 'Female'} onTap={handleLeftSexChange} />
+             </div>
 
-          {/* Custom Labels */}
-          <div className="space-y-4 mt-6 pt-6 border-t border-blue-200">
-            <p className="text-sm font-bold text-gray-600">Custom pen names (optional)</p>
-            
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Left Pen</label>
-                <input
-                  type="text"
-                  value={leftLabel}
-                  onChange={(e) => setLeftLabel(e.target.value)}
-                  placeholder="Left"
-                  maxLength="20"
-                  className="w-full h-10 px-3 rounded-xl border border-blue-200 bg-white text-sm font-medium placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400"
-                />
-              </div>
+             {/* Right Pen */}
+             <div className="space-y-3">
+               <input
+                 type="text"
+                 value={rightLabel}
+                 onChange={(e) => setRightLabel(e.target.value)}
+                 placeholder="Right"
+                 maxLength="20"
+                 className="w-full h-9 px-3 rounded-xl border border-blue-200 bg-white text-sm font-semibold text-center placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400"
+               />
+               <SexButton sex="Male" selected={rightSex === 'Male'} onTap={handleRightSexChange} />
+               <SexButton sex="Female" selected={rightSex === 'Female'} onTap={handleRightSexChange} />
+             </div>
+           </div>
 
-              <div className="space-y-2">
-                <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Right Pen</label>
-                <input
-                  type="text"
-                  value={rightLabel}
-                  onChange={(e) => setRightLabel(e.target.value)}
-                  placeholder="Right"
-                  maxLength="20"
-                  className="w-full h-10 px-3 rounded-xl border border-blue-200 bg-white text-sm font-medium placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400"
-                />
-              </div>
-            </div>
-
-            {/* Live Preview */}
-            <div className="mt-3 rounded-2xl p-4 border-2 border-blue-200" style={{ background: BLUE_LIGHT }}>
-              <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Preview</p>
-              <p className="font-heading font-bold text-base" style={{ color: BLUE_DARK }}>
-                {leftLabel} = {leftSexDisplay}
-              </p>
-              <p className="font-heading font-bold text-base mt-1" style={{ color: BLUE_DARK }}>
-                {rightLabel} = {rightSexDisplay}
-              </p>
-            </div>
-          </div>
+           {/* Live Preview */}
+           <div className="mt-4 rounded-2xl p-4 border-2 border-blue-200" style={{ background: BLUE_LIGHT }}>
+             <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Preview</p>
+             <p className="font-heading font-bold text-base" style={{ color: BLUE_DARK }}>
+               {leftLabel} = {leftSexDisplay}
+             </p>
+             <p className="font-heading font-bold text-base mt-1" style={{ color: BLUE_DARK }}>
+               {rightLabel} = {rightSexDisplay}
+             </p>
+           </div>
         </div>
 
         {/* ── Session Notes ──────────────────────────────── */}
