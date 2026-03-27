@@ -194,7 +194,7 @@ export default function QuickCalfForm({ animals = [], seasons = [], pastures = [
     <div className="flex flex-col min-h-[calc(100vh-56px)]">
 
       {/* ── Scrollable fields ─────────────────────────── */}
-      <div className="flex-1 overflow-y-auto px-5 py-6 space-y-7 pb-56 safe-bottom">
+      <div className="flex-1 overflow-y-auto px-5 py-6 space-y-7">
 
         {/* 1. Cow's Tag # */}
         <div>
@@ -565,9 +565,9 @@ export default function QuickCalfForm({ animals = [], seasons = [], pastures = [
 
       </div>
 
-      {/* ── Fixed bottom buttons ───────────────────────── */}
+      {/* ── Bottom buttons ───────────────────────── */}
       <div
-        className="fixed bottom-0 left-0 right-0 px-5 py-4 space-y-3 border-t border-green-100 safe-bottom"
+        className="px-5 py-6 space-y-3 border-t border-green-100 mt-4"
         style={{ background: '#F1F8F1' }}
       >
         <button
