@@ -628,7 +628,7 @@ export default function MasterSpreadsheet({ onBack, currentUser }) {
       </div>
 
       {/* ── Table ───────────────────────────────────────────── */}
-      <div className="flex-1 overflow-auto px-2 pb-32">
+      <div className="flex-1 overflow-auto px-2 pb-32 flex flex-col">
         {isLoading ? (
           <div className="flex justify-center py-16">
             <div className="w-8 h-8 border-4 rounded-full animate-spin" style={{ borderColor: `${PURPLE}30`, borderTopColor: PURPLE }} />
@@ -641,7 +641,7 @@ export default function MasterSpreadsheet({ onBack, currentUser }) {
           </div>
         ) : (
           <DragDropContext onDragEnd={handleDragEnd}>
-          <div className="overflow-y-auto bg-white border border-gray-300" style={{ maxHeight: 'calc(100vh - 280px)' }}>
+          <div className="flex-1 overflow-y-auto bg-white border border-gray-300">
             {/* Column headers */}
             <div className="flex items-center bg-gray-50 sticky top-0 z-10" style={{ borderBottom: '2px solid #999' }}>
               {/* Select-all checkbox */}
