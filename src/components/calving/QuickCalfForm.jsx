@@ -154,6 +154,7 @@ export default function QuickCalfForm({ animals = [], seasons = [], pastures = [
            const match = validMothers.find(m => m.tag_number === val.trim());
            if (match) {
              setMotherId(match.id);
+             setTagNumber(match.tag_number);
              if (!pastureId && match.pasture_id) {
                setPastureId(match.pasture_id);
                const matchedPasture = pastures.find(p => p.id === match.pasture_id);
