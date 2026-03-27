@@ -124,7 +124,7 @@ export default function QuickCalfForm({ animals = [], seasons = [], pastures = [
             }
           }}
           placeholder="Type mother's tag number"
-          className={`h-14 text-2xl font-black mt-1 ${
+          className={`h-14 text-base mt-1 ${
             motherTagInput && !motherId ? 'border-orange-400 bg-orange-50' : motherId ? 'border-green-400 bg-green-50' : ''
           }`}
         />
@@ -145,7 +145,7 @@ export default function QuickCalfForm({ animals = [], seasons = [], pastures = [
           value={tagNumber}
           onChange={e => setTagNumber(e.target.value)}
           placeholder="Auto-filled from mother"
-          className={`h-14 text-2xl font-black mt-1 ${isDuplicate ? 'border-orange-400 bg-orange-50' : ''}`}
+          className={`h-14 text-base mt-1 ${isDuplicate ? 'border-orange-400 bg-orange-50' : ''}`}
         />
         {isDuplicate && (
           <p className="text-xs text-orange-600 mt-1 font-semibold">
