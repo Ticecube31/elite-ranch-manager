@@ -34,6 +34,9 @@ export default function CalvingSeason() {
   const [showAI, setShowAI] = useState(false);
   const [isTwinDefault, setIsTwinDefault] = useState(false);
 
+  // Scroll to top on every view change
+  useEffect(() => { window.scrollTo(0, 0); }, [view]);
+
   const { setOpenCalvingAI } = useContext(CalvingAIContext);
 
   useEffect(() => { base44.auth.me().then(setCurrentUser).catch(() => {}); }, []);

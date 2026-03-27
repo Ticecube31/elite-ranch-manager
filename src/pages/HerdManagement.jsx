@@ -76,6 +76,9 @@ export default function HerdManagement() {
   const [currentUser, setCurrentUser] = useState(null);
   useEffect(() => { base44.auth.me().then(setCurrentUser).catch(() => {}); }, []);
 
+  // Scroll to top when switching views
+  useEffect(() => { window.scrollTo(0, 0); }, [selectedAnimal, editMode]);
+
   const handleSave = async (formData) => {
     const { id, created_date, updated_date, created_by, ...data } = formData;
     await updateMutation.mutateAsync({ id: selectedAnimal.id, data });

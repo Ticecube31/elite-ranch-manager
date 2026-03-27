@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
@@ -165,6 +165,9 @@ export default function CalfSorting() {
   const [newName, setNewName] = useState('');
   const [activeSession, setActiveSession] = useState(null);
   const queryClient = useQueryClient();
+
+  // Scroll to top when entering/leaving a session
+  useEffect(() => { window.scrollTo(0, 0); }, [activeSession]);
 
   const { data: sessions = [], isLoading } = useQuery({
     queryKey: ['sorting-sessions'],
