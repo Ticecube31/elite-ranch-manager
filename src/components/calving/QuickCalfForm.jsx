@@ -128,12 +128,12 @@ export default function QuickCalfForm({ animals = [], seasons = [], pastures = [
               key={s}
               type="button"
               onClick={() => setSex(s)}
-              className={`h-16 rounded-2xl border-2 font-black text-xl transition-all ${
+              className={`h-16 rounded-2xl border-2 transition-all ${
                 sex === s
                   ? s === 'Male'
-                    ? 'border-blue-500 bg-blue-50 text-blue-700'
-                    : 'border-pink-500 bg-pink-50 text-pink-700'
-                  : 'border-gray-200 bg-white text-gray-400'
+                    ? 'border-blue-500 bg-blue-50 text-blue-700 font-black text-xl shadow-md'
+                    : 'border-pink-500 bg-pink-50 text-pink-700 font-black text-xl shadow-md'
+                  : 'border-gray-200 bg-white text-gray-400 font-semibold'
               }`}
             >
               {s === 'Male' ? '(M) Steer' : '(F) Heifer'}
