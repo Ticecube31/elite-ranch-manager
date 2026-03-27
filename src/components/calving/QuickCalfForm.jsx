@@ -94,7 +94,7 @@ export default function QuickCalfForm({ animals = [], seasons = [], pastures = [
                   : 'border-gray-200 bg-white text-gray-400'
               }`}
             >
-              {s === 'Male' ? '♂ Steer' : '♀ Heifer'}
+              {s === 'Male' ? '(M) Steer' : '(F) Heifer'}
             </button>
           ))}
         </div>
