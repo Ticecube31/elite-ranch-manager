@@ -1,16 +1,17 @@
 import React, { useState, useEffect } from 'react';
+import { base44 } from '@/api/base44Client';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Save, X } from 'lucide-react';
+import { Save, X, Plus } from 'lucide-react';
 import { toast } from 'sonner';
 
 const GREEN = '#4CAF50';
 const GREEN_DARK = '#2E7D32';
 
-export default function QuickCalfForm({ animals = [], seasons = [], pastures = [], defaultSeasonId, isTwinDefault = false, onSave, onCancel }) {
+export default function QuickCalfForm({ animals = [], seasons = [], pastures = [], defaultSeasonId, isTwinDefault = false, onSave, onCancel, onAnimalsRefresh }) {
   const validMothers = animals.filter(
     a => a.sex === 'Female' && ['Cow', '1st Calf Heifer'].includes(a.animal_type)
   );
@@ -27,6 +28,9 @@ export default function QuickCalfForm({ animals = [], seasons = [], pastures = [
   const [pastureInput, setPastureInput] = useState('');
   const [showPastureSuggestions, setShowPastureSuggestions] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [showAddCowModal, setShowAddCowModal] = useState(false);
+  const [newCowForm, setNewCowForm] = useState({ tag_number: '', animal_type: 'Cow', date_of_birth: '' });
+  const [creatingCow, setCreatingCow] = useState(false);
 
 
 
@@ -43,6 +47,44 @@ export default function QuickCalfForm({ animals = [], seasons = [], pastures = [
     a => a.tag_number === tagNumber && a.id !== undefined && !['Cow', '1st Calf Heifer', 'Bull'].includes(a.animal_type)
   );
   const isDuplicate = duplicates.length > 0 && !twin;
+
+  const handleAddCow = async () => {
+    if (!newCowForm.tag_number.trim()) { toast.error('Tag number required'); return; }
+    if (!newCowForm.animal_type) { toast.error('Animal type required'); return; }
+    
+    const exists = animals.find(a => a.tag_number === newCowForm.tag_number.trim());
+    if (exists) { toast.error(`Tag #${newCowForm.tag_number} already exists`); return; }
+
+    setCreatingCow(true);
+    const birthYear = newCowForm.date_of_birth ? new Date(newCowForm.date_of_birth).getFullYear() : undefined;
+    
+    try {
+      const created = await base44.entities.Animals.create({
+        tag_number: newCowForm.tag_number.trim(),
+        sex: 'Female',
+        animal_type: newCowForm.animal_type,
+        date_of_birth: newCowForm.date_of_birth || undefined,
+        birth_year: birthYear,
+        status: 'Alive',
+        is_archived: false,
+      });
+      
+      toast.success(`${newCowForm.animal_type} #${newCowForm.tag_number} created!`);
+      setShowAddCowModal(false);
+      setNewCowForm({ tag_number: '', animal_type: 'Cow', date_of_birth: '' });
+      
+      // Refresh animals list
+      onAnimalsRefresh?.();
+      
+      // Auto-select the new cow as mother
+      setMotherTagInput(newCowForm.tag_number.trim());
+      setMotherId(created.id);
+      setTagNumber(newCowForm.tag_number.trim());
+    } catch (err) {
+      toast.error('Failed to create cow');
+    }
+    setCreatingCow(false);
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -129,7 +171,19 @@ export default function QuickCalfForm({ animals = [], seasons = [], pastures = [
           }`}
         />
         {motherTagInput && !motherId && (
-          <p className="text-xs text-orange-600 mt-1 font-semibold">⚠️ No cow found with tag #{motherTagInput}</p>
+          <div className="mt-2 space-y-2">
+            <p className="text-xs text-orange-600 font-semibold">⚠️ No cow found with tag #{motherTagInput}</p>
+            <button
+              type="button"
+              onClick={() => {
+                setNewCowForm({ ...newCowForm, tag_number: motherTagInput });
+                setShowAddCowModal(true);
+              }}
+              className="w-full h-10 rounded-xl border-2 border-orange-300 text-orange-600 font-semibold text-sm hover:bg-orange-50 transition-colors flex items-center justify-center gap-2"
+            >
+              <Plus className="w-4 h-4" /> Create Cow #{motherTagInput}
+            </button>
+          </div>
         )}
         {motherId && (
           <p className="text-xs text-green-600 mt-1 font-semibold">
@@ -255,6 +309,79 @@ export default function QuickCalfForm({ animals = [], seasons = [], pastures = [
           {saving ? 'Saving...' : 'Save Calf'}
         </Button>
       </div>
+
+      {/* Add Cow Modal */}
+      {showAddCowModal && (
+        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 pb-0">
+          <div className="bg-white rounded-t-3xl w-full max-w-lg shadow-2xl p-6 space-y-4">
+            <div className="flex items-center justify-between">
+              <h3 className="font-heading font-bold text-xl" style={{ color: GREEN_DARK }}>Add New Cow</h3>
+              <button onClick={() => setShowAddCowModal(false)} className="p-1 hover:bg-gray-100 rounded-lg">
+                <X className="w-6 h-6 text-gray-400" />
+              </button>
+            </div>
+
+            <div className="space-y-4">
+              <div>
+                <Label className="text-sm font-semibold">Tag Number *</Label>
+                <Input
+                  inputMode="numeric"
+                  pattern="[0-9]*"
+                  value={newCowForm.tag_number}
+                  onChange={e => setNewCowForm(prev => ({ ...prev, tag_number: e.target.value }))}
+                  placeholder="e.g. 142"
+                  className="h-12 text-lg mt-1"
+                />
+              </div>
+
+              <div>
+                <Label className="text-sm font-semibold">Type *</Label>
+                <div className="grid grid-cols-2 gap-3 mt-1">
+                  {['Cow', '1st Calf Heifer'].map(t => (
+                    <button
+                      key={t}
+                      type="button"
+                      onClick={() => setNewCowForm(prev => ({ ...prev, animal_type: t }))}
+                      className={`h-12 rounded-xl border-2 font-bold text-sm transition-all ${
+                        newCowForm.animal_type === t
+                          ? 'border-green-500 bg-green-50 text-green-700'
+                          : 'border-gray-200 text-gray-400'
+                      }`}
+                    >
+                      {t}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <Label className="text-sm font-semibold">Birth Year (optional)</Label>
+                <Input
+                  type="date"
+                  value={newCowForm.date_of_birth}
+                  onChange={e => setNewCowForm(prev => ({ ...prev, date_of_birth: e.target.value }))}
+                  className="h-12 mt-1"
+                />
+              </div>
+            </div>
+
+            <div className="flex gap-3 pt-2">
+              <Button type="button" variant="outline" onClick={() => setShowAddCowModal(false)} className="flex-1 h-12 text-base font-semibold">
+                Cancel
+              </Button>
+              <Button
+                type="button"
+                onClick={handleAddCow}
+                disabled={creatingCow}
+                className="flex-1 h-12 text-base font-semibold text-white"
+                style={{ background: `linear-gradient(135deg, ${GREEN}, ${GREEN_DARK})`, border: 'none' }}
+              >
+                {creatingCow ? 'Creating...' : 'Create Cow'}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </form>
   );
 }
