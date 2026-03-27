@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Search, Filter, ArrowLeft, Edit2, ChevronRight } from 'lucide-react';
@@ -10,6 +10,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sh
 import { format } from 'date-fns';
 import AnimalForm from '@/components/calving/AnimalForm';
 import { toast } from 'sonner';
+import { logTagHistory } from '@/lib/tagHistoryLogger';
 
 const statusColors = {
   Alive:   'bg-emerald-100 text-emerald-800 border-emerald-200',
@@ -57,6 +58,12 @@ export default function HerdManagement() {
     initialData: [],
   });
 
+  const { data: tagHistoryAll = [] } = useQuery({
+    queryKey: ['tag-history'],
+    queryFn: () => base44.entities.TagHistory.list('-change_date'),
+    initialData: [],
+  });
+
   const updateMutation = useMutation({
     mutationFn: ({ id, data }) => base44.entities.Animals.update(id, data),
     onSuccess: (_, { data }) => {
@@ -66,10 +73,23 @@ export default function HerdManagement() {
     },
   });
 
+  const [currentUser, setCurrentUser] = useState(null);
+  useEffect(() => { base44.auth.me().then(setCurrentUser).catch(() => {}); }, []);
+
   const handleSave = async (formData) => {
     const { id, created_date, updated_date, created_by, ...data } = formData;
     await updateMutation.mutateAsync({ id: selectedAnimal.id, data });
-    // Refresh selected animal
+    // Log tag change if tag number changed
+    if (data.tag_number && data.tag_number !== selectedAnimal.tag_number) {
+      logTagHistory({
+        animalId: selectedAnimal.id,
+        oldTagNumber: selectedAnimal.tag_number,
+        newTagNumber: data.tag_number,
+        reason: 'Manual correction in Herd Management',
+        user: currentUser,
+      });
+      queryClient.invalidateQueries({ queryKey: ['tag-history'] });
+    }
     const updated = { ...selectedAnimal, ...data };
     setSelectedAnimal(updated);
   };
@@ -91,7 +111,14 @@ export default function HerdManagement() {
   const buildTimeline = (animal) => {
     if (!animal) return [];
     const events = [];
-    if (animal.date_of_birth) events.push({ date: animal.date_of_birth, type: 'birth', label: `Born / Tagged — ${animal.animal_type}` });
+    if (animal.date_of_birth) events.push({ date: animal.date_of_birth, type: 'birth', label: `Born / Tagged — ${animal.animal_type} #${animal.tag_number}` });
+    // Tag history events
+    tagHistoryAll.filter(h => h.animal_id === animal.id).forEach(h => {
+      const label = h.old_tag_number
+        ? `Tag changed: #${h.old_tag_number} → #${h.new_tag_number}${h.reason ? ` (${h.reason})` : ''}${h.changed_by ? ` by ${h.changed_by}` : ''}`
+        : `Initial tag assigned: #${h.new_tag_number}${h.reason ? ` — ${h.reason}` : ''}`;
+      events.push({ date: h.change_date, type: 'tag', label });
+    });
     // Sort events from sorting sessions
     sortingSessions.forEach(ss => {
       const entry = ss.sorted_animals?.find(e => e.tag_number === animal.tag_number);
@@ -212,7 +239,7 @@ export default function HerdManagement() {
               {timeline.map((ev, i) => (
                 <div key={i} className="flex items-start gap-3 bg-card border border-border rounded-xl px-4 py-3">
                   <span className="text-lg shrink-0">
-                    {ev.type === 'birth' ? '🐣' : ev.type === 'sort' ? '🔀' : ev.type === 'preg' ? '🤰' : '📝'}
+                    {ev.type === 'birth' ? '🐣' : ev.type === 'tag' ? '🏷️' : ev.type === 'sort' ? '🔀' : ev.type === 'preg' ? '🤰' : '📝'}
                   </span>
                   <div>
                     <p className="text-sm font-medium text-foreground">{ev.label}</p>

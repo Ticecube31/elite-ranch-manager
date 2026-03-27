@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import QuickCalfForm from '@/components/calving/QuickCalfForm';
+import { logTagHistory } from '@/lib/tagHistoryLogger';
 import AnimalForm from '@/components/calving/AnimalForm';
 import AllCalvesView from '@/components/calving/AllCalvesView';
 import CalvingSeasonReports from '@/components/calving/CalvingSeasonReports';
@@ -80,11 +81,13 @@ export default function CalvingSeason() {
 
   const createMutation = useMutation({
     mutationFn: (data) => base44.entities.Animals.create(data),
-    onSuccess: (created, data) => {
+    onSuccess: async (created, data) => {
       queryClient.invalidateQueries({ queryKey: ['animals'] });
       queryClient.invalidateQueries({ queryKey: ['animals-stats'] });
       setLastAdded(data);
       logAudit({ action: 'Created', entityType: 'Animal', entityId: created.id, entityLabel: `Animal #${data.tag_number}`, changeSummary: `New ${data.animal_type} (${data.sex}) created`, newValue: data, user: currentUser });
+      // Log initial tag assignment to TagHistory
+      logTagHistory({ animalId: created.id, oldTagNumber: null, newTagNumber: data.tag_number, reason: 'Calf tagging — same tag as mother per ranch rules', user: currentUser });
       toast.success(`Calf #${data.tag_number} added!`);
       setView('success');
     },
@@ -123,6 +126,16 @@ export default function CalvingSeason() {
   const handleEditSave = async (formData) => {
     const { id, created_date, updated_date, created_by, ...data } = formData;
     await updateMutation.mutateAsync({ id: editAnimal.id, data });
+    // Log tag change if tag number changed
+    if (data.tag_number && data.tag_number !== editAnimal.tag_number) {
+      logTagHistory({
+        animalId: editAnimal.id,
+        oldTagNumber: editAnimal.tag_number,
+        newTagNumber: data.tag_number,
+        reason: 'Manual correction in Calving Season edit',
+        user: currentUser,
+      });
+    }
   };
 
   const selectedSeason = seasons.find(s => s.id === selectedSeasonId);

@@ -81,8 +81,16 @@ ${Object.entries(byWeek).slice(-8).map(([k, v]) => `  ${k}: ${v}`).join('\n') ||
 INDIVIDUAL CALF RECORDS (first 60):
 ${calves.slice(0, 60).map(c => {
   const pasture = pastures.find(p => p.id === c.born_pasture_id);
-  return `  Tag#${c.tag_number} | ${c.sex} | ${c.status} | Born: ${c.date_of_birth || 'unknown'} | Location: ${pasture?.pasture_name || 'unknown'} | Twin: ${c.twin ? 'Yes' : 'No'} | Mother: ${c.mother_animal_number || 'unknown'}`;
+  const tagMatchesMother = c.tag_number === c.mother_animal_number;
+  return `  Tag#${c.tag_number} | ${c.sex} | ${c.status} | Born: ${c.date_of_birth || 'unknown'} | Location: ${pasture?.pasture_name || 'unknown'} | Twin: ${c.twin ? 'Yes' : 'No'} | Mother: ${c.mother_animal_number || 'unknown'} | TagMatchesMother: ${tagMatchesMother ? 'Yes (correct)' : 'No'}`;
 }).join('\n') || '  No calves recorded yet'}
+
+RANCH TAG NUMBER RULES (IMPORTANT — use these when answering tag-related questions):
+1. Every new calf receives the EXACT SAME tag number as its mother at birth.
+2. Cows and first-calf heifers receive a NEW unique tag number (different from their mother).
+3. The first digit of any tag number equals the last digit of the animal's birth year. Example: tag 101 = born in 2001, 2011, 2021, or 2031.
+4. When a calf is re-tagged as a heifer or cow, a new unique tag is assigned — this is logged in TagHistory.
+5. If asked about tag history for an animal, explain that the full history (old tag, new tag, date, user, reason) is stored in TagHistory and viewable in Herd Management.
 
 INSTRUCTIONS:
 - Answer in plain rancher-friendly language. Short and direct.
@@ -91,6 +99,7 @@ INSTRUCTIONS:
 - No technical jargon.
 - If listing animals, keep lists short (top 5-10 max).
 - Always be helpful and positive.
+- When asked about tag history (e.g. "show tag history for animal 101"), explain what you know from the records above and note full history is in Herd Management.
 `.trim();
 }
 
@@ -137,7 +146,8 @@ export default function CalvingAIAssistant({ animals, seasons, pastures, selecte
     'What is the survival rate?',
     'Show me calves by location',
     'How many calves died?',
-    'How many calves born this month?',
+    'Explain the ranch tag numbering rules',
+    'Show me calves whose tag matches their mother',
   ];
 
   useEffect(() => {

@@ -1,0 +1,35 @@
+{
+  "name": "TagHistory",
+  "type": "object",
+  "properties": {
+    "animal_id": {
+      "type": "string",
+      "description": "ID of the Animals record this log entry belongs to"
+    },
+    "old_tag_number": {
+      "type": "string",
+      "description": "The previous tag number before the change"
+    },
+    "new_tag_number": {
+      "type": "string",
+      "description": "The new tag number after the change"
+    },
+    "change_date": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO timestamp of when the tag change occurred"
+    },
+    "changed_by": {
+      "type": "string",
+      "description": "Email of the user who made the change"
+    },
+    "reason": {
+      "type": "string",
+      "description": "Reason for the tag change (e.g. Calf tagging, Re-tagged as first-calf heifer, Manual correction)"
+    }
+  },
+  "required": [
+    "animal_id",
+    "new_tag_number"
+  ]
+}

@@ -9,11 +9,13 @@ const GREEN_BG = '#F1F8F1';
 const PAGE_SIZE = 50;
 
 function exportCSV(calves, pastures) {
-  const headers = ['Calf #', 'Mother #', 'Sex', 'Type', 'Date Tagged', 'Location', 'Status', 'Notes'];
+  const headers = ['Calf #', 'Mother #', 'Tag Matches Mother', 'Twin', 'Sex', 'Type', 'Date Tagged', 'Location', 'Status', 'Notes'];
   const getPastureName = (id) => id ? (pastures.find(p => p.id === id)?.pasture_name || 'Unknown') : 'Unknown';
   const rows = calves.map(a => [
     a.tag_number,
     a.mother_animal_number || '',
+    a.tag_number === a.mother_animal_number ? 'Yes' : 'No',
+    a.twin ? 'Yes' : 'No',
     a.sex,
     a.animal_type,
     a.date_of_birth || '',
@@ -371,6 +373,13 @@ export default function AllCalvesView({ calves = [], pastures = [], seasons = []
                       </span>
                       {a.mother_animal_number && (
                         <span className="text-sm text-gray-400 font-medium">Dam: #{a.mother_animal_number}</span>
+                      )}
+                      {/* Highlight when calf tag matches mother tag — expected for new calves per ranch rules */}
+                      {a.tag_number && a.mother_animal_number && a.tag_number === a.mother_animal_number && (
+                        <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-green-100 text-green-700">✓ Tag Match</span>
+                      )}
+                      {a.twin && (
+                        <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-purple-100 text-purple-700">👯 Twin</span>
                       )}
                     </div>
                     <div className="flex items-center gap-2 mt-0.5 flex-wrap">
