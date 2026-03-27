@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Plus, X } from 'lucide-react';
 
 const PURPLE = '#6B2D5E';
@@ -6,6 +6,8 @@ const PURPLE_DARK = '#4A1F40';
 
 export default function ChildrenCell({ animalId, animals, onAddChild, onRemoveChild }) {
   const [showMenu, setShowMenu] = useState(false);
+  const [menuPos, setMenuPos] = useState({ top: 0, left: 0 });
+  const buttonRef = useRef(null);
   
   // Find all calves with this animal as parent
   const calves = animals.filter(a => a.mother_id === animalId || (a.mother_animal_number && animals.find(p => p.id === animalId)?.tag_number === a.mother_animal_number));
@@ -20,6 +22,16 @@ export default function ChildrenCell({ animalId, animals, onAddChild, onRemoveCh
     onAddChild?.(childId);
     setShowMenu(false);
   };
+
+  useEffect(() => {
+    if (showMenu && buttonRef.current) {
+      const rect = buttonRef.current.getBoundingClientRect();
+      setMenuPos({
+        top: rect.bottom + window.scrollY,
+        left: rect.left + window.scrollX
+      });
+    }
+  }, [showMenu]);
 
   return (
     <div className="relative">
@@ -49,6 +61,7 @@ export default function ChildrenCell({ animalId, animals, onAddChild, onRemoveCh
         
         {/* Add child button */}
         <button
+          ref={buttonRef}
           onClick={() => setShowMenu(!showMenu)}
           className="inline-flex items-center justify-center w-5 h-5 rounded-full hover:bg-purple-50 transition-colors"
           style={{ color: PURPLE }}
@@ -60,7 +73,7 @@ export default function ChildrenCell({ animalId, animals, onAddChild, onRemoveCh
 
       {/* Dropdown menu */}
       {showMenu && (
-        <div className="absolute top-full left-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg p-2 z-[9999] max-h-48 overflow-y-auto min-w-[200px]">
+        <div className="fixed bg-white border border-gray-200 rounded-lg shadow-lg p-2 z-[9999] max-h-48 overflow-y-auto min-w-[200px]" style={{ top: `${menuPos.top}px`, left: `${menuPos.left}px` }}>
           {potentialChildren.length > 0 ? (
             potentialChildren.map(child => (
               <button
