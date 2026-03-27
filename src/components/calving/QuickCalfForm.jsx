@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Save, X, Plus } from 'lucide-react';
 import { toast } from 'sonner';
+import NumericInput from '@/components/shared/NumericInput';
 
 const GREEN = '#4CAF50';
 const GREEN_DARK = '#2E7D32';
@@ -145,9 +146,7 @@ export default function QuickCalfForm({ animals = [], seasons = [], pastures = [
       {/* Mother */}
       <div>
         <Label className="text-sm font-semibold">Mother Tag # *</Label>
-        <Input
-          inputMode="numeric"
-          pattern="[0-9]*"
+        <NumericInput
           value={motherTagInput}
           onChange={e => {
             const val = e.target.value;
@@ -165,7 +164,7 @@ export default function QuickCalfForm({ animals = [], seasons = [], pastures = [
               setMotherId('');
             }
           }}
-          placeholder="Type mother's tag number"
+          placeholder="Mother's tag #"
           className={`h-14 text-base mt-1 ${
             motherTagInput && !motherId ? 'border-orange-400 bg-orange-50' : motherId ? 'border-green-400 bg-green-50' : ''
           }`}
@@ -195,7 +194,7 @@ export default function QuickCalfForm({ animals = [], seasons = [], pastures = [
       {/* Tag Number */}
       <div>
         <Label className="text-sm font-semibold">Calf Tag # *</Label>
-        <Input
+        <NumericInput
           value={tagNumber}
           onChange={e => setTagNumber(e.target.value)}
           placeholder="Auto-filled from mother"
@@ -324,13 +323,11 @@ export default function QuickCalfForm({ animals = [], seasons = [], pastures = [
             <div className="space-y-4">
               <div>
                 <Label className="text-sm font-semibold">Tag Number *</Label>
-                <Input
-                  inputMode="numeric"
-                  pattern="[0-9]*"
+                <NumericInput
                   value={newCowForm.tag_number}
                   onChange={e => setNewCowForm(prev => ({ ...prev, tag_number: e.target.value }))}
                   placeholder="e.g. 142"
-                  className="h-12 text-lg mt-1"
+                  className="h-12 text-lg"
                 />
               </div>
 
