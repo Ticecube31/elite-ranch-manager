@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { Plus, ChevronDown, ChevronRight, X, Edit2 } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
@@ -18,27 +19,60 @@ import { CalvingAIContext } from '@/components/layout/AppLayout';
 import { logAudit } from '@/lib/auditLogger';
 import { format } from 'date-fns';
 import CalfSuccessAnimation from '@/components/calving/CalfSuccessAnimation';
+import { useTabScrollPosition } from '@/hooks/useTabScrollPosition';
 
 const GREEN = '#4CAF50';
 const GREEN_DARK = '#2E7D32';
 const GREEN_BG = '#F1F8F1';
 
 export default function CalvingSeason() {
-  const [view, setView] = useState('main');           // 'main' | 'add-calf' | 'edit-animal' | 'all-calves' | 'reports'
-  const [editAnimal, setEditAnimal] = useState(null);
+  const location = useLocation();
+  const navigate = useNavigate();
+  const { animalId } = useParams();
+  useTabScrollPosition('calving-scroll-container');
+
+  // Determine current view from URL pathname
+  const getViewFromPath = () => {
+    if (location.pathname.includes('/calving/add-calf')) return 'add-calf';
+    if (location.pathname.includes('/calving/all-calves')) return 'all-calves';
+    if (location.pathname.includes('/calving/reports')) return 'reports';
+    if (location.pathname.includes('/calving/edit/')) return 'edit-animal';
+    return 'main';
+  };
+
+  const view = getViewFromPath();
+
+  // Route-based navigation
+  const setView = (newView) => {
+    switch (newView) {
+      case 'add-calf':
+        navigate('/calving/add-calf');
+        break;
+      case 'all-calves':
+        navigate('/calving/all-calves');
+        break;
+      case 'reports':
+        navigate('/calving/reports');
+        break;
+      case 'edit-animal':
+        if (editAnimal) navigate(`/calving/edit/${editAnimal.id}`);
+        break;
+      default:
+        navigate('/calving');
+    }
+  };
+
   const [selectedSeasonId, setSelectedSeasonId] = useState('all');
   const [showSeasonPicker, setShowSeasonPicker] = useState(false);
   const [showNewSeasonDialog, setShowNewSeasonDialog] = useState(false);
   const [newSeasonYear, setNewSeasonYear] = useState(new Date().getFullYear());
   const [currentUser, setCurrentUser] = useState(null);
-  const [lastAdded, setLastAdded] = useState(null); // for "add another" flow
+  const [lastAdded, setLastAdded] = useState(null);
   const [showAI, setShowAI] = useState(false);
   const [isTwinDefault, setIsTwinDefault] = useState(false);
   const [showEditSeasonDialog, setShowEditSeasonDialog] = useState(false);
   const [editSeasonForm, setEditSeasonForm] = useState({});
-
-  // Scroll to top on every view change
-  useEffect(() => { window.scrollTo(0, 0); }, [view]);
+  const [editAnimal, setEditAnimal] = useState(null);
 
   const { setOpenCalvingAI } = useContext(CalvingAIContext);
 
@@ -103,27 +137,54 @@ export default function CalvingSeason() {
 
   const createMutation = useMutation({
     mutationFn: (data) => base44.entities.Animals.create(data),
+    onMutate: async (data) => {
+      // Optimistic update: add to cache
+      await queryClient.cancelQueries({ queryKey: ['animals'] });
+      const previousAnimals = queryClient.getQueryData(['animals']);
+      const optimisticAnimal = { ...data, id: `temp-${Date.now()}`, created_date: new Date().toISOString(), updated_date: new Date().toISOString(), created_by: currentUser?.email };
+      queryClient.setQueryData(['animals'], (old = []) => [...old, optimisticAnimal]);
+      return { previousAnimals, optimisticAnimal };
+    },
     onSuccess: async (created, data) => {
       queryClient.invalidateQueries({ queryKey: ['animals'] });
       queryClient.invalidateQueries({ queryKey: ['animals-stats'] });
       setLastAdded(data);
       logAudit({ action: 'Created', entityType: 'Animal', entityId: created.id, entityLabel: `Animal #${data.tag_number}`, changeSummary: `New ${data.animal_type} (${data.sex}) created`, newValue: data, user: currentUser });
-      // Log initial tag assignment to TagHistory
       logTagHistory({ animalId: created.id, oldTagNumber: null, newTagNumber: data.tag_number, reason: 'Calf tagging — same tag as mother per ranch rules', user: currentUser });
       toast.success(`Calf #${data.tag_number} added!`);
-      setView('success');
+      navigate('/calving/success');
+    },
+    onError: (_err, _data, context) => {
+      if (context?.previousAnimals) {
+        queryClient.setQueryData(['animals'], context.previousAnimals);
+      }
+      toast.error('Failed to create calf');
     },
   });
 
   const updateMutation = useMutation({
     mutationFn: ({ id, data }) => base44.entities.Animals.update(id, data),
+    onMutate: async ({ id, data }) => {
+      await queryClient.cancelQueries({ queryKey: ['animals'] });
+      const previousAnimals = queryClient.getQueryData(['animals']);
+      queryClient.setQueryData(['animals'], (old = []) => 
+        old.map(a => a.id === id ? { ...a, ...data } : a)
+      );
+      return { previousAnimals };
+    },
     onSuccess: (_, { id, data }) => {
       queryClient.invalidateQueries({ queryKey: ['animals'] });
       queryClient.invalidateQueries({ queryKey: ['animals-stats'] });
       setEditAnimal(null);
-      setView('main');
+      navigate('/calving');
       toast.success(`Animal #${data.tag_number} updated!`);
       logAudit({ action: 'Updated', entityType: 'Animal', entityId: id, entityLabel: `Animal #${data.tag_number}`, changeSummary: `Record updated`, newValue: data, user: currentUser });
+    },
+    onError: (_err, _data, context) => {
+      if (context?.previousAnimals) {
+        queryClient.setQueryData(['animals'], context.previousAnimals);
+      }
+      toast.error('Failed to update animal');
     },
   });
 
@@ -202,12 +263,12 @@ export default function CalvingSeason() {
     : 'All Seasons';
 
   // ── SUCCESS VIEW ──────────────────────────────────────────
-  if (view === 'success' && lastAdded) {
+  if (location.pathname === '/calving/success' && lastAdded) {
     return (
       <CalfSuccessAnimation
         calfData={lastAdded}
-        onAddAnother={() => setView('add-calf')}
-        onBack={() => setView('main')}
+        onAddAnother={() => navigate('/calving/add-calf')}
+        onBack={() => navigate('/calving')}
       />
     );
   }
@@ -215,11 +276,11 @@ export default function CalvingSeason() {
   // ── ADD CALF FORM VIEW ────────────────────────────────────
   if (view === 'add-calf') {
     return (
-      <div className="min-h-screen pb-[60px] bg-background">
+      <div className="min-h-screen pb-[60px] bg-background" id="calving-scroll-container">
         {/* Form Header */}
         <div className="sticky top-0 z-10 flex items-center justify-between px-4 h-14 border-b border-green-200"
           style={{ background: GREEN_DARK }}>
-          <button onClick={() => setView('main')} className="text-white/80 hover:text-white p-2 -ml-2">
+          <button onClick={() => navigate('/calving')} className="text-white/80 hover:text-white p-2 -ml-2">
             <X className="w-6 h-6" />
           </button>
           <h1 className="font-heading font-black text-white text-lg">Add New Calf</h1>
@@ -233,7 +294,7 @@ export default function CalvingSeason() {
             defaultSeasonId={selectedSeasonId !== 'all' ? selectedSeasonId : seasons[0]?.id}
             isTwinDefault={isTwinDefault}
             onSave={handleQuickSave}
-            onCancel={() => setView('main')}
+            onCancel={() => navigate('/calving')}
             onAnimalsRefresh={() => {
               queryClient.invalidateQueries({ queryKey: ['animals'] });
               queryClient.invalidateQueries({ queryKey: ['pastures'] });
@@ -251,8 +312,8 @@ export default function CalvingSeason() {
         calves={animals}
         pastures={pastures}
         seasons={seasons}
-        onBack={() => setView('main')}
-        onEditCalf={(animal) => { setEditAnimal(animal); setView('edit-animal'); }}
+        onBack={() => navigate('/calving')}
+        onEditCalf={(animal) => { setEditAnimal(animal); navigate(`/calving/edit/${animal.id}`); }}
       />
     );
   }
@@ -265,7 +326,7 @@ export default function CalvingSeason() {
         seasons={seasons}
         pastures={pastures}
         selectedSeasonId={selectedSeasonId !== 'all' ? selectedSeasonId : seasons[0]?.id}
-        onBack={() => setView('main')}
+        onBack={() => navigate('/calving')}
       />
     );
   }
@@ -273,10 +334,10 @@ export default function CalvingSeason() {
   // ── EDIT ANIMAL VIEW ──────────────────────────────────────
   if (view === 'edit-animal' && editAnimal) {
     return (
-      <div className="min-h-screen pb-[60px] bg-background">
+      <div className="min-h-screen pb-[60px] bg-background" id="calving-scroll-container">
         <div className="sticky top-0 z-10 flex items-center justify-between px-4 h-14 border-b border-green-200"
           style={{ background: GREEN_DARK }}>
-          <button onClick={() => { setView('main'); setEditAnimal(null); }} className="text-white/80 hover:text-white p-2 -ml-2">
+          <button onClick={() => navigate('/calving')} className="text-white/80 hover:text-white p-2 -ml-2">
             <X className="w-6 h-6" />
           </button>
           <h1 className="font-heading font-black text-white text-lg">Edit #{editAnimal.tag_number}</h1>
@@ -286,7 +347,7 @@ export default function CalvingSeason() {
           <AnimalForm
             animal={editAnimal}
             onSave={handleEditSave}
-            onCancel={() => { setView('main'); setEditAnimal(null); }}
+            onCancel={() => navigate('/calving')}
             existingAnimals={animals}
             seasons={seasons}
           />
@@ -308,9 +369,17 @@ export default function CalvingSeason() {
     );
   }
 
+  // Load edit animal from animals list when route includes animalId
+  useEffect(() => {
+    if (animalId && view === 'edit-animal' && !editAnimal) {
+      const animal = animals.find(a => a.id === animalId);
+      if (animal) setEditAnimal(animal);
+    }
+  }, [animalId, animals, view, editAnimal]);
+
   // ── MAIN VIEW ─────────────────────────────────────────────
   return (
-    <div className="min-h-screen pb-[60px] bg-background">
+    <div className="min-h-screen pb-[60px] bg-background" id="calving-scroll-container">
 
       {/* ── Season Header Bar ────────────────────────────── */}
       <div className="sticky top-0 z-10 px-4 py-3 shadow-md flex items-center justify-between" style={{ background: GREEN_DARK }}>
@@ -341,30 +410,30 @@ export default function CalvingSeason() {
       <div className="px-4 py-5 max-w-lg mx-auto space-y-6">
 
         {/* ── BIG ADD CALF BUTTON ─────────────────────── */}
-        <button
-          onClick={() => setView('add-calf')}
-          className="w-full h-20 rounded-2xl font-heading font-black text-2xl text-white shadow-xl active:scale-[0.98] transition-all flex items-center justify-center gap-3"
-          style={{ background: `linear-gradient(135deg, ${GREEN}, ${GREEN_DARK})` }}
-        >
-          <Plus className="w-7 h-7 stroke-[3px]" />
-          Add New Calf{isTwinDefault ? ' 👯' : ''}
-        </button>
+         <button
+           onClick={() => navigate('/calving/add-calf')}
+           className="w-full h-20 rounded-2xl font-heading font-black text-2xl text-white shadow-xl active:scale-[0.98] transition-all flex items-center justify-center gap-3"
+           style={{ background: `linear-gradient(135deg, ${GREEN}, ${GREEN_DARK})` }}
+         >
+           <Plus className="w-7 h-7 stroke-[3px]" />
+           Add New Calf{isTwinDefault ? ' 👯' : ''}
+         </button>
 
-        {/* ── VIEW ALL CALVES + REPORTS BUTTONS ──────────────────── */}
-        <div className="grid grid-cols-2 gap-3">
-          <button
-            onClick={() => setView('all-calves')}
-            className="h-14 rounded-2xl font-heading font-bold text-base border-2 border-green-300 text-green-800 bg-white hover:bg-green-50 active:scale-[0.98] transition-all"
-          >
-            View All ({calves.length})
-          </button>
-          <button
-            onClick={() => setView('reports')}
-            className="h-14 rounded-2xl font-heading font-bold text-base border-2 border-green-300 text-green-800 bg-white hover:bg-green-50 active:scale-[0.98] transition-all"
-          >
-            Reports 📊
-          </button>
-        </div>
+         {/* ── VIEW ALL CALVES + REPORTS BUTTONS ──────────────────── */}
+         <div className="grid grid-cols-2 gap-3">
+           <button
+             onClick={() => navigate('/calving/all-calves')}
+             className="h-14 rounded-2xl font-heading font-bold text-base border-2 border-green-300 text-green-800 bg-white hover:bg-green-50 active:scale-[0.98] transition-all"
+           >
+             View All ({calves.length})
+           </button>
+           <button
+             onClick={() => navigate('/calving/reports')}
+             className="h-14 rounded-2xl font-heading font-bold text-base border-2 border-green-300 text-green-800 bg-white hover:bg-green-50 active:scale-[0.98] transition-all"
+           >
+             Reports 📊
+           </button>
+         </div>
 
         {/* ── ANALYTICS CARD ──────────────────────────── */}
         <div className="bg-white rounded-2xl shadow-sm border border-green-100 overflow-hidden">
@@ -406,7 +475,7 @@ export default function CalvingSeason() {
               {recentActivity.map((entry, i) => (
                 <button
                   key={`${entry.animal?.id}-${i}`}
-                  onClick={() => { if (entry.animal?.id) { setEditAnimal(entry.animal); setView('edit-animal'); } }}
+                  onClick={() => { if (entry.animal?.id) { setEditAnimal(entry.animal); navigate(`/calving/edit/${entry.animal.id}`); } }}
                   className="w-full flex items-center justify-between px-5 py-4 hover:bg-green-50 active:bg-green-100 transition-colors text-left"
                 >
                   <div className="flex items-center gap-3">

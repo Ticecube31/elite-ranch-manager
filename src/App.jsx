@@ -6,8 +6,7 @@ import { BrowserRouter as Router, Route, Routes, useLocation } from 'react-route
 import { AnimatePresence, motion } from 'framer-motion';
 
 function ScrollToTop() {
-  const { pathname } = useLocation();
-  useEffect(() => { window.scrollTo(0, 0); }, [pathname]);
+  useAppScrollRestoration();
   return null;
 }
 
@@ -32,6 +31,7 @@ import PageNotFound from './lib/PageNotFound';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import { RanchProvider, RanchContext } from '@/lib/RanchContext';
+import { useAppScrollRestoration } from '@/hooks/useAppScrollRestoration';
 
 import AppLayout from '@/components/layout/AppLayout';
 import { ThemeProvider } from '@/lib/ThemeContext';
@@ -84,7 +84,11 @@ const AuthenticatedApp = () => {
       <Route path="/ranch-selector" element={<RanchSelector />} />
       <Route element={<AppLayout />}>
         <Route path="/" element={<RouteTransition><Home /></RouteTransition>} />
-        <Route path="/calving/*" element={<RouteTransition><CalvingSeason /></RouteTransition>} />
+        <Route path="/calving" element={<RouteTransition><CalvingSeason /></RouteTransition>} />
+        <Route path="/calving/add-calf" element={<RouteTransition><CalvingSeason /></RouteTransition>} />
+        <Route path="/calving/all-calves" element={<RouteTransition><CalvingSeason /></RouteTransition>} />
+        <Route path="/calving/reports" element={<RouteTransition><CalvingSeason /></RouteTransition>} />
+        <Route path="/calving/edit/:animalId" element={<RouteTransition><CalvingSeason /></RouteTransition>} />
         <Route path="/sorting" element={<RouteTransition><CalfSortingDashboard /></RouteTransition>} />
         <Route path="/sorting/setup" element={<RouteTransition><PreSessionSetup /></RouteTransition>} />
         <Route path="/sorting/:sessionId" element={<RouteTransition><FastSortingInputScreen /></RouteTransition>} />
@@ -92,7 +96,12 @@ const AuthenticatedApp = () => {
         <Route path="/settings" element={<RouteTransition><Settings /></RouteTransition>} />
         <Route path="/ai-assistant" element={<RouteTransition><AIAssistant /></RouteTransition>} />
         <Route path="/preg-checking" element={<RouteTransition><PregChecking /></RouteTransition>} />
-        <Route path="/herd/*" element={<RouteTransition><HerdManagement /></RouteTransition>} />
+        <Route path="/herd" element={<RouteTransition><HerdManagement /></RouteTransition>} />
+        <Route path="/herd/detail/:animalId" element={<RouteTransition><HerdManagement /></RouteTransition>} />
+        <Route path="/herd/edit/:animalId" element={<RouteTransition><HerdManagement /></RouteTransition>} />
+        <Route path="/herd/all-animals" element={<RouteTransition><HerdManagement /></RouteTransition>} />
+        <Route path="/herd/reports" element={<RouteTransition><HerdManagement /></RouteTransition>} />
+        <Route path="/herd/spreadsheet" element={<RouteTransition><HerdManagement /></RouteTransition>} />
       </Route>
       <Route path="*" element={<PageNotFound />} />
     </Routes>

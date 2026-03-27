@@ -1,8 +1,10 @@
 import React, { useState, useEffect, useContext, useCallback } from 'react';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { CalvingAIContext } from '@/components/layout/AppLayout';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { usePullToRefresh } from '@/hooks/usePullToRefresh';
+import { useTabScrollPosition } from '@/hooks/useTabScrollPosition';
 import PullToRefreshIndicator from '@/components/shared/PullToRefreshIndicator';
 import { Search, Filter, ArrowLeft, Edit2, ChevronRight, TableProperties, List, BarChart3, Tag } from 'lucide-react';
 import HerdReports from '@/components/herd/HerdReports';
@@ -47,7 +49,44 @@ function SummaryCard({ emoji, label, value, accent }) {
 }
 
 export default function HerdManagement() {
-  const [view, setView] = useState('dashboard'); // 'dashboard' | 'spreadsheet' | 'all-animals' | 'detail' | 'edit'
+  const location = useLocation();
+  const navigate = useNavigate();
+  const { animalId } = useParams();
+  useTabScrollPosition('herd-scroll-container');
+
+  const getViewFromPath = () => {
+    if (location.pathname.includes('/herd/spreadsheet')) return 'spreadsheet';
+    if (location.pathname.includes('/herd/reports')) return 'reports';
+    if (location.pathname.includes('/herd/all-animals')) return 'all-animals';
+    if (location.pathname.includes('/herd/detail/')) return 'detail';
+    if (location.pathname.includes('/herd/edit/')) return 'edit';
+    return 'dashboard';
+  };
+
+  const view = getViewFromPath();
+
+  const setView = (newView) => {
+    switch (newView) {
+      case 'spreadsheet':
+        navigate('/herd/spreadsheet');
+        break;
+      case 'reports':
+        navigate('/herd/reports');
+        break;
+      case 'all-animals':
+        navigate('/herd/all-animals');
+        break;
+      case 'detail':
+        if (selectedAnimal) navigate(`/herd/detail/${selectedAnimal.id}`);
+        break;
+      case 'edit':
+        if (selectedAnimal) navigate(`/herd/edit/${selectedAnimal.id}`);
+        break;
+      default:
+        navigate('/herd');
+    }
+  };
+
   const [search, setSearch] = useState('');
   const [typeFilter, setTypeFilter] = useState('all');
   const [statusFilter, setStatusFilter] = useState('all');
@@ -65,7 +104,6 @@ export default function HerdManagement() {
   }, [setOpenHerdAI]);
 
   useEffect(() => { base44.auth.me().then(setCurrentUser).catch(() => {}); }, []);
-  useEffect(() => { window.scrollTo(0, 0); }, [view, selectedAnimal]);
 
   const { data: animals = [], isLoading } = useQuery({
     queryKey: ['animals'],
@@ -99,12 +137,25 @@ export default function HerdManagement() {
 
   const updateMutation = useMutation({
     mutationFn: ({ id, data }) => base44.entities.Animals.update(id, data),
+    onMutate: async ({ id, data }) => {
+      await queryClient.cancelQueries({ queryKey: ['animals'] });
+      const previousAnimals = queryClient.getQueryData(['animals']);
+      queryClient.setQueryData(['animals'], (old = []) =>
+        old.map(a => a.id === id ? { ...a, ...data } : a)
+      );
+      return { previousAnimals };
+    },
     onSuccess: (_, { id, data }) => {
       queryClient.invalidateQueries({ queryKey: ['animals'] });
       toast.success(`#${data.tag_number} updated!`);
-      // refresh selected animal
       setSelectedAnimal(prev => prev ? { ...prev, ...data } : prev);
-      setView('detail');
+      navigate(`/herd/detail/${id}`);
+    },
+    onError: (_err, _data, context) => {
+      if (context?.previousAnimals) {
+        queryClient.setQueryData(['animals'], context.previousAnimals);
+      }
+      toast.error('Failed to update animal');
     },
   });
 
@@ -337,14 +388,22 @@ export default function HerdManagement() {
     );
   }
 
+  // Load animal from list when animalId param changes
+  useEffect(() => {
+    if (animalId && (view === 'detail' || view === 'edit') && !selectedAnimal) {
+      const animal = animals.find(a => a.id === animalId);
+      if (animal) setSelectedAnimal(animal);
+    }
+  }, [animalId, animals, view, selectedAnimal]);
+
   // ── ALL ANIMALS VIEW ──────────────────────────────────────
   if (view === 'all-animals') {
     return (
-      <div className="min-h-screen pb-[60px] bg-background" ref={scrollableRef}>
+      <div className="min-h-screen pb-[60px] bg-background" ref={scrollableRef} id="herd-scroll-container">
         <PullToRefreshIndicator pullDistance={pullDistance} threshold={threshold} isRefreshing={isRefreshing} />
         <div className="sticky top-0 z-10" style={{ background: PURPLE_DARK }}>
           <div className="flex items-center justify-between px-4 h-14">
-            <button onClick={() => setView('dashboard')} className="text-white/80 hover:text-white p-2 -ml-2">
+            <button onClick={() => navigate('/herd')} className="text-white/80 hover:text-white p-2 -ml-2">
               <ArrowLeft className="w-6 h-6" />
             </button>
             <h1 className="font-heading font-black text-white text-xl">All Animals</h1>
@@ -414,7 +473,7 @@ export default function HerdManagement() {
             {filtered.map(animal => (
               <button
                 key={animal.id}
-                onClick={() => { setSelectedAnimal(animal); setView('detail'); }}  
+                onClick={() => { setSelectedAnimal(animal); navigate(`/herd/detail/${animal.id}`); }}  
                 className="w-full text-left bg-white rounded-2xl border border-purple-100 p-4 shadow-sm hover:shadow-md transition-all active:scale-[0.98]"
               >
                 <div className="flex items-start gap-3">
@@ -449,7 +508,7 @@ export default function HerdManagement() {
 
   // ── DASHBOARD VIEW ────────────────────────────────────────
   return (
-    <div className="min-h-screen pb-[60px] bg-background">
+    <div className="min-h-screen pb-[60px] bg-background" id="herd-scroll-container">
 
       {/* Header */}
       <div className="px-4 pt-6 pb-5" style={{ background: `linear-gradient(135deg, ${PURPLE_DARK}, ${PURPLE})` }}>
@@ -492,7 +551,7 @@ export default function HerdManagement() {
         {/* Main Action — Open Master Spreadsheet */}
         <div>
           <button
-            onClick={() => setView('spreadsheet')}
+            onClick={() => navigate('/herd/spreadsheet')}
             className="w-full h-24 rounded-2xl font-heading font-black text-xl text-white shadow-xl active:scale-[0.98] transition-all flex items-center justify-center gap-3"
             style={{ background: `linear-gradient(135deg, ${PURPLE}, ${PURPLE_DARK})` }}
           >
@@ -505,7 +564,7 @@ export default function HerdManagement() {
         {/* Secondary Actions */}
         <div className="grid grid-cols-2 gap-3">
           <button
-            onClick={() => setView('all-animals')}
+            onClick={() => navigate('/herd/all-animals')}
             className="h-16 rounded-2xl font-heading font-bold text-base border-2 bg-white active:scale-[0.98] transition-all flex items-center justify-center gap-2"
             style={{ borderColor: PURPLE, color: PURPLE }}
           >
@@ -513,7 +572,7 @@ export default function HerdManagement() {
             View All Animals
           </button>
           <button
-            onClick={() => setView('reports')}
+            onClick={() => navigate('/herd/reports')}
             className="h-16 rounded-2xl font-heading font-bold text-base border-2 bg-white active:scale-[0.98] transition-all flex items-center justify-center gap-2"
             style={{ borderColor: PURPLE, color: PURPLE }}
           >
