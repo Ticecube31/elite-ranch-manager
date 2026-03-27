@@ -32,7 +32,7 @@ export default function QuickCalfForm({ animals = [], seasons = [], pastures = [
   const [showAddCowModal, setShowAddCowModal] = useState(false);
   const [newCowForm, setNewCowForm] = useState({ tag_number: '', animal_type: 'Cow', date_of_birth: '' });
   const [creatingCow, setCreatingCow] = useState(false);
-
+  const [creatingPasture, setCreatingPasture] = useState(false);
 
 
   // Auto-derive calving season from date
@@ -85,6 +85,29 @@ export default function QuickCalfForm({ animals = [], seasons = [], pastures = [
       toast.error('Failed to create cow');
     }
     setCreatingCow(false);
+  };
+
+  const handleAddPasture = async () => {
+    if (!pastureInput.trim()) { toast.error('Pasture name required'); return; }
+    
+    const exists = pastures.find(p => p.pasture_name === pastureInput.trim());
+    if (exists) { toast.error(`Pasture "${pastureInput}" already exists`); return; }
+
+    setCreatingPasture(true);
+    try {
+      const created = await base44.entities.Pastures.create({
+        pasture_name: pastureInput.trim(),
+        status: 'Active',
+      });
+      
+      toast.success(`Pasture "${pastureInput}" created!`);
+      setPastureId(created.id);
+      setShowPastureSuggestions(false);
+      onAnimalsRefresh?.();
+    } catch (err) {
+      toast.error('Failed to create pasture');
+    }
+    setCreatingPasture(false);
   };
 
   const handleSubmit = async (e) => {
@@ -276,7 +299,17 @@ export default function QuickCalfForm({ animals = [], seasons = [], pastures = [
             </div>
           )}
           {pastureInput && !pastureId && (
-            <p className="text-xs text-orange-500 mt-1">⚠️ No matching pasture — select from the list</p>
+           <div className="mt-2 space-y-2">
+             <p className="text-xs text-orange-600 font-semibold">⚠️ No pasture found with name "{pastureInput}"</p>
+             <button
+               type="button"
+               onClick={handleAddPasture}
+               disabled={creatingPasture}
+               className="w-full h-10 rounded-xl border-2 border-orange-300 text-orange-600 font-semibold text-sm hover:bg-orange-50 transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
+             >
+               <Plus className="w-4 h-4" /> Create Pasture "{pastureInput}"
+             </button>
+           </div>
           )}
         </div>
       )}
