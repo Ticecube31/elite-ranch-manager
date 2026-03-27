@@ -203,7 +203,7 @@ export default function CalvingSeason() {
   // ── ADD CALF FORM VIEW ────────────────────────────────────
   if (view === 'add-calf') {
     return (
-      <div className="min-h-screen" style={{ background: GREEN_BG }}>
+      <div className="min-h-screen pb-[60px] bg-background">
         {/* Form Header */}
         <div className="sticky top-0 z-10 flex items-center justify-between px-4 h-14 border-b border-green-200"
           style={{ background: GREEN_DARK }}>
@@ -261,7 +261,7 @@ export default function CalvingSeason() {
   // ── EDIT ANIMAL VIEW ──────────────────────────────────────
   if (view === 'edit-animal' && editAnimal) {
     return (
-      <div className="min-h-screen" style={{ background: GREEN_BG }}>
+      <div className="min-h-screen pb-[60px] bg-background">
         <div className="sticky top-0 z-10 flex items-center justify-between px-4 h-14 border-b border-green-200"
           style={{ background: GREEN_DARK }}>
           <button onClick={() => { setView('main'); setEditAnimal(null); }} className="text-white/80 hover:text-white p-2 -ml-2">
@@ -298,7 +298,7 @@ export default function CalvingSeason() {
 
   // ── MAIN VIEW ─────────────────────────────────────────────
   return (
-    <div className="min-h-screen pb-[60px]" style={{ background: GREEN_BG }}>
+    <div className="min-h-screen pb-[60px] bg-background">
 
       {/* ── Season Header Bar ────────────────────────────── */}
       <div className="sticky top-0 z-10 px-4 py-3 shadow-md" style={{ background: GREEN_DARK }}>

@@ -124,7 +124,7 @@ export default function FastSortingInputScreen() {
   const isMatchingRight = matchedAnimal && matchedAnimal.sex === 'Female';
 
   return (
-    <div className="min-h-screen flex flex-col" style={{ background: BLUE_LIGHT }}>
+    <div className="min-h-screen flex flex-col pb-[60px] bg-background">
 
       {/* ── TOP HEADER ──────────────────────────────────────── */}
       <div className="sticky top-0 z-20 shrink-0 flex items-center justify-between px-4 h-16" style={{ background: BLUE_DARK }}>
