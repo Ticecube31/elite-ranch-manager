@@ -8,6 +8,7 @@ import {
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 import AnimalDetailView from '@/components/herd/AnimalDetailView';
 import ImportWizard from '@/components/herd/ImportWizard';
+import ChildrenCell from '@/components/herd/ChildrenCell';
 import { Input } from '@/components/ui/input';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
@@ -287,7 +288,7 @@ export default function MasterSpreadsheet({ onBack, currentUser }) {
   const [showImportWizard, setShowImportWizard] = useState(false);
   const [detailAnimalId, setDetailAnimalId] = useState(null);
   const [colWidths, setColWidths] = useState({});
-  const [visibleCols, setVisibleCols] = useState(new Set(['tag_number', 'sex', 'animal_type', 'mother_animal_number', 'date_of_birth', 'status', 'pasture_id', 'notes']));
+  const [visibleCols, setVisibleCols] = useState(new Set(['tag_number', 'sex', 'animal_type', 'mother_animal_number', 'date_of_birth', 'status', 'pasture_id', 'notes', 'children']));
   const [showColMenu, setShowColMenu] = useState(false);
   const [resizing, setResizing] = useState(null);
   const [sortedAnimals, setSortedAnimals] = useState([]);
@@ -481,7 +482,7 @@ export default function MasterSpreadsheet({ onBack, currentUser }) {
   const DEFAULT_WIDTHS = {
     tag_number: 100, sex: 70, animal_type: 140, mother_animal_number: 120,
     date_of_birth: 130, birth_year: 100, status: 100, pasture_id: 150, born_pasture_id: 150,
-    twin: 70, notes: 250, photo_url: 44, is_archived: 100, created_date: 110,
+    twin: 70, children: 180, notes: 250, photo_url: 44, is_archived: 100, created_date: 110,
   };
 
   const COLS = [
@@ -495,6 +496,7 @@ export default function MasterSpreadsheet({ onBack, currentUser }) {
     { key: 'pasture_id', label: 'Location' },
     { key: 'born_pasture_id', label: 'Born Pasture' },
     { key: 'twin', label: 'Twin' },
+    { key: 'children', label: 'Children' },
     { key: 'notes', label: 'Notes' },
     { key: 'photo_url', label: '📷' },
     { key: 'is_archived', label: 'Archived' },
@@ -777,11 +779,33 @@ export default function MasterSpreadsheet({ onBack, currentUser }) {
                   </div>
                 )}
                 {visibleCols.has('twin') && (
-                  <div style={{ width: getColWidth('twin'), minWidth: getColWidth('twin'), maxWidth: getColWidth('twin'), borderRight: '1px solid #ccc' }} className="px-2 py-2 shrink-0 text-sm overflow-hidden flex items-center">
-                    <span className="text-sm">{animal.twin ? '✓' : '—'}</span>
-                  </div>
-                )}
-                {visibleCols.has('notes') && (
+                   <div style={{ width: getColWidth('twin'), minWidth: getColWidth('twin'), maxWidth: getColWidth('twin'), borderRight: '1px solid #ccc' }} className="px-2 py-2 shrink-0 text-sm overflow-hidden flex items-center">
+                     <span className="text-sm">{animal.twin ? '✓' : '—'}</span>
+                   </div>
+                 )}
+                 {visibleCols.has('children') && (
+                   <div style={{ width: getColWidth('children'), minWidth: getColWidth('children'), maxWidth: getColWidth('children'), borderRight: '1px solid #ccc' }} className="px-2 py-2 shrink-0 text-sm overflow-hidden flex items-center">
+                     <ChildrenCell 
+                       animalId={animal.id} 
+                       animals={animals}
+                       onAddChild={async (childId) => {
+                         const child = animals.find(a => a.id === childId);
+                         if (child) {
+                           await handleCellUpdate(child, 'mother_animal_number', animal.tag_number);
+                           await handleCellUpdate(child, 'mother_id', animal.id);
+                         }
+                       }}
+                       onRemoveChild={async (childId) => {
+                         const child = animals.find(a => a.id === childId);
+                         if (child) {
+                           await handleCellUpdate(child, 'mother_animal_number', '');
+                           await handleCellUpdate(child, 'mother_id', '');
+                         }
+                       }}
+                     />
+                   </div>
+                 )}
+                 {visibleCols.has('notes') && (
                   <div style={{ width: getColWidth('notes'), minWidth: getColWidth('notes'), maxWidth: getColWidth('notes'), borderRight: '1px solid #ccc' }} className="px-2 py-2 shrink-0 text-sm overflow-hidden flex items-center">
                     <CellText value={animal.notes} onCommit={v => handleCellUpdate(animal, 'notes', v)} placeholder="—" />
                   </div>
