@@ -3,6 +3,7 @@ import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { ArrowLeft, Plus, Download, Search, X, ChevronUp, ChevronDown, Trash2, CheckSquare, Square, Save } from 'lucide-react';
 import { toast } from 'sonner';
+import { DragDropContext, Draggable, Droppable } from '@hello-pangea/dnd';
 
 const PURPLE = '#6B2D5E';
 const PURPLE_DARK = '#4A1F40';
@@ -115,6 +116,10 @@ export default function CalvingSeasonSpreadsheet({ onBack }) {
   const [showAddModal, setShowAddModal] = useState(false);
   const [visibleCols, setVisibleCols] = useState(new Set(['year', 'label', 'total_animals', 'notes']));
   const [showColMenu, setShowColMenu] = useState(false);
+  const [colOrder, setColOrder] = useState(['year', 'label', 'total_animals', 'notes']);
+  const [colWidths, setColWidths] = useState({});
+  const [draggedCol, setDraggedCol] = useState(null);
+  const [resizing, setResizing] = useState(null);
 
   const queryClient = useQueryClient();
 
@@ -173,6 +178,50 @@ export default function CalvingSeasonSpreadsheet({ onBack }) {
     else { setSortCol(col); setSortDir('asc'); }
   };
 
+  const getColWidth = (key) => colWidths[key] || (COLS.find(c => c.key === key)?.defaultWidth || 120);
+
+  const handleColResize = (colKey, newWidth) => {
+    setColWidths(prev => ({ ...prev, [colKey]: Math.max(80, newWidth) }));
+  };
+
+  const handleColDragStart = (e, colKey) => {
+    setDraggedCol(colKey);
+    e.dataTransfer.effectAllowed = 'move';
+  };
+
+  const handleColDragOver = (e) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+  };
+
+  const handleColDrop = (e, targetKey) => {
+    e.preventDefault();
+    if (!draggedCol || draggedCol === targetKey) { setDraggedCol(null); return; }
+    const dragIdx = colOrder.indexOf(draggedCol);
+    const dropIdx = colOrder.indexOf(targetKey);
+    const newOrder = [...colOrder];
+    newOrder.splice(dragIdx, 1);
+    newOrder.splice(dropIdx, 0, draggedCol);
+    setColOrder(newOrder);
+    setDraggedCol(null);
+  };
+
+  const handleSaveLayout = () => {
+    const layout = { colOrder, colWidths, visibleCols: Array.from(visibleCols) };
+    localStorage.setItem('calving-season-layout', JSON.stringify(layout));
+    toast.success('Layout saved!');
+  };
+
+  const toggleColVisibility = (key) => {
+    const n = new Set(visibleCols);
+    n.has(key) ? n.delete(key) : n.add(key);
+    setVisibleCols(n);
+  };
+
+  const handleDragEnd = (result) => {
+    // drag-drop for rows if needed
+  };
+
   const exportCSV = (rows) => {
     const headers = ['Year', 'Label', 'Total Animals', 'Notes'];
     const data = rows.map(s => [s.year, s.label || '', s.total_animals || 0, (s.notes || '').replace(/,/g, ' ')]);
@@ -189,10 +238,10 @@ export default function CalvingSeasonSpreadsheet({ onBack }) {
     : <span className="w-3 h-3 inline-block" />;
 
   const COLS = [
-    { key: 'year', label: 'Year' },
-    { key: 'label', label: 'Label' },
-    { key: 'total_animals', label: 'Total Animals' },
-    { key: 'notes', label: 'Notes' },
+    { key: 'year', label: 'Year', defaultWidth: 120 },
+    { key: 'label', label: 'Label', defaultWidth: 150 },
+    { key: 'total_animals', label: 'Total Animals', defaultWidth: 140 },
+    { key: 'notes', label: 'Notes', defaultWidth: 200 },
   ];
 
   return (
@@ -228,6 +277,13 @@ export default function CalvingSeasonSpreadsheet({ onBack }) {
       <div className="flex items-center justify-between px-4 py-2 shrink-0">
         <p className="text-xs font-semibold text-gray-400">{filtered.length} seasons{selected.size > 0 ? ` · ${selected.size} selected` : ''}</p>
         <div className="flex gap-2">
+          <button
+            onClick={handleSaveLayout}
+            className="h-9 px-3 rounded-xl flex items-center justify-center gap-1.5 text-xs font-bold hover:bg-gray-100 border border-gray-200"
+            title="Save layout as default"
+          >
+            <Save className="w-4 h-4" /> Save Layout
+          </button>
           <div className="relative">
             <button onClick={() => setShowColMenu(!showColMenu)} className="h-9 w-9 rounded-xl flex items-center justify-center text-sm font-bold hover:bg-gray-100 border border-gray-200" title="Show/hide columns">
               ⚙️
@@ -236,7 +292,7 @@ export default function CalvingSeasonSpreadsheet({ onBack }) {
               <div className="absolute top-10 right-0 bg-white border border-gray-200 rounded-lg shadow-lg p-2 z-50 w-48">
                 {COLS.map(col => (
                   <label key={col.key} className="flex items-center gap-2 px-2 py-1 cursor-pointer hover:bg-gray-50 rounded text-xs">
-                    <input type="checkbox" checked={visibleCols.has(col.key)} onChange={() => { const n = new Set(visibleCols); n.has(col.key) ? n.delete(col.key) : n.add(col.key); setVisibleCols(n); }} className="w-4 h-4 rounded" />
+                    <input type="checkbox" checked={visibleCols.has(col.key)} onChange={() => toggleColVisibility(col.key)} className="w-4 h-4 rounded" />
                     {col.label}
                   </label>
                 ))}
@@ -261,6 +317,7 @@ export default function CalvingSeasonSpreadsheet({ onBack }) {
             <p className="font-semibold text-gray-600">No seasons found</p>
           </div>
         ) : (
+          <DragDropContext onDragEnd={handleDragEnd}>
           <div className="flex-1 overflow-y-auto bg-white border border-gray-300">
             {/* Header row */}
             <div className="flex items-center bg-gray-50 sticky top-0 z-10" style={{ borderBottom: '2px solid #999' }}>
@@ -271,54 +328,112 @@ export default function CalvingSeasonSpreadsheet({ onBack }) {
                     : <Square className="w-5 h-5 text-gray-300" />}
                 </button>
               </div>
-              {COLS.map(col => visibleCols.has(col.key) && (
-                <div key={col.key} style={{ flex: col.key === 'notes' ? 1 : '0 0 auto', minWidth: col.key === 'notes' ? 200 : 120, borderRight: '1px solid #ccc' }} className="shrink-0 group">
-                  <button onClick={() => handleSort(col.key)} className="w-full text-left text-xs font-bold px-2 py-3 uppercase tracking-wide hover:bg-gray-100 cursor-pointer" style={{ color: PURPLE_DARK }}>
-                    {col.label} <SortIcon col={col.key} />
-                  </button>
-                </div>
-              ))}
+              {colOrder.map(colKey => {
+                const col = COLS.find(c => c.key === colKey);
+                if (!col || !visibleCols.has(col.key)) return null;
+                const width = getColWidth(col.key);
+                return (
+                  <div
+                    key={col.key}
+                    style={{ width, minWidth: width, maxWidth: width, borderRight: '1px solid #ccc', opacity: draggedCol === col.key ? 0.5 : 1 }}
+                    className="relative shrink-0 group flex items-center cursor-move select-none"
+                    draggable
+                    onDragStart={(e) => handleColDragStart(e, col.key)}
+                    onDragOver={handleColDragOver}
+                    onDrop={(e) => handleColDrop(e, col.key)}
+                  >
+                    <button
+                      onClick={() => handleSort(col.key)}
+                      className="w-full text-left text-xs font-bold px-2 py-3 uppercase tracking-wide overflow-hidden cursor-pointer hover:bg-gray-100"
+                      style={{ color: PURPLE_DARK }}
+                    >
+                      {col.label} <SortIcon col={col.key} />
+                    </button>
+                    <div
+                      onMouseDown={(e) => {
+                        e.preventDefault();
+                        setResizing(col.key);
+                        const startX = e.clientX;
+                        const startW = width;
+
+                        const onMove = (e) => {
+                          const delta = e.clientX - startX;
+                          handleColResize(col.key, startW + delta);
+                        };
+
+                        const onUp = () => {
+                          document.removeEventListener('mousemove', onMove);
+                          document.removeEventListener('mouseup', onUp);
+                          setResizing(null);
+                        };
+
+                        document.addEventListener('mousemove', onMove);
+                        document.addEventListener('mouseup', onUp);
+                      }}
+                      className="absolute right-0 top-0 h-full w-1 bg-gray-400 hover:bg-purple-500 cursor-col-resize opacity-0 group-hover:opacity-100 transition-opacity"
+                    />
+                  </div>
+                );
+              })}
               <div style={{ width: 40, minWidth: 40, maxWidth: 40, borderRight: '1px solid #ccc' }} className="shrink-0" />
             </div>
 
             {/* Rows */}
-            {filtered.map((season) => (
-              <div key={season.id} className={`flex transition-all ${selected.has(season.id) ? 'bg-purple-100' : 'bg-white'}`} style={{ borderBottom: '1px solid #ccc' }}>
-                <div style={{ width: 40, minWidth: 40, maxWidth: 40, borderRight: '1px solid #ccc' }} className="flex items-center justify-center shrink-0 py-2">
-                  <button onClick={() => toggleSelect(season.id)}>
-                    {selected.has(season.id) ? <CheckSquare className="w-5 h-5" style={{ color: PURPLE }} /> : <Square className="w-5 h-5 text-gray-200" />}
-                  </button>
-                </div>
+            <Droppable droppableId="seasons-list">
+              {(provided, snapshot) => (
+                <div ref={provided.innerRef} {...provided.droppableProps}>
+            {filtered.map((season, idx) => (
+              <Draggable key={season.id} draggableId={season.id} index={idx}>
+                {(provided, snapshot) => (
+                  <div
+                    ref={provided.innerRef}
+                    {...provided.draggableProps}
+                    {...provided.dragHandleProps}
+                    className={`flex transition-all ${snapshot.isDragging ? 'bg-blue-100 shadow-lg' : selected.has(season.id) ? 'bg-purple-100' : 'bg-white'}`}
+                    style={{ borderBottom: '1px solid #ccc', ...provided.draggableProps.style }}
+                  >
+                    <div style={{ width: 40, minWidth: 40, maxWidth: 40, borderRight: '1px solid #ccc' }} className="flex items-center justify-center shrink-0 py-2">
+                      <button onClick={() => toggleSelect(season.id)}>
+                        {selected.has(season.id) ? <CheckSquare className="w-5 h-5" style={{ color: PURPLE }} /> : <Square className="w-5 h-5 text-gray-200" />}
+                      </button>
+                    </div>
 
-                {visibleCols.has('year') && (
-                  <div style={{ minWidth: 120, borderRight: '1px solid #ccc', color: PURPLE_DARK }} className="px-2 py-2 shrink-0 font-bold text-sm overflow-hidden flex items-center">
-                    <CellNumber value={season.year} onCommit={v => handleCellUpdate(season, 'year', v)} />
-                  </div>
-                )}
-                {visibleCols.has('label') && (
-                  <div style={{ minWidth: 150, borderRight: '1px solid #ccc' }} className="px-2 py-2 shrink-0 text-sm overflow-hidden flex items-center">
-                    <CellText value={season.label} onCommit={v => handleCellUpdate(season, 'label', v)} />
-                  </div>
-                )}
-                {visibleCols.has('total_animals') && (
-                  <div style={{ minWidth: 120, borderRight: '1px solid #ccc' }} className="px-2 py-2 shrink-0 text-sm overflow-hidden flex items-center">
-                    <span className="text-sm">{season.total_animals || 0}</span>
-                  </div>
-                )}
-                {visibleCols.has('notes') && (
-                  <div style={{ flex: 1, borderRight: '1px solid #ccc', minWidth: 200 }} className="px-2 py-2 shrink-0 text-sm overflow-hidden flex items-center">
-                    <CellText value={season.notes} onCommit={v => handleCellUpdate(season, 'notes', v)} />
-                  </div>
-                )}
+                    {visibleCols.has('year') && (
+                      <div style={{ width: getColWidth('year'), minWidth: getColWidth('year'), maxWidth: getColWidth('year'), borderRight: '1px solid #ccc', color: PURPLE_DARK }} className="px-2 py-2 shrink-0 font-bold text-sm overflow-hidden flex items-center">
+                        <CellNumber value={season.year} onCommit={v => handleCellUpdate(season, 'year', v)} />
+                      </div>
+                    )}
+                    {visibleCols.has('label') && (
+                      <div style={{ width: getColWidth('label'), minWidth: getColWidth('label'), maxWidth: getColWidth('label'), borderRight: '1px solid #ccc' }} className="px-2 py-2 shrink-0 text-sm overflow-hidden flex items-center">
+                        <CellText value={season.label} onCommit={v => handleCellUpdate(season, 'label', v)} />
+                      </div>
+                    )}
+                    {visibleCols.has('total_animals') && (
+                      <div style={{ width: getColWidth('total_animals'), minWidth: getColWidth('total_animals'), maxWidth: getColWidth('total_animals'), borderRight: '1px solid #ccc' }} className="px-2 py-2 shrink-0 text-sm overflow-hidden flex items-center">
+                        <span className="text-sm">{season.total_animals || 0}</span>
+                      </div>
+                    )}
+                    {visibleCols.has('notes') && (
+                      <div style={{ width: getColWidth('notes'), minWidth: getColWidth('notes'), maxWidth: getColWidth('notes'), borderRight: '1px solid #ccc' }} className="px-2 py-2 shrink-0 text-sm overflow-hidden flex items-center">
+                        <CellText value={season.notes} onCommit={v => handleCellUpdate(season, 'notes', v)} />
+                      </div>
+                    )}
 
-                <div style={{ width: 40, minWidth: 40, maxWidth: 40, borderRight: '1px solid #ccc' }} className="flex items-center justify-center shrink-0">
-                  <button onClick={() => setDeleteTarget(season)} className="p-1.5 hover:bg-gray-100">
-                    <Trash2 className="w-4 h-4 text-red-300 hover:text-red-500" />
-                  </button>
-                </div>
-              </div>
+                    <div style={{ width: 40, minWidth: 40, maxWidth: 40, borderRight: '1px solid #ccc' }} className="flex items-center justify-center shrink-0">
+                      <button onClick={() => setDeleteTarget(season)} className="p-1.5 hover:bg-gray-100">
+                        <Trash2 className="w-4 h-4 text-red-300 hover:text-red-500" />
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </Draggable>
             ))}
+            {provided.placeholder}
+                </div>
+              )}
+            </Droppable>
           </div>
+          </DragDropContext>
         )}
       </div>
 
