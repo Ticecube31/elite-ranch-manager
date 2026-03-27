@@ -1,7 +1,9 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import { Input } from '@/components/ui/input';
 import { ArrowLeft, Download, X, ChevronRight, ChevronDown } from 'lucide-react';
 import { format } from 'date-fns';
+import { usePullToRefresh } from '@/hooks/usePullToRefresh';
+import PullToRefreshIndicator from '@/components/shared/PullToRefreshIndicator';
 
 const GREEN = '#4CAF50';
 const GREEN_DARK = '#2E7D32';
@@ -72,10 +74,16 @@ function CalfDetailSheet({ calf, pastures, onClose, onEditCalf }) {
   );
 }
 
-export default function AllCalvesView({ calves = [], pastures = [], seasons = [], onBack, onEditCalf }) {
+export default function AllCalvesView({ calves = [], pastures = [], seasons = [], onBack, onEditCalf, onRefresh }) {
   const [search, setSearch]           = useState('');
   const [page, setPage]               = useState(1);
   const [detail, setDetail]           = useState(null);
+
+  const handleRefresh = useCallback(async () => {
+    if (onRefresh) await onRefresh();
+  }, [onRefresh]);
+
+  const { scrollableRef, isRefreshing, pullDistance, threshold } = usePullToRefresh(handleRefresh, 80);
 
   // Season filter: null = All, or a season id
   const [selectedSeasonId, setSelectedSeasonId] = useState(null);
@@ -171,7 +179,8 @@ export default function AllCalvesView({ calves = [], pastures = [], seasons = []
   }
 
   return (
-    <div className="min-h-screen flex flex-col" style={{ background: GREEN_BG }}>
+    <div className="min-h-screen flex flex-col" style={{ background: GREEN_BG }} ref={scrollableRef}>
+      <PullToRefreshIndicator pullDistance={pullDistance} threshold={threshold} isRefreshing={isRefreshing} />
 
       {/* ── Header ─────────────────────────────────────── */}
       <div className="sticky top-0 z-10 shrink-0" style={{ background: GREEN_DARK }}>

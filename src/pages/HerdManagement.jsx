@@ -1,7 +1,9 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect, useContext, useCallback } from 'react';
 import { CalvingAIContext } from '@/components/layout/AppLayout';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { usePullToRefresh } from '@/hooks/usePullToRefresh';
+import PullToRefreshIndicator from '@/components/shared/PullToRefreshIndicator';
 import { Search, Filter, ArrowLeft, Edit2, ChevronRight, TableProperties, List, BarChart3, Tag } from 'lucide-react';
 import HerdReports from '@/components/herd/HerdReports';
 import HerdManagementAIAssistant from '@/components/herd/HerdManagementAIAssistant';
@@ -331,8 +333,15 @@ export default function HerdManagement() {
 
   // ── ALL ANIMALS VIEW ──────────────────────────────────────
   if (view === 'all-animals') {
+    const handleRefresh = useCallback(async () => {
+      await queryClient.invalidateQueries({ queryKey: ['animals'] });
+    }, [queryClient]);
+
+    const { scrollableRef, isRefreshing, pullDistance, threshold } = usePullToRefresh(handleRefresh, 80);
+
     return (
-      <div className="min-h-screen pb-[60px] bg-background">
+      <div className="min-h-screen pb-[60px] bg-background" ref={scrollableRef}>
+        <PullToRefreshIndicator pullDistance={pullDistance} threshold={threshold} isRefreshing={isRefreshing} />
         <div className="sticky top-0 z-10" style={{ background: PURPLE_DARK }}>
           <div className="flex items-center justify-between px-4 h-14">
             <button onClick={() => setView('dashboard')} className="text-white/80 hover:text-white p-2 -ml-2">

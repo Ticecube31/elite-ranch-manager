@@ -3,11 +3,30 @@ import { QueryClientProvider } from '@tanstack/react-query'
 import { queryClientInstance } from '@/lib/query-client'
 import { BrowserRouter as Router, Route, Routes, useLocation } from 'react-router-dom';
 import { useEffect } from 'react';
+import { AnimatePresence, motion } from 'framer-motion';
 
 function ScrollToTop() {
   const { pathname } = useLocation();
   useEffect(() => { window.scrollTo(0, 0); }, [pathname]);
   return null;
+}
+
+// Route wrapper with Framer Motion slide transitions
+function RouteTransition({ children }) {
+  const location = useLocation();
+  return (
+    <AnimatePresence mode="wait">
+      <motion.div
+        key={location.pathname}
+        initial={{ opacity: 0, x: 20 }}
+        animate={{ opacity: 1, x: 0 }}
+        exit={{ opacity: 0, x: -20 }}
+        transition={{ duration: 0.3 }}
+      >
+        {children}
+      </motion.div>
+    </AnimatePresence>
+  );
 }
 import PageNotFound from './lib/PageNotFound';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
@@ -55,16 +74,16 @@ const AuthenticatedApp = () => {
   return (
     <Routes>
       <Route element={<AppLayout />}>
-        <Route path="/" element={<Home />} />
-        <Route path="/calving" element={<CalvingSeason />} />
-        <Route path="/sorting" element={<CalfSortingDashboard />} />
-        <Route path="/sorting/setup" element={<PreSessionSetup />} />
-        <Route path="/sorting/:sessionId" element={<FastSortingInputScreen />} />
-        <Route path="/pastures" element={<PastureManagement />} />
-        <Route path="/settings" element={<Settings />} />
-        <Route path="/ai-assistant" element={<AIAssistant />} />
-        <Route path="/preg-checking" element={<PregChecking />} />
-        <Route path="/herd" element={<HerdManagement />} />
+        <Route path="/" element={<RouteTransition><Home /></RouteTransition>} />
+        <Route path="/calving/*" element={<RouteTransition><CalvingSeason /></RouteTransition>} />
+        <Route path="/sorting" element={<RouteTransition><CalfSortingDashboard /></RouteTransition>} />
+        <Route path="/sorting/setup" element={<RouteTransition><PreSessionSetup /></RouteTransition>} />
+        <Route path="/sorting/:sessionId" element={<RouteTransition><FastSortingInputScreen /></RouteTransition>} />
+        <Route path="/pastures" element={<RouteTransition><PastureManagement /></RouteTransition>} />
+        <Route path="/settings" element={<RouteTransition><Settings /></RouteTransition>} />
+        <Route path="/ai-assistant" element={<RouteTransition><AIAssistant /></RouteTransition>} />
+        <Route path="/preg-checking" element={<RouteTransition><PregChecking /></RouteTransition>} />
+        <Route path="/herd/*" element={<RouteTransition><HerdManagement /></RouteTransition>} />
       </Route>
       <Route path="*" element={<PageNotFound />} />
     </Routes>
