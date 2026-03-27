@@ -1,10 +1,11 @@
 import React, { useEffect, useState, createContext, useContext } from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
-import { Home, Baby, ArrowLeftRight, TreePine, HeartPulse, Rows3 } from 'lucide-react';
+import { Home, Baby, ArrowLeftRight, TreePine, HeartPulse, Rows3, Moon, Sun, Settings, LogOut, User } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { base44 } from '@/api/base44Client';
 import { useTheme } from '@/lib/ThemeContext';
 import AISearchBar from '@/components/layout/AISearchBar';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger, DropdownMenuSeparator, DropdownMenuItem } from '@/components/ui/dropdown-menu';
 
 // Context so CalvingSeason page can register its AI open handler
 export const CalvingAIContext = createContext({ openCalvingAI: null, setOpenCalvingAI: () => {} });
@@ -31,7 +32,7 @@ function UserAvatar({ user }) {
 
 export default function AppLayout() {
   const location = useLocation();
-  const { sectionTheme, headerStyle } = useTheme();
+  const { sectionTheme, headerStyle, isDark, toggleTheme } = useTheme();
   const [user, setUser] = useState(null);
   const [ranchName, setRanchName] = useState('Elite Ranch Manager');
   const [logoUrl, setLogoUrl] = useState('');
@@ -39,6 +40,10 @@ export default function AppLayout() {
   const [openHerdAI, setOpenHerdAI] = useState(null); // fn registered by HerdManagement
 
   const isColoredHeader = !!headerStyle.background;
+
+  const handleLogout = async () => {
+    await base44.auth.logout();
+  };
 
   useEffect(() => {
     base44.auth.me().then(setUser).catch(() => {});
@@ -121,17 +126,53 @@ export default function AppLayout() {
             ))}
           </nav>
 
-          {/* User Avatar */}
+          {/* User Menu */}
           {user && (
-            isColoredHeader
-              ? <UserAvatar user={user} />
-              : (
-                <div className="w-9 h-9 rounded-full bg-primary/15 border-2 border-primary/30 flex items-center justify-center shrink-0">
-                  <span className="text-sm font-bold text-primary">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button
+                  className={cn(
+                    'w-9 h-9 rounded-full flex items-center justify-center shrink-0 transition-colors hover:opacity-80',
+                    isColoredHeader
+                      ? 'bg-white/20 border-2 border-white/30'
+                      : 'bg-primary/15 border-2 border-primary/30'
+                  )}
+                >
+                  <span className={cn('text-sm font-bold', isColoredHeader ? 'text-white' : 'text-primary')}>
                     {user.full_name?.[0]?.toUpperCase() ?? user.email?.[0]?.toUpperCase() ?? '?'}
                   </span>
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-48">
+                <div className="px-2 py-1.5">
+                  <p className="text-xs font-bold text-gray-500 uppercase">Account</p>
+                  <p className="text-sm font-semibold text-gray-900">{user.full_name || 'User'}</p>
+                  <p className="text-xs text-gray-500">{user.email}</p>
                 </div>
-              )
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={toggleTheme} className="cursor-pointer">
+                  {isDark ? <Sun className="w-4 h-4 mr-2" /> : <Moon className="w-4 h-4 mr-2" />}
+                  {isDark ? 'Light Mode' : 'Dark Mode'}
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link to="/settings" className="cursor-pointer">
+                    <Settings className="w-4 h-4 mr-2" />
+                    Settings
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link to="/settings" className="cursor-pointer">
+                    <User className="w-4 h-4 mr-2" />
+                    Manage Account
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={handleLogout} className="cursor-pointer text-red-600">
+                  <LogOut className="w-4 h-4 mr-2" />
+                  Logout
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           )}
         </div>
       </header>
