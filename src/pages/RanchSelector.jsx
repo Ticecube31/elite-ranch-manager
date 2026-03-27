@@ -255,10 +255,10 @@ export default function RanchSelector() {
                       <h3 className="font-heading font-bold text-lg" style={{ color: PURPLE_DARK }}>
                         {ranch.ranch_name}
                       </h3>
-                      <p className="text-xs text-gray-500 capitalize">{ranch.userRole} • Click to enter</p>
+                      <p className="text-xs text-gray-500 capitalize">{ranch.userRole}</p>
                     </div>
                   </div>
-                  <div className="text-xs text-gray-400">Enter Ranch →</div>
+                  <div className="text-sm font-bold" style={{ color: PURPLE_DARK }}>Enter Ranch →</div>
                 </button>
               ))}
             </div>
