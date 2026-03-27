@@ -150,24 +150,15 @@ export default function FastSortingInputScreen() {
     <div className="min-h-screen flex flex-col pb-[60px] bg-background">
 
       {/* ── TOP HEADER ──────────────────────────────────────── */}
-      <div className="sticky top-0 z-20 shrink-0 flex items-center justify-between px-4 h-16" style={{ background: BLUE_DARK }}>
+      <div className="sticky top-0 z-20 shrink-0 flex items-center justify-between px-4 h-12" style={{ background: BLUE_DARK }}>
         <button
           onClick={handleEndSession}
           className="text-white/80 hover:text-white p-2 -ml-2 transition-colors"
         >
-          <ArrowLeft className="w-6 h-6" />
+          <ArrowLeft className="w-5 h-5" />
         </button>
-        <div className="text-center">
-          <p className="text-white/70 text-xs font-semibold uppercase tracking-wide">Sorting Session</p>
-          <p className="font-heading font-black text-white text-base leading-tight">{session.session_name || 'Session'}</p>
-          {session.session_date && (
-            <p className="text-white/60 text-xs mt-0.5">{format(new Date(session.session_date), 'MMM d, yyyy')}</p>
-          )}
-        </div>
-        <div className="text-right">
-          <p className="text-white/60 text-xs font-semibold">Sorted</p>
-          <p className="font-heading font-black text-white text-xl leading-tight">{session.total_sorted || 0}</p>
-        </div>
+        <p className="font-heading font-bold text-white text-sm">{session.session_name || 'Session'}</p>
+        <p className="font-heading font-black text-white text-lg">{session.total_sorted || 0}</p>
       </div>
 
       {/* ── MAIN CONTENT ────────────────────────────────────── */}
