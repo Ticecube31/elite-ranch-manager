@@ -44,7 +44,7 @@ function CellText({ value, onCommit, placeholder = '—' }) {
   );
   return (
     <button onClick={() => { setVal(value || ''); setEditing(true); }}
-      className="w-full text-left text-sm whitespace-pre-wrap break-words px-1 py-1 rounded hover:bg-purple-50 active:bg-purple-100">
+      className="w-full text-left text-sm whitespace-normal px-1 py-1 rounded hover:bg-purple-50 active:bg-purple-100 overflow-hidden">
       {value || <span className="text-gray-300">{placeholder}</span>}
     </button>
   );
@@ -66,7 +66,7 @@ function CellSelect({ value, options, onCommit }) {
   );
   return (
     <button onClick={() => setEditing(true)}
-      className="w-full text-left text-sm whitespace-pre-wrap break-words px-1 py-1 rounded hover:bg-purple-50 active:bg-purple-100">
+      className="w-full text-left text-sm whitespace-normal px-1 py-1 rounded hover:bg-purple-50 active:bg-purple-100 overflow-hidden">
       {value || <span className="text-gray-300">—</span>}
     </button>
   );
@@ -434,9 +434,9 @@ export default function MasterSpreadsheet({ onBack, currentUser }) {
 
 
   const DEFAULT_WIDTHS = {
-    tag_number: 70, sex: 60, animal_type: 100, mother_animal_number: 80,
-    date_of_birth: 90, birth_year: 70, status: 70, pasture_id: 90, born_pasture_id: 90,
-    twin: 50, notes: 120, photo_url: 44, is_archived: 70, created_date: 80,
+    tag_number: 100, sex: 70, animal_type: 140, mother_animal_number: 120,
+    date_of_birth: 130, birth_year: 100, status: 100, pasture_id: 150, born_pasture_id: 150,
+    twin: 70, notes: 250, photo_url: 44, is_archived: 100, created_date: 110,
   };
 
   const COLS = [
