@@ -176,7 +176,7 @@ export default function PreSessionSetup() {
         </div>
 
         {/* ── Bottom Action Bar (in scroll) ──────────────── */}
-        <div className="px-0 pb-3 pt-3 bg-white border-t border-blue-100 rounded-t-3xl mt-4">
+        <div className="px-0 py-3 bg-white border-t border-blue-100 mt-2">
           <div className="px-4">
             <button
               onClick={handleStart}
