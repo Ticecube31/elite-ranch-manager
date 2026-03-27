@@ -308,11 +308,6 @@ export default function MasterSpreadsheet({ onBack, currentUser }) {
     }
   }, []);
 
-  // Save sorted animals for reordering
-  useEffect(() => {
-    setSortedAnimals([...filtered]);
-  }, [filtered]);
-
   const queryClient = useQueryClient();
 
   const { data: animals = [], isLoading } = useQuery({
@@ -414,6 +409,11 @@ export default function MasterSpreadsheet({ onBack, currentUser }) {
     });
     return list;
   }, [animals, search, filterChip, sortCol, sortDir]);
+
+  // Save sorted animals for reordering
+  useEffect(() => {
+    setSortedAnimals([...filtered]);
+  }, [filtered]);
 
   const handleSort = (col) => {
     if (sortCol === col) setSortDir(d => d === 'asc' ? 'desc' : 'asc');
@@ -822,40 +822,42 @@ export default function MasterSpreadsheet({ onBack, currentUser }) {
               )}
             </Droppable>
           </div>
-        </DragDropContext>
+          </DragDropContext>
+          )}
+          </div>
 
-              {/* ── Bulk Action Bar ──────────────────────────────────── */}
-      {selected.size > 0 && (
-        <BulkBar
+          {/* ── Bulk Action Bar ──────────────────────────────────── */}
+          {selected.size > 0 && (
+          <BulkBar
           count={selected.size}
           pastures={pastures}
           onChangeStatus={handleBulkStatus}
           onChangeLocation={handleBulkLocation}
           onExport={() => exportCSV(animals.filter(a => selected.has(a.id)))}
           onClear={() => setSelected(new Set())}
-        />
-      )}
+          />
+          )}
 
-      {/* ── Modals ──────────────────────────────────────────── */}
-      {deleteTarget && (
-        <DeleteConfirm tagNumber={deleteTarget.tag_number} onConfirm={handleDelete} onCancel={() => setDeleteTarget(null)} />
-      )}
-      {showAddModal && (
-        <AddRowModal
+          {/* ── Modals ──────────────────────────────────────────── */}
+          {deleteTarget && (
+          <DeleteConfirm tagNumber={deleteTarget.tag_number} onConfirm={handleDelete} onCancel={() => setDeleteTarget(null)} />
+          )}
+          {showAddModal && (
+          <AddRowModal
           pastures={pastures}
           seasons={seasons}
           existingAnimals={animals}
           currentUser={currentUser}
           onSave={async (data) => { await createMutation.mutateAsync(data); setShowAddModal(false); }}
           onClose={() => setShowAddModal(false)}
-        />
-      )}
-      {showImportWizard && (
-        <ImportWizard
+          />
+          )}
+          {showImportWizard && (
+          <ImportWizard
           onClose={() => setShowImportWizard(false)}
           onSuccess={() => setShowImportWizard(false)}
-        />
-      )}
-    </div>
-  );
-}
+          />
+          )}
+          </div>
+          );
+          }
