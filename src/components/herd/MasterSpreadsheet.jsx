@@ -639,7 +639,7 @@ export default function MasterSpreadsheet({ onBack, currentUser }) {
           </div>
         ) : (
           <DragDropContext onDragEnd={handleDragEnd}>
-          <div className="overflow-hidden bg-white border border-gray-300">
+          <div className="overflow-y-auto bg-white border border-gray-300" style={{ maxHeight: 'calc(100vh - 280px)' }}>
             {/* Column headers */}
             <div className="flex items-center bg-gray-50 sticky top-0 z-10" style={{ borderBottom: '2px solid #999' }}>
               {/* Select-all checkbox */}
