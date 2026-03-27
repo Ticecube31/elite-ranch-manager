@@ -30,14 +30,16 @@ export default function RanchSelector() {
 
   const loadData = async () => {
     try {
-      setLoading(true);
+      setLoading(false);
       
       // Get current user
       const currentUser = await base44.auth.me();
       if (!currentUser) {
-        await base44.auth.redirectToLogin();
+        setUser(null);
         return;
       }
+      
+      setLoading(true);
       setUser(currentUser);
 
       // Get user's ranches
@@ -136,6 +138,27 @@ export default function RanchSelector() {
   const discoverRanches = allRanches.filter(
     r => !userRanches.find(ur => ur.id === r.id) && r.status === 'active'
   ).filter(r => r.ranch_name.toLowerCase().includes(search.toLowerCase()));
+
+  if (!user) {
+    return (
+      <div className="min-h-screen flex items-center justify-center" style={{ background: `linear-gradient(135deg, ${PURPLE_DARK}, ${PURPLE})` }}>
+        <div className="text-center">
+          <div className="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-6" style={{ background: 'rgba(255,255,255,0.15)' }}>
+            <span className="text-white font-heading font-black text-2xl">ER</span>
+          </div>
+          <h1 className="text-white font-heading font-black text-3xl mb-2">Elite Ranch Manager</h1>
+          <p className="text-white/70 mb-8">Manage your cattle with confidence</p>
+          <Button
+            onClick={() => base44.auth.redirectToLogin()}
+            className="h-13 px-8 text-base font-bold text-white"
+            style={{ background: `linear-gradient(135deg, ${PURPLE}, ${PURPLE_DARK})` }}
+          >
+            Sign In
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   if (loading) {
     return (
