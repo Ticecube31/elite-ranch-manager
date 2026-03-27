@@ -149,20 +149,19 @@ export default function QuickCalfForm({ animals = [], seasons = [], pastures = [
         <NumericInput
           value={motherTagInput}
           onChange={e => {
-            const val = e.target.value;
-            setMotherTagInput(val);
-            const match = validMothers.find(m => m.tag_number === val.trim());
-            if (match) {
-              setMotherId(match.id);
-              setTagNumber(match.tag_number);
-              if (!pastureId && match.pasture_id) {
-                setPastureId(match.pasture_id);
-                const matchedPasture = pastures.find(p => p.id === match.pasture_id);
-                if (matchedPasture) setPastureInput(matchedPasture.pasture_name);
-              }
-            } else {
-              setMotherId('');
-            }
+           const val = e.target.value;
+           setMotherTagInput(val);
+           const match = validMothers.find(m => m.tag_number === val.trim());
+           if (match) {
+             setMotherId(match.id);
+             if (!pastureId && match.pasture_id) {
+               setPastureId(match.pasture_id);
+               const matchedPasture = pastures.find(p => p.id === match.pasture_id);
+               if (matchedPasture) setPastureInput(matchedPasture.pasture_name);
+             }
+           } else {
+             setMotherId('');
+           }
           }}
           placeholder="Mother's tag #"
           className={`h-14 text-base mt-1 ${
