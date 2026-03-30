@@ -140,7 +140,7 @@ export default function QuickCalfForm({ animals = [], seasons = [], pastures = [
     setSaving(false);
   };
 
-  return (
+  return (<>
     <form onSubmit={handleSubmit} className="space-y-5 pb-4">
 
       {/* Sex */}
