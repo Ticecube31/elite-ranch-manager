@@ -341,8 +341,8 @@ export default function QuickCalfForm({ animals = [], seasons = [], pastures = [
           {saving ? 'Saving...' : 'Save Calf'}
         </Button>
       </div>
-
-      {/* Add Cow Modal */}
+    </form>
+     {/* Add Cow Modal */}
       {showAddCowModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
           <div className="bg-white rounded-3xl w-full max-w-lg shadow-2xl p-6 space-y-4 mx-4">
@@ -412,6 +412,5 @@ export default function QuickCalfForm({ animals = [], seasons = [], pastures = [
           </div>
         </div>
       )}
-    </form>
   );
 }
