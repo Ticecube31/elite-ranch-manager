@@ -49,7 +49,7 @@ export default function QuickCalfForm({ animals = [], seasons = [], pastures = [
   );
   const isDuplicate = duplicates.length > 0 && !twin;
 
-        const handleAddCow = async () => {
+          const handleAddCow = async () => {
     toast.info('Step 1: Button clicked');
 
     if (!newCowForm.tag_number.trim()) {
@@ -83,6 +83,7 @@ export default function QuickCalfForm({ animals = [], seasons = [], pastures = [
         birth_year: birthYear,
         status: 'Alive',
         is_archived: false,
+        ranch_id: 1,                    // ← THIS WAS MISSING
       });
 
       toast.success(`✅ Cow #${newCowForm.tag_number} created!`);
@@ -95,8 +96,7 @@ export default function QuickCalfForm({ animals = [], seasons = [], pastures = [
       setMotherId(created.id);
       setTagNumber(newCowForm.tag_number.trim());
     } catch (err) {
-      toast.error('Failed to create cow');
-      alert('ERROR DETAILS:\n' + (err.message || err));   // ← This will pop up the exact error
+      toast.error('Failed to create cow: ' + (err.message || 'Unknown error'));
       console.error(err);
     }
 
