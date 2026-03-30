@@ -13,12 +13,11 @@ import AppStoreSection        from '@/components/settings/AppStoreSection';
 import DataBackupSection      from '@/components/settings/DataBackupSection';
 import AuditLogSection        from '@/components/settings/AuditLogSection';
 import NotificationsSection   from '@/components/settings/NotificationsSection';
-import RanchAdminSection      from '@/components/settings/RanchAdminSection';
 
 const TABS = [
   { id: 'notifications', icon: Bell,           label: 'Notifications' },
-  { id: 'ranch',         icon: Users,          label: 'Ranch Admin'    },
   { id: 'branding',      icon: Palette,       label: 'Branding'      },
+  { id: 'users',         icon: Users,         label: 'Users'         },
   { id: 'appstore',      icon: Smartphone,    label: 'App Store'     },
   { id: 'data',          icon: Database,      label: 'Data'          },
   { id: 'audit',         icon: ClipboardList, label: 'Audit Log'     },
@@ -115,9 +114,6 @@ export default function Settings() {
          {activeTab === 'notifications' && (
            <NotificationsSection settings={settings} onSave={handleSave} />
          )}
-         {activeTab === 'ranch' && (
-           <RanchAdminSection />
-         )}
          {activeTab === 'branding' && (
            <BrandingSection
              settings={settings}
@@ -126,6 +122,7 @@ export default function Settings() {
              onLogoUpload={handleLogoUpload}
            />
          )}
+         {activeTab === 'users' && <UserManagementSection />}
          {activeTab === 'appstore' && (
            <AppStoreSection settings={settings} onSave={handleSave} />
          )}

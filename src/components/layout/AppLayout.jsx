@@ -1,10 +1,9 @@
 import React, { useEffect, useState, createContext, useContext } from 'react';
-import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
-import { Home, Baby, ArrowLeftRight, TreePine, HeartPulse, Rows3, Moon, Sun, Settings, LogOut, User, ChevronDown, Building2 } from 'lucide-react';
+import { Outlet, Link, useLocation } from 'react-router-dom';
+import { Home, Baby, ArrowLeftRight, TreePine, HeartPulse, Rows3, Moon, Sun, Settings, LogOut, User } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { base44 } from '@/api/base44Client';
 import { useTheme } from '@/lib/ThemeContext';
-import { RanchContext } from '@/lib/RanchContext';
 import AISearchBar from '@/components/layout/AISearchBar';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger, DropdownMenuSeparator, DropdownMenuItem } from '@/components/ui/dropdown-menu';
 
@@ -33,11 +32,10 @@ function UserAvatar({ user }) {
 
 export default function AppLayout() {
   const location = useLocation();
-  const navigate = useNavigate();
   const { sectionTheme, headerStyle, isDark, toggleTheme } = useTheme();
-  const ranchContext = useContext(RanchContext);
-  const { currentRanch, userRanches, switchRanch } = ranchContext || {};
   const [user, setUser] = useState(null);
+  const [ranchName, setRanchName] = useState('Elite Ranch Manager');
+  const [logoUrl, setLogoUrl] = useState('');
   const [openCalvingAI, setOpenCalvingAI] = useState(null); // fn registered by CalvingSeason
   const [openHerdAI, setOpenHerdAI] = useState(null); // fn registered by HerdManagement
 
@@ -47,13 +45,18 @@ export default function AppLayout() {
     await base44.auth.logout();
   };
 
-  const handleChangeRanch = () => {
-    navigate('/ranch-selector');
-  };
-
   useEffect(() => {
     base44.auth.me().then(setUser).catch(() => {});
   }, []);
+
+  useEffect(() => {
+    base44.entities.RanchSettings.list().then(list => {
+      if (list.length > 0) {
+        if (list[0].ranch_name) setRanchName(list[0].ranch_name);
+        if (list[0].logo_url)   setLogoUrl(list[0].logo_url);
+      }
+    }).catch(() => {});
+  }, [location.pathname]); // refresh on nav so Settings changes reflect instantly
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
@@ -68,25 +71,25 @@ export default function AppLayout() {
       >
         <div className="flex items-center gap-2 px-3 h-14 max-w-3xl mx-auto w-full">
 
-          {/* Ranch Logo + Name */}
+          {/* Logo */}
           <Link to="/" className="flex items-center gap-2 shrink-0 mr-1">
-            {currentRanch?.logo_url ? (
-              <img src={currentRanch.logo_url} alt="Ranch Logo" className="w-8 h-8 rounded-lg object-cover" />
+            {logoUrl ? (
+              <img src={logoUrl} alt="Ranch Logo" className="w-8 h-8 rounded-lg object-cover" />
             ) : (
               <div className={cn(
                 'w-8 h-8 rounded-lg flex items-center justify-center shrink-0',
                 isColoredHeader ? 'bg-white/20' : 'bg-primary'
               )}>
                 <span className={cn('font-heading font-black text-xs', isColoredHeader ? 'text-white' : 'text-primary-foreground')}>
-                  {currentRanch?.ranch_name?.slice(0, 2).toUpperCase() || 'ER'}
+                  ER
                 </span>
               </div>
             )}
             <span className={cn(
-              'font-heading font-bold text-sm truncate hidden sm:block max-w-[140px]',
+              'font-heading font-bold text-sm truncate hidden sm:block max-w-[120px]',
               isColoredHeader ? 'text-white' : 'text-foreground'
             )}>
-              {currentRanch?.ranch_name || 'Elite Ranch Manager'}
+              {ranchName}
             </span>
           </Link>
 
@@ -157,28 +160,13 @@ export default function AppLayout() {
                     Settings
                   </Link>
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={handleChangeRanch} className="cursor-pointer">
-                  <Building2 className="w-4 h-4 mr-2" />
-                  Change Ranch
+                <DropdownMenuItem asChild>
+                  <Link to="/settings" className="cursor-pointer">
+                    <User className="w-4 h-4 mr-2" />
+                    Manage Account
+                  </Link>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                {userRanches && userRanches.length > 1 && (
-                  <>
-                    <div className="px-2 py-1.5">
-                      <p className="text-xs font-bold text-gray-500 uppercase">Switch Ranch</p>
-                    </div>
-                    {userRanches.map(ranch => (
-                      <DropdownMenuItem 
-                        key={ranch.id}
-                        onClick={() => switchRanch(ranch.id)}
-                        className="cursor-pointer"
-                      >
-                        {currentRanch?.id === ranch.id ? '✓' : '○'} {ranch.ranch_name}
-                      </DropdownMenuItem>
-                    ))}
-                    <DropdownMenuSeparator />
-                  </>
-                )}
                 <DropdownMenuItem onClick={handleLogout} className="cursor-pointer text-red-600">
                   <LogOut className="w-4 h-4 mr-2" />
                   Logout

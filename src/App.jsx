@@ -1,12 +1,13 @@
-import React, { useEffect } from 'react';
 import { Toaster } from "@/components/ui/toaster"
 import { QueryClientProvider } from '@tanstack/react-query'
 import { queryClientInstance } from '@/lib/query-client'
 import { BrowserRouter as Router, Route, Routes, useLocation } from 'react-router-dom';
+import { useEffect } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 
 function ScrollToTop() {
-  useAppScrollRestoration();
+  const { pathname } = useLocation();
+  useEffect(() => { window.scrollTo(0, 0); }, [pathname]);
   return null;
 }
 
@@ -30,13 +31,10 @@ function RouteTransition({ children }) {
 import PageNotFound from './lib/PageNotFound';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
-import { RanchProvider, RanchContext } from '@/lib/RanchContext';
-import { useAppScrollRestoration } from '@/hooks/useAppScrollRestoration';
 
 import AppLayout from '@/components/layout/AppLayout';
 import { ThemeProvider } from '@/lib/ThemeContext';
 import Home from '@/pages/Home';
-import RanchSelector from '@/pages/RanchSelector';
 import CalvingSeason from '@/pages/CalvingSeason.jsx';
 import CalfSortingDashboard from '@/pages/CalfSortingDashboard';
 import PreSessionSetup from '@/pages/PreSessionSetup';
@@ -50,10 +48,8 @@ import CalvingSeasonSpreadsheet from '@/components/herd/CalvingSeasonSpreadsheet
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
-  const ranchContext = React.useContext(RanchContext);
-  const { currentRanch, loading: ranchLoading } = ranchContext || {};
 
-  if (isLoadingPublicSettings || isLoadingAuth || ranchLoading) {
+  if (isLoadingPublicSettings || isLoadingAuth) {
     return (
       <div className="fixed inset-0 flex items-center justify-center bg-background">
         <div className="flex flex-col items-center gap-3">
@@ -75,20 +71,11 @@ const AuthenticatedApp = () => {
     }
   }
 
-  if (!currentRanch) {
-    return <RanchSelector />;
-  }
-
   return (
     <Routes>
-      <Route path="/ranch-selector" element={<RanchSelector />} />
       <Route element={<AppLayout />}>
         <Route path="/" element={<RouteTransition><Home /></RouteTransition>} />
-        <Route path="/calving" element={<RouteTransition><CalvingSeason /></RouteTransition>} />
-        <Route path="/calving/add-calf" element={<RouteTransition><CalvingSeason /></RouteTransition>} />
-        <Route path="/calving/all-calves" element={<RouteTransition><CalvingSeason /></RouteTransition>} />
-        <Route path="/calving/reports" element={<RouteTransition><CalvingSeason /></RouteTransition>} />
-        <Route path="/calving/edit/:animalId" element={<RouteTransition><CalvingSeason /></RouteTransition>} />
+        <Route path="/calving/*" element={<RouteTransition><CalvingSeason /></RouteTransition>} />
         <Route path="/sorting" element={<RouteTransition><CalfSortingDashboard /></RouteTransition>} />
         <Route path="/sorting/setup" element={<RouteTransition><PreSessionSetup /></RouteTransition>} />
         <Route path="/sorting/:sessionId" element={<RouteTransition><FastSortingInputScreen /></RouteTransition>} />
@@ -96,12 +83,7 @@ const AuthenticatedApp = () => {
         <Route path="/settings" element={<RouteTransition><Settings /></RouteTransition>} />
         <Route path="/ai-assistant" element={<RouteTransition><AIAssistant /></RouteTransition>} />
         <Route path="/preg-checking" element={<RouteTransition><PregChecking /></RouteTransition>} />
-        <Route path="/herd" element={<RouteTransition><HerdManagement /></RouteTransition>} />
-        <Route path="/herd/detail/:animalId" element={<RouteTransition><HerdManagement /></RouteTransition>} />
-        <Route path="/herd/edit/:animalId" element={<RouteTransition><HerdManagement /></RouteTransition>} />
-        <Route path="/herd/all-animals" element={<RouteTransition><HerdManagement /></RouteTransition>} />
-        <Route path="/herd/reports" element={<RouteTransition><HerdManagement /></RouteTransition>} />
-        <Route path="/herd/spreadsheet" element={<RouteTransition><HerdManagement /></RouteTransition>} />
+        <Route path="/herd/*" element={<RouteTransition><HerdManagement /></RouteTransition>} />
       </Route>
       <Route path="*" element={<PageNotFound />} />
     </Routes>
@@ -114,10 +96,8 @@ function App() {
       <QueryClientProvider client={queryClientInstance}>
         <Router>
           <ThemeProvider>
-            <RanchProvider>
-              <ScrollToTop />
-              <AuthenticatedApp />
-            </RanchProvider>
+            <ScrollToTop />
+            <AuthenticatedApp />
           </ThemeProvider>
         </Router>
         <Toaster />

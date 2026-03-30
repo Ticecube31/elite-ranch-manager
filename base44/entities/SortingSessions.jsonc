@@ -2,10 +2,6 @@
   "name": "SortingSessions",
   "type": "object",
   "properties": {
-    "ranch_id": {
-      "type": "string",
-      "description": "ID of the Ranch this session belongs to"
-    },
     "session_name": {
       "type": "string",
       "description": "Name of this sorting session (e.g. Spring Sort 2026)"
@@ -97,7 +93,6 @@
     }
   },
   "required": [
-    "ranch_id",
     "session_name"
   ]
 }

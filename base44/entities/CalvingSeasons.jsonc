@@ -2,10 +2,6 @@
   "name": "CalvingSeasons",
   "type": "object",
   "properties": {
-    "ranch_id": {
-      "type": "string",
-      "description": "ID of the Ranch this season belongs to"
-    },
     "year": {
       "type": "number",
       "description": "The calendar year of this calving season (e.g. 2025)"
@@ -25,7 +21,6 @@
     }
   },
   "required": [
-    "ranch_id",
     "year"
   ]
 }

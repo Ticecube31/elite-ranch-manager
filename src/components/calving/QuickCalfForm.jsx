@@ -49,31 +49,16 @@ export default function QuickCalfForm({ animals = [], seasons = [], pastures = [
   );
   const isDuplicate = duplicates.length > 0 && !twin;
 
-          const handleAddCow = async () => {
-    toast.info('Step 1: Button clicked');
-
-    if (!newCowForm.tag_number.trim()) {
-      toast.error('Tag number required');
-      return;
-    }
-    if (!newCowForm.animal_type) {
-      toast.error('Animal type required');
-      return;
-    }
-
-    toast.info('Step 2: Checks passed');
-
+  const handleAddCow = async () => {
+    if (!newCowForm.tag_number.trim()) { toast.error('Tag number required'); return; }
+    if (!newCowForm.animal_type) { toast.error('Animal type required'); return; }
+    
     const exists = animals.find(a => a.tag_number === newCowForm.tag_number.trim());
-    if (exists) {
-      toast.error(`Tag #${newCowForm.tag_number} already exists`);
-      return;
-    }
+    if (exists) { toast.error(`Tag #${newCowForm.tag_number} already exists`); return; }
 
-    toast.info('Step 3: No duplicate — creating now...');
     setCreatingCow(true);
-
     const birthYear = newCowForm.date_of_birth ? new Date(newCowForm.date_of_birth).getFullYear() : undefined;
-
+    
     try {
       const created = await base44.entities.Animals.create({
         tag_number: newCowForm.tag_number.trim(),
@@ -83,23 +68,22 @@ export default function QuickCalfForm({ animals = [], seasons = [], pastures = [
         birth_year: birthYear,
         status: 'Alive',
         is_archived: false,
-        ranch_id: 1,                    // ← THIS WAS MISSING
       });
-
-      toast.success(`✅ Cow #${newCowForm.tag_number} created!`);
+      
+      toast.success(`${newCowForm.animal_type} #${newCowForm.tag_number} created!`);
       setShowAddCowModal(false);
       setNewCowForm({ tag_number: '', animal_type: 'Cow', date_of_birth: '' });
-
+      
+      // Refresh animals list
       onAnimalsRefresh?.();
-
+      
+      // Auto-select the new cow as mother
       setMotherTagInput(newCowForm.tag_number.trim());
       setMotherId(created.id);
       setTagNumber(newCowForm.tag_number.trim());
     } catch (err) {
-      toast.error('Failed to create cow: ' + (err.message || 'Unknown error'));
-      console.error(err);
+      toast.error('Failed to create cow');
     }
-
     setCreatingCow(false);
   };
 
@@ -156,7 +140,7 @@ export default function QuickCalfForm({ animals = [], seasons = [], pastures = [
     setSaving(false);
   };
 
-  return (<>
+  return (
     <form onSubmit={handleSubmit} className="space-y-5 pb-4">
 
       {/* Sex */}
@@ -357,74 +341,77 @@ export default function QuickCalfForm({ animals = [], seasons = [], pastures = [
           {saving ? 'Saving...' : 'Save Calf'}
         </Button>
       </div>
-        </form>
 
-    {/* Add Cow Modal */}
-    {showAddCowModal && (
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-        <div className="bg-white rounded-3xl w-full max-w-lg shadow-2xl p-6 space-y-4 mx-4">
-          <div className="flex items-center justify-between">
-            <h3 className="font-heading font-bold text-xl" style={{ color: GREEN_DARK }}>Add New Cow</h3>
-            <button onClick={() => setShowAddCowModal(false)} className="p-1 hover:bg-gray-100 rounded-lg">
-              <X className="w-6 h-6 text-gray-400" />
-            </button>
-          </div>
-          <div className="space-y-4">
-            <div>
-              <Label className="text-sm font-semibold">Tag Number *</Label>
-              <NumericInput
-                value={newCowForm.tag_number}
-                onChange={e => setNewCowForm(prev => ({ ...prev, tag_number: e.target.value }))}
-                placeholder="e.g. 142"
-                className="h-12 text-lg"
-              />
+      {/* Add Cow Modal */}
+      {showAddCowModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+          <div className="bg-white rounded-3xl w-full max-w-lg shadow-2xl p-6 space-y-4 mx-4">
+            <div className="flex items-center justify-between">
+              <h3 className="font-heading font-bold text-xl" style={{ color: GREEN_DARK }}>Add New Cow</h3>
+              <button onClick={() => setShowAddCowModal(false)} className="p-1 hover:bg-gray-100 rounded-lg">
+                <X className="w-6 h-6 text-gray-400" />
+              </button>
             </div>
-            <div>
-              <Label className="text-sm font-semibold">Type *</Label>
-              <div className="grid grid-cols-2 gap-3 mt-1">
-                {['Cow', '1st Calf Heifer'].map(t => (
-                  <button
-                    key={t}
-                    type="button"
-                    onClick={() => setNewCowForm(prev => ({ ...prev, animal_type: t }))}
-                    className={`h-12 rounded-xl border-2 font-bold text-sm transition-all ${
-                      newCowForm.animal_type === t
-                        ? 'border-green-500 bg-green-50 text-green-700'
-                        : 'border-gray-200 text-gray-400'
-                    }`}
-                  >
-                    {t}
-                  </button>
-                ))}
+
+            <div className="space-y-4">
+              <div>
+                <Label className="text-sm font-semibold">Tag Number *</Label>
+                <NumericInput
+                  value={newCowForm.tag_number}
+                  onChange={e => setNewCowForm(prev => ({ ...prev, tag_number: e.target.value }))}
+                  placeholder="e.g. 142"
+                  className="h-12 text-lg"
+                />
+              </div>
+
+              <div>
+                <Label className="text-sm font-semibold">Type *</Label>
+                <div className="grid grid-cols-2 gap-3 mt-1">
+                  {['Cow', '1st Calf Heifer'].map(t => (
+                    <button
+                      key={t}
+                      type="button"
+                      onClick={() => setNewCowForm(prev => ({ ...prev, animal_type: t }))}
+                      className={`h-12 rounded-xl border-2 font-bold text-sm transition-all ${
+                        newCowForm.animal_type === t
+                          ? 'border-green-500 bg-green-50 text-green-700'
+                          : 'border-gray-200 text-gray-400'
+                      }`}
+                    >
+                      {t}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <Label className="text-sm font-semibold">Birth Year (optional)</Label>
+                <Input
+                  type="date"
+                  value={newCowForm.date_of_birth}
+                  onChange={e => setNewCowForm(prev => ({ ...prev, date_of_birth: e.target.value }))}
+                  className="h-12 mt-1"
+                />
               </div>
             </div>
-            <div>
-              <Label className="text-sm font-semibold">Birth Year (optional)</Label>
-              <Input
-                type="date"
-                value={newCowForm.date_of_birth}
-                onChange={e => setNewCowForm(prev => ({ ...prev, date_of_birth: e.target.value }))}
-                className="h-12 mt-1"
-              />
+
+            <div className="flex gap-3 pt-2">
+              <Button type="button" variant="outline" onClick={() => setShowAddCowModal(false)} className="flex-1 h-12 text-base font-semibold">
+                Cancel
+              </Button>
+              <Button
+                type="button"
+                onClick={handleAddCow}
+                disabled={creatingCow}
+                className="flex-1 h-12 text-base font-semibold text-white"
+                style={{ background: `linear-gradient(135deg, ${GREEN}, ${GREEN_DARK})`, border: 'none' }}
+              >
+                {creatingCow ? 'Creating...' : 'Create Cow'}
+              </Button>
             </div>
           </div>
-          <div className="flex gap-3 pt-2">
-            <Button type="button" variant="outline" onClick={() => setShowAddCowModal(false)} className="flex-1 h-12 text-base font-semibold">
-              Cancel
-            </Button>
-           <button
-  type="button"
-  onClick={() => handleAddCow()}
-  disabled={creatingCow}
-  className="flex-1 h-12 text-base font-semibold text-white rounded-xl"
-  style={{ background: `linear-gradient(135deg, ${GREEN}, ${GREEN_DARK})`, border: 'none' }}
->
-  {creatingCow ? 'Creating...' : 'Create Cow'}
-</button>
-          </div>
         </div>
-      </div>
-    )}
-  </>
-);
+      )}
+    </form>
+  );
 }
