@@ -42,6 +42,17 @@ export default function CalvingSeason() {
 
   const view = getViewFromPath();
 
+  const [selectedSeasonId, setSelectedSeasonId] = useState('all');
+  const [showSeasonPicker, setShowSeasonPicker] = useState(false);
+  const [showNewSeasonDialog, setShowNewSeasonDialog] = useState(false);
+  const [newSeasonYear, setNewSeasonYear] = useState(new Date().getFullYear());
+  const [currentUser, setCurrentUser] = useState(null);
+  const [lastAdded, setLastAdded] = useState(null);
+  const [showAI, setShowAI] = useState(false);
+  const [isTwinDefault, setIsTwinDefault] = useState(false);
+  const [showEditSeasonDialog, setShowEditSeasonDialog] = useState(false);
+  const [editSeasonForm, setEditSeasonForm] = useState({});
+  const [editAnimal, setEditAnimal] = useState(null);
   // Route-based navigation
   const setView = (newView) => {
     switch (newView) {
@@ -62,20 +73,8 @@ export default function CalvingSeason() {
     }
   };
 
-  const [selectedSeasonId, setSelectedSeasonId] = useState('all');
-  const [showSeasonPicker, setShowSeasonPicker] = useState(false);
-  const [showNewSeasonDialog, setShowNewSeasonDialog] = useState(false);
-  const [newSeasonYear, setNewSeasonYear] = useState(new Date().getFullYear());
-  const [currentUser, setCurrentUser] = useState(null);
-  const [lastAdded, setLastAdded] = useState(null);
-  const [showAI, setShowAI] = useState(false);
-  const [isTwinDefault, setIsTwinDefault] = useState(false);
-  const [showEditSeasonDialog, setShowEditSeasonDialog] = useState(false);
-  const [editSeasonForm, setEditSeasonForm] = useState({});
-  const [editAnimal, setEditAnimal] = useState(null);
-
   const { setOpenCalvingAI } = useContext(CalvingAIContext);
-
+ 
   useEffect(() => { base44.auth.me().then(setCurrentUser).catch(() => {}); }, []);
 
    // Register AI opener with the layout header search bar
@@ -84,13 +83,6 @@ export default function CalvingSeason() {
     return () => setOpenCalvingAI(null);
   }, [setOpenCalvingAI]);
 
-  // Load edit animal from animals list when route includes animalId
-  useEffect(() => {
-    if (animalId && view === 'edit-animal' && !editAnimal) {
-      const animal = animals.find(a => a.id === animalId);
-      if (animal) setEditAnimal(animal);
-    }
-  }, [animalId, animals, view, editAnimal]);
 
   const queryClient = useQueryClient();
 
@@ -118,6 +110,14 @@ export default function CalvingSeason() {
     initialData: [],
   });
 
+  // Load edit animal from animals list when route includes animalId
+  useEffect(() => {
+    if (animalId && view === 'edit-animal' && !editAnimal) {
+      const animal = animals.find(a => a.id === animalId);
+      if (animal) setEditAnimal(animal);
+    }
+  }, [animalId, animals, view, editAnimal]);
+  
   // Auto-select most recent season on first load
   useEffect(() => {
     if (seasons.length > 0 && selectedSeasonId === 'all') {
