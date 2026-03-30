@@ -341,76 +341,74 @@ export default function QuickCalfForm({ animals = [], seasons = [], pastures = [
           {saving ? 'Saving...' : 'Save Calf'}
         </Button>
       </div>
-    </form>
-     {/* Add Cow Modal */}
-      {showAddCowModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-          <div className="bg-white rounded-3xl w-full max-w-lg shadow-2xl p-6 space-y-4 mx-4">
-            <div className="flex items-center justify-between">
-              <h3 className="font-heading font-bold text-xl" style={{ color: GREEN_DARK }}>Add New Cow</h3>
-              <button onClick={() => setShowAddCowModal(false)} className="p-1 hover:bg-gray-100 rounded-lg">
-                <X className="w-6 h-6 text-gray-400" />
-              </button>
+        </form>
+
+    {/* Add Cow Modal */}
+    {showAddCowModal && (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+        <div className="bg-white rounded-3xl w-full max-w-lg shadow-2xl p-6 space-y-4 mx-4">
+          <div className="flex items-center justify-between">
+            <h3 className="font-heading font-bold text-xl" style={{ color: GREEN_DARK }}>Add New Cow</h3>
+            <button onClick={() => setShowAddCowModal(false)} className="p-1 hover:bg-gray-100 rounded-lg">
+              <X className="w-6 h-6 text-gray-400" />
+            </button>
+          </div>
+          <div className="space-y-4">
+            <div>
+              <Label className="text-sm font-semibold">Tag Number *</Label>
+              <NumericInput
+                value={newCowForm.tag_number}
+                onChange={e => setNewCowForm(prev => ({ ...prev, tag_number: e.target.value }))}
+                placeholder="e.g. 142"
+                className="h-12 text-lg"
+              />
             </div>
-
-            <div className="space-y-4">
-              <div>
-                <Label className="text-sm font-semibold">Tag Number *</Label>
-                <NumericInput
-                  value={newCowForm.tag_number}
-                  onChange={e => setNewCowForm(prev => ({ ...prev, tag_number: e.target.value }))}
-                  placeholder="e.g. 142"
-                  className="h-12 text-lg"
-                />
-              </div>
-
-              <div>
-                <Label className="text-sm font-semibold">Type *</Label>
-                <div className="grid grid-cols-2 gap-3 mt-1">
-                  {['Cow', '1st Calf Heifer'].map(t => (
-                    <button
-                      key={t}
-                      type="button"
-                      onClick={() => setNewCowForm(prev => ({ ...prev, animal_type: t }))}
-                      className={`h-12 rounded-xl border-2 font-bold text-sm transition-all ${
-                        newCowForm.animal_type === t
-                          ? 'border-green-500 bg-green-50 text-green-700'
-                          : 'border-gray-200 text-gray-400'
-                      }`}
-                    >
-                      {t}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              <div>
-                <Label className="text-sm font-semibold">Birth Year (optional)</Label>
-                <Input
-                  type="date"
-                  value={newCowForm.date_of_birth}
-                  onChange={e => setNewCowForm(prev => ({ ...prev, date_of_birth: e.target.value }))}
-                  className="h-12 mt-1"
-                />
+            <div>
+              <Label className="text-sm font-semibold">Type *</Label>
+              <div className="grid grid-cols-2 gap-3 mt-1">
+                {['Cow', '1st Calf Heifer'].map(t => (
+                  <button
+                    key={t}
+                    type="button"
+                    onClick={() => setNewCowForm(prev => ({ ...prev, animal_type: t }))}
+                    className={`h-12 rounded-xl border-2 font-bold text-sm transition-all ${
+                      newCowForm.animal_type === t
+                        ? 'border-green-500 bg-green-50 text-green-700'
+                        : 'border-gray-200 text-gray-400'
+                    }`}
+                  >
+                    {t}
+                  </button>
+                ))}
               </div>
             </div>
-
-            <div className="flex gap-3 pt-2">
-              <Button type="button" variant="outline" onClick={() => setShowAddCowModal(false)} className="flex-1 h-12 text-base font-semibold">
-                Cancel
-              </Button>
-              <Button
-                type="button"
-                onClick={handleAddCow}
-                disabled={creatingCow}
-                className="flex-1 h-12 text-base font-semibold text-white"
-                style={{ background: `linear-gradient(135deg, ${GREEN}, ${GREEN_DARK})`, border: 'none' }}
-              >
-                {creatingCow ? 'Creating...' : 'Create Cow'}
-              </Button>
+            <div>
+              <Label className="text-sm font-semibold">Birth Year (optional)</Label>
+              <Input
+                type="date"
+                value={newCowForm.date_of_birth}
+                onChange={e => setNewCowForm(prev => ({ ...prev, date_of_birth: e.target.value }))}
+                className="h-12 mt-1"
+              />
             </div>
           </div>
+          <div className="flex gap-3 pt-2">
+            <Button type="button" variant="outline" onClick={() => setShowAddCowModal(false)} className="flex-1 h-12 text-base font-semibold">
+              Cancel
+            </Button>
+            <Button
+              type="button"
+              onClick={handleAddCow}
+              disabled={creatingCow}
+              className="flex-1 h-12 text-base font-semibold text-white"
+              style={{ background: `linear-gradient(135deg, ${GREEN}, ${GREEN_DARK})`, border: 'none' }}
+            >
+              {creatingCow ? 'Creating...' : 'Create Cow'}
+            </Button>
+          </div>
         </div>
-      )}
-  );
+      </div>
+    )}
+  </>
+);
 }
