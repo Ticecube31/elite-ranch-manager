@@ -384,15 +384,18 @@ export default function QuickCalfForm({ animals = [], seasons = [], pastures = [
                 </div>
               </div>
 
-              <div>
-                <Label className="text-sm font-semibold">Birth Year (optional)</Label>
-                <Input
-                  type="date"
-                  value={newCowForm.date_of_birth}
-                  onChange={e => setNewCowForm(prev => ({ ...prev, date_of_birth: e.target.value }))}
-                  className="h-12 mt-1"
-                />
-              </div>
+             <div>
+  <Label className="text-sm font-semibold">Birth Year (optional)</Label>
+  <Input
+    type="number"
+    placeholder="YYYY"
+    value={newCowForm.date_of_birth}
+    onChange={e => setNewCowForm(prev => ({ ...prev, date_of_birth: e.target.value }))}
+    className="h-12 mt-1"
+    min="1950"
+    max="2030"
+  />
+</div>
             </div>
 
             <div className="flex gap-3 pt-2">
