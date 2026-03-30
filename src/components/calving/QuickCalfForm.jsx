@@ -101,7 +101,6 @@ export default function QuickCalfForm({ animals = [], seasons = [], pastures = [
 
     setCreatingCow(false);
   };
-  };
 
   const handleAddPasture = async () => {
     if (!pastureInput.trim()) { toast.error('Pasture name required'); return; }
