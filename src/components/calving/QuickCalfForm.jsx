@@ -49,16 +49,17 @@ export default function QuickCalfForm({ animals = [], seasons = [], pastures = [
   );
   const isDuplicate = duplicates.length > 0 && !twin;
 
-  const handleAddCow = async () => {
+   const handleAddCow = async () => {
+    toast.info('Create Cow button was clicked!');   // ← debug line
+
     if (!newCowForm.tag_number.trim()) { toast.error('Tag number required'); return; }
     if (!newCowForm.animal_type) { toast.error('Animal type required'); return; }
-    
+   
     const exists = animals.find(a => a.tag_number === newCowForm.tag_number.trim());
     if (exists) { toast.error(`Tag #${newCowForm.tag_number} already exists`); return; }
-
     setCreatingCow(true);
     const birthYear = newCowForm.date_of_birth ? new Date(newCowForm.date_of_birth).getFullYear() : undefined;
-    
+   
     try {
       const created = await base44.entities.Animals.create({
         tag_number: newCowForm.tag_number.trim(),
@@ -69,15 +70,13 @@ export default function QuickCalfForm({ animals = [], seasons = [], pastures = [
         status: 'Alive',
         is_archived: false,
       });
-      
+     
       toast.success(`${newCowForm.animal_type} #${newCowForm.tag_number} created!`);
       setShowAddCowModal(false);
       setNewCowForm({ tag_number: '', animal_type: 'Cow', date_of_birth: '' });
-      
-      // Refresh animals list
+     
       onAnimalsRefresh?.();
-      
-      // Auto-select the new cow as mother
+     
       setMotherTagInput(newCowForm.tag_number.trim());
       setMotherId(created.id);
       setTagNumber(newCowForm.tag_number.trim());
