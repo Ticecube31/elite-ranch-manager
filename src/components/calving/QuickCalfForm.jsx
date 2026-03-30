@@ -414,7 +414,7 @@ export default function QuickCalfForm({ animals = [], seasons = [], pastures = [
             </Button>
            <button
   type="button"
-  onClick={handleAddCow}
+  onClick={() => handleAddCow()}
   disabled={creatingCow}
   className="flex-1 h-12 text-base font-semibold text-white rounded-xl"
   style={{ background: `linear-gradient(135deg, ${GREEN}, ${GREEN_DARK})`, border: 'none' }}
