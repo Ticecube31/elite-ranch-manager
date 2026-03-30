@@ -78,11 +78,19 @@ export default function CalvingSeason() {
 
   useEffect(() => { base44.auth.me().then(setCurrentUser).catch(() => {}); }, []);
 
-  // Register AI opener with the layout header search bar
+   // Register AI opener with the layout header search bar
   useEffect(() => {
     setOpenCalvingAI(() => () => setShowAI(true));
     return () => setOpenCalvingAI(null);
   }, [setOpenCalvingAI]);
+
+  // Load edit animal from animals list when route includes animalId
+  useEffect(() => {
+    if (animalId && view === 'edit-animal' && !editAnimal) {
+      const animal = animals.find(a => a.id === animalId);
+      if (animal) setEditAnimal(animal);
+    }
+  }, [animalId, animals, view, editAnimal]);
 
   const queryClient = useQueryClient();
 
@@ -262,49 +270,6 @@ export default function CalvingSeason() {
     ? (selectedSeason.label || `Calving Season ${selectedSeason.year}`)
     : 'All Seasons';
 
-  // ── SUCCESS VIEW ──────────────────────────────────────────
-  if (location.pathname === '/calving/success' && lastAdded) {
-    return (
-      <CalfSuccessAnimation
-        calfData={lastAdded}
-        onAddAnother={() => navigate('/calving/add-calf')}
-        onBack={() => navigate('/calving')}
-      />
-    );
-  }
-
-  // ── ADD CALF FORM VIEW ────────────────────────────────────
-  if (view === 'add-calf') {
-    return (
-      <div className="min-h-screen pb-[60px] bg-background" id="calving-scroll-container">
-        {/* Form Header */}
-        <div className="sticky top-0 z-10 flex items-center justify-between px-4 h-14 border-b border-green-200"
-          style={{ background: GREEN_DARK }}>
-          <button onClick={() => navigate('/calving')} className="text-white/80 hover:text-white p-2 -ml-2">
-            <X className="w-6 h-6" />
-          </button>
-          <h1 className="font-heading font-black text-white text-lg">Add New Calf</h1>
-          <div className="w-10" />
-        </div>
-        <div className="px-5 py-6 max-w-lg mx-auto">
-          <QuickCalfForm
-            animals={animals}
-            seasons={seasons}
-            pastures={pastures}
-            defaultSeasonId={selectedSeasonId !== 'all' ? selectedSeasonId : seasons[0]?.id}
-            isTwinDefault={isTwinDefault}
-            onSave={handleQuickSave}
-            onCancel={() => navigate('/calving')}
-            onAnimalsRefresh={() => {
-              queryClient.invalidateQueries({ queryKey: ['animals'] });
-              queryClient.invalidateQueries({ queryKey: ['pastures'] });
-            }}
-          />
-        </div>
-      </div>
-    );
-  }
-
   // ── ALL CALVES VIEW ───────────────────────────────────────
   if (view === 'all-calves') {
     return (
@@ -317,20 +282,31 @@ export default function CalvingSeason() {
       />
     );
   }
-
-  // ── REPORTS VIEW ───────────────────────────────────────────
-  if (view === 'reports') {
+  // ── ADD CALF FORM VIEW ────────────────────────────────────
+  if (view === 'add-calf') {
     return (
-      <CalvingSeasonReports
-        animals={animals}
-        seasons={seasons}
-        pastures={pastures}
-        selectedSeasonId={selectedSeasonId !== 'all' ? selectedSeasonId : seasons[0]?.id}
-        onBack={() => navigate('/calving')}
-      />
+      <div className="min-h-screen pb-[60px] bg-background" id="calving-scroll-container">
+        <div className="sticky top-0 z-10 flex items-center justify-between px-4 h-14 border-b border-green-200"
+          style={{ background: GREEN_DARK }}>
+          <button onClick={() => navigate('/calving')} className="text-white/80 hover:text-white p-2 -ml-2">
+            <X className="w-6 h-6" />
+          </button>
+          <h1 className="font-heading font-black text-white text-lg">Add New Calf</h1>
+          <div className="w-10" />
+        </div>
+        <div className="px-5 py-6 max-w-lg mx-auto">
+          <QuickCalfForm
+            onSave={handleQuickSave}
+            onCancel={() => navigate('/calving')}
+            seasons={seasons}
+            pastures={pastures}
+            isTwinDefault={isTwinDefault}
+            setIsTwinDefault={setIsTwinDefault}
+          />
+        </div>
+      </div>
     );
   }
-
   // ── EDIT ANIMAL VIEW ──────────────────────────────────────
   if (view === 'edit-animal' && editAnimal) {
     return (
@@ -369,13 +345,6 @@ export default function CalvingSeason() {
     );
   }
 
-  // Load edit animal from animals list when route includes animalId
-  useEffect(() => {
-    if (animalId && view === 'edit-animal' && !editAnimal) {
-      const animal = animals.find(a => a.id === animalId);
-      if (animal) setEditAnimal(animal);
-    }
-  }, [animalId, animals, view, editAnimal]);
 
   // ── MAIN VIEW ─────────────────────────────────────────────
   return (
