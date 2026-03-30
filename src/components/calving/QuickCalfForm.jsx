@@ -49,17 +49,31 @@ export default function QuickCalfForm({ animals = [], seasons = [], pastures = [
   );
   const isDuplicate = duplicates.length > 0 && !twin;
 
-   const handleAddCow = async () => {
-    toast.info('Create Cow button was clicked!');   // ← debug line
+     const handleAddCow = async () => {
+    toast.info('Step 1: Button clicked');
 
-    if (!newCowForm.tag_number.trim()) { toast.error('Tag number required'); return; }
-    if (!newCowForm.animal_type) { toast.error('Animal type required'); return; }
-   
+    if (!newCowForm.tag_number.trim()) {
+      toast.error('Tag number required');
+      return;
+    }
+    if (!newCowForm.animal_type) {
+      toast.error('Animal type required');
+      return;
+    }
+
+    toast.info('Step 2: Checks passed');
+
     const exists = animals.find(a => a.tag_number === newCowForm.tag_number.trim());
-    if (exists) { toast.error(`Tag #${newCowForm.tag_number} already exists`); return; }
+    if (exists) {
+      toast.error(`Tag #${newCowForm.tag_number} already exists`);
+      return;
+    }
+
+    toast.info('Step 3: No duplicate — creating...');
     setCreatingCow(true);
+
     const birthYear = newCowForm.date_of_birth ? new Date(newCowForm.date_of_birth).getFullYear() : undefined;
-   
+
     try {
       const created = await base44.entities.Animals.create({
         tag_number: newCowForm.tag_number.trim(),
@@ -70,20 +84,23 @@ export default function QuickCalfForm({ animals = [], seasons = [], pastures = [
         status: 'Alive',
         is_archived: false,
       });
-     
-      toast.success(`${newCowForm.animal_type} #${newCowForm.tag_number} created!`);
+
+      toast.success(`✅ SUCCESS: ${newCowForm.animal_type} #${newCowForm.tag_number} created!`);
       setShowAddCowModal(false);
       setNewCowForm({ tag_number: '', animal_type: 'Cow', date_of_birth: '' });
-     
+
       onAnimalsRefresh?.();
-     
+
       setMotherTagInput(newCowForm.tag_number.trim());
       setMotherId(created.id);
       setTagNumber(newCowForm.tag_number.trim());
     } catch (err) {
-      toast.error('Failed to create cow');
+      toast.error('Failed to create cow: ' + (err.message || err));
+      console.error(err);
     }
+
     setCreatingCow(false);
+  };
   };
 
   const handleAddPasture = async () => {
@@ -395,15 +412,15 @@ export default function QuickCalfForm({ animals = [], seasons = [], pastures = [
             <Button type="button" variant="outline" onClick={() => setShowAddCowModal(false)} className="flex-1 h-12 text-base font-semibold">
               Cancel
             </Button>
-           <button
+           <Button
   type="button"
-  onClick={() => alert("Create Cow button was clicked!")}
+  onClick={handleAddCow}
   disabled={creatingCow}
-  className="flex-1 h-12 text-base font-semibold text-white rounded-xl"
+  className="flex-1 h-12 text-base font-semibold text-white"
   style={{ background: `linear-gradient(135deg, ${GREEN}, ${GREEN_DARK})`, border: 'none' }}
 >
   {creatingCow ? 'Creating...' : 'Create Cow'}
-</button>
+</Button>
           </div>
         </div>
       </div>
