@@ -395,15 +395,15 @@ export default function QuickCalfForm({ animals = [], seasons = [], pastures = [
             <Button type="button" variant="outline" onClick={() => setShowAddCowModal(false)} className="flex-1 h-12 text-base font-semibold">
               Cancel
             </Button>
-            <Button
-              type="button"
-              onClick={handleAddCow}
-              disabled={creatingCow}
-              className="flex-1 h-12 text-base font-semibold text-white"
-              style={{ background: `linear-gradient(135deg, ${GREEN}, ${GREEN_DARK})`, border: 'none' }}
-            >
-              {creatingCow ? 'Creating...' : 'Create Cow'}
-            </Button>
+           <button
+  type="button"
+  onClick={() => alert("Create Cow button was clicked!")}
+  disabled={creatingCow}
+  className="flex-1 h-12 text-base font-semibold text-white rounded-xl"
+  style={{ background: `linear-gradient(135deg, ${GREEN}, ${GREEN_DARK})`, border: 'none' }}
+>
+  {creatingCow ? 'Creating...' : 'Create Cow'}
+</button>
           </div>
         </div>
       </div>
