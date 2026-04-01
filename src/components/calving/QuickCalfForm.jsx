@@ -123,13 +123,20 @@ export default function QuickCalfForm({ animals = [], seasons = [], pastures = [
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!sex) { toast.error('Select sex'); return; }
-    if (!motherId) { toast.error('Select a mother'); return; }
+    const missingFields = [];
+    if (!sex) missingFields.push('Sex');
+    if (!motherId) missingFields.push('Mother Tag #');
+    if (!tagNumber.trim()) missingFields.push('Calf Tag #');
+
+    if (missingFields.length > 0) {
+      toast.error(`Please fill out required field${missingFields.length > 1 ? 's' : ''}: ${missingFields.join(', ')}`);
+      return;
+    }
+
     if (motherInSameSeasonYear) {
       toast.error('Selected mother is from the same calving season year as this calf');
       return;
     }
-    if (!tagNumber.trim()) { toast.error('Tag number is required'); return; }
 
     const mother = selectedMother;
     const animal_type = sex === 'Male' ? 'Calf - Steer' : 'Calf - Heifer';
