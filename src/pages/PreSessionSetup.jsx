@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { ArrowLeft, ChevronRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
@@ -40,6 +40,12 @@ export default function PreSessionSetup() {
   const [rightLabel, setRightLabel] = useState('Right');
   const [notes, setNotes] = useState('');
   const [saving, setSaving] = useState(false);
+
+  const { data: seasons = [] } = useQuery({
+    queryKey: ['calving-seasons'],
+    queryFn: () => base44.entities.CalvingSeasons.list('-year'),
+    initialData: [],
+  });
 
   // Display current sex assignment
   const leftSexDisplay = leftSex === 'Male' ? '♂ Male / Steer' : '♀ Female / Heifer';
@@ -83,9 +89,12 @@ export default function PreSessionSetup() {
   const handleStart = async () => {
     if (!isReady) return;
     setSaving(true);
+    const sessionYear = Number(sessionDate?.split('-')?.[0]);
+    const matchedSeason = seasons.find((season) => season.year === sessionYear);
     await createMutation.mutateAsync({
       session_name: sessionName,
       session_date: sessionDate,
+      calving_season_id: matchedSeason?.id,
       status: 'Active',
       left_pen_label: leftLabel,
       right_pen_label: rightLabel,
