@@ -4,7 +4,6 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Save, X, Plus } from 'lucide-react';
 import { toast } from 'sonner';
 import NumericInput from '@/components/shared/NumericInput';
@@ -34,6 +33,19 @@ export default function QuickCalfForm({ animals = [], seasons = [], pastures = [
   const [creatingCow, setCreatingCow] = useState(false);
   const [creatingPasture, setCreatingPasture] = useState(false);
 
+  const selectedMother = validMothers.find(m => m.id === motherId);
+  const calfBirthYear = dateOfBirth ? new Date(dateOfBirth).getFullYear() : undefined;
+  const selectedSeason = seasons.find(s => s.id === calvingSeasonId);
+  const selectedSeasonYear = selectedSeason?.year;
+  const motherBirthYear = selectedMother?.birth_year || (selectedMother?.date_of_birth ? new Date(selectedMother.date_of_birth).getFullYear() : undefined);
+  const motherInSameSeasonYear = !!selectedMother && !!motherBirthYear && (motherBirthYear === calfBirthYear || motherBirthYear === selectedSeasonYear);
+
+  const findMotherByTag = (tag) =>
+    validMothers.find(m => m.tag_number?.toLowerCase() === tag.trim().toLowerCase());
+
+  const suggestCalfTagFromMother = (motherTag) => {
+    setTagNumber(prev => (prev?.trim() ? prev : motherTag));
+  };
 
   // Auto-derive calving season from date
   useEffect(() => {
@@ -80,7 +92,7 @@ export default function QuickCalfForm({ animals = [], seasons = [], pastures = [
       // Auto-select the new cow as mother
       setMotherTagInput(newCowForm.tag_number.trim());
       setMotherId(created.id);
-      setTagNumber(newCowForm.tag_number.trim());
+      suggestCalfTagFromMother(newCowForm.tag_number.trim());
     } catch (err) {
       toast.error('Failed to create cow');
     }
@@ -114,9 +126,13 @@ export default function QuickCalfForm({ animals = [], seasons = [], pastures = [
     e.preventDefault();
     if (!sex) { toast.error('Select sex'); return; }
     if (!motherId) { toast.error('Select a mother'); return; }
+    if (motherInSameSeasonYear) {
+      toast.error('Selected mother is from the same calving season year as this calf');
+      return;
+    }
     if (!tagNumber.trim()) { toast.error('Tag number is required'); return; }
 
-    const mother = validMothers.find(m => m.id === motherId);
+    const mother = selectedMother;
     const animal_type = sex === 'Male' ? 'Calf - Steer' : 'Calf - Heifer';
     const birthYear = dateOfBirth ? new Date(dateOfBirth).getFullYear() : undefined;
 
@@ -171,20 +187,27 @@ export default function QuickCalfForm({ animals = [], seasons = [], pastures = [
         <Label className="text-sm font-semibold">Mother Tag # *</Label>
         <NumericInput
           value={motherTagInput}
-          onChange={e => setMotherTagInput(e.target.value)}
-          onBlur={() => {
-            const val = motherTagInput.trim();
-            const match = validMothers.find(m => m.tag_number === val);
+          onChange={e => {
+            const val = e.target.value;
+            setMotherTagInput(val);
+            const match = findMotherByTag(val);
             if (match) {
               setMotherId(match.id);
-              setTagNumber(match.tag_number);
-              if (!pastureId && match.pasture_id) {
-                setPastureId(match.pasture_id);
-                const matchedPasture = pastures.find(p => p.id === match.pasture_id);
-                if (matchedPasture) setPastureInput(matchedPasture.pasture_name);
-              }
+              suggestCalfTagFromMother(match.tag_number);
             } else {
               setMotherId('');
+            }
+          }}
+          onBlur={() => {
+            const val = motherTagInput.trim();
+            if (!val) {
+              setMotherId('');
+              return;
+            }
+            const match = findMotherByTag(val);
+            if (match) {
+              setMotherId(match.id);
+              suggestCalfTagFromMother(match.tag_number);
             }
           }}
           placeholder="Mother's tag #"
@@ -209,7 +232,15 @@ export default function QuickCalfForm({ animals = [], seasons = [], pastures = [
         )}
         {motherId && (
           <p className="text-xs text-green-600 mt-1 font-semibold">
-            ✓ {validMothers.find(m => m.id === motherId)?.animal_type} found
+            ✓ {selectedMother?.animal_type} found
+            {motherBirthYear && (
+              <span className="text-gray-500"> — born {motherBirthYear}</span>
+            )}
+          </p>
+        )}
+        {motherInSameSeasonYear && (
+          <p className="text-xs text-red-600 mt-1 font-semibold">
+            ✗ Mother birth year ({motherBirthYear}) cannot match this calf&apos;s calving season year ({selectedSeasonYear || calfBirthYear})
           </p>
         )}
       </div>
@@ -220,7 +251,7 @@ export default function QuickCalfForm({ animals = [], seasons = [], pastures = [
         <NumericInput
           value={tagNumber}
           onChange={e => setTagNumber(e.target.value)}
-          placeholder="Auto-filled from mother"
+          placeholder="Enter calf tag #"
           className={`h-14 text-base mt-1 ${isDuplicate ? 'border-orange-400 bg-orange-50' : ''}`}
         />
         {isDuplicate && (
@@ -333,7 +364,7 @@ export default function QuickCalfForm({ animals = [], seasons = [], pastures = [
         </Button>
         <Button
           type="submit"
-          disabled={saving}
+          disabled={saving || motherInSameSeasonYear}
           className="flex-1 h-14 text-base font-semibold text-white"
           style={{ background: `linear-gradient(135deg, ${GREEN}, ${GREEN_DARK})`, border: 'none' }}
         >
