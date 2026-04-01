@@ -141,11 +141,28 @@ export default function AnimalForm({ animal, onSave, onCancel, existingAnimals =
     const ruleError = validateSexType(form.sex, form.animal_type);
     if (ruleError) { toast.error(ruleError); return; }
 
-    // Uniqueness check (skip if editing same animal)
-    const duplicate = existingAnimals.find(
-      a => a.tag_number?.toLowerCase() === form.tag_number.trim().toLowerCase() && a.id !== animal?.id
+    const normalizedTag = form.tag_number.trim().toLowerCase();
+    const animalsWithSameTag = existingAnimals.filter(
+      a => a.tag_number?.trim().toLowerCase() === normalizedTag && a.id !== animal?.id
     );
-    if (duplicate) { toast.error(`Tag #${form.tag_number} already exists`); return; }
+
+    if (animalsWithSameTag.length > 0) {
+      const formBirthYear = form.date_of_birth ? new Date(form.date_of_birth).getFullYear() : undefined;
+      const animalsWithSameBirthYear = animalsWithSameTag.filter((a) => {
+        const existingBirthYear = a.birth_year || (a.date_of_birth ? new Date(a.date_of_birth).getFullYear() : undefined);
+        return existingBirthYear && formBirthYear && existingBirthYear === formBirthYear;
+      });
+
+      if (animalsWithSameBirthYear.length > 0) {
+        const shouldContinue = window.confirm(
+          `Tag #${form.tag_number} already exists for birth year ${formBirthYear}. Do you want to add another animal with this same tag and birth year?`
+        );
+        if (!shouldContinue) return;
+      } else if (!formBirthYear) {
+        toast.error('Birth year is required when reusing an existing tag number');
+        return;
+      }
+    }
 
     // Mother required for Calf types
     const isCalfType = ['Calf - Steer', 'Calf - Heifer'].includes(form.animal_type);
