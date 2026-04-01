@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { ArrowRight, Plus, Play, Check, Edit2 } from 'lucide-react';
-import { format, isToday } from 'date-fns';
+import { format, isToday, isValid, parseISO } from 'date-fns';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
@@ -25,6 +25,8 @@ function SummaryCard({ emoji, label, value, accent }) {
 
 function SessionCard({ session, onResume, onFinish, onEdit }) {
   const isActive = session.status === 'Active';
+  const sessionDate = session.session_date ? parseISO(session.session_date) : null;
+  const hasValidSessionDate = sessionDate && isValid(sessionDate);
   
   return (
     <div className="bg-white rounded-2xl border border-blue-100 p-4 shadow-sm">
@@ -34,7 +36,7 @@ function SessionCard({ session, onResume, onFinish, onEdit }) {
             {session.session_name}
           </h3>
           <p className="text-sm text-gray-500 mt-0.5">
-            {session.session_date ? format(new Date(session.session_date), 'MMM d, yyyy') : 'No date'}
+            {hasValidSessionDate ? format(sessionDate, 'MMM d, yyyy') : 'No date'}
           </p>
         </div>
         <div className="text-right">
@@ -92,15 +94,10 @@ function SessionCard({ session, onResume, onFinish, onEdit }) {
 export default function CalfSortingDashboard() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const [currentUser, setCurrentUser] = useState(null);
   const [editingSession, setEditingSession] = useState(null);
   const [editName, setEditName] = useState('');
   const [editLeftLabel, setEditLeftLabel] = useState('');
   const [editRightLabel, setEditRightLabel] = useState('');
-
-  useEffect(() => {
-    base44.auth.me().then(setCurrentUser).catch(() => {});
-  }, []);
 
   const { data: sortingSessions = [] } = useQuery({
     queryKey: ['sorting-sessions'],
@@ -119,7 +116,11 @@ export default function CalfSortingDashboard() {
 
   // Calculate summary stats
   const todaySorted = sortingSessions
-    .filter(s => s.session_date && isToday(new Date(s.session_date)))
+    .filter((s) => {
+      if (!s.session_date) return false;
+      const sessionDate = parseISO(s.session_date);
+      return isValid(sessionDate) && isToday(sessionDate);
+    })
     .reduce((sum, s) => sum + (s.total_sorted || 0), 0);
 
   const totalSeasonSorted = sortingSessions.reduce((sum, s) => sum + (s.total_sorted || 0), 0);
