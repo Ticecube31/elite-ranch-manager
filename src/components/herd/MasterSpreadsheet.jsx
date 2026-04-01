@@ -12,6 +12,7 @@ import ChildrenCell from '@/components/herd/ChildrenCell';
 import CalvingSeasonSpreadsheet from '@/components/herd/CalvingSeasonSpreadsheet';
 import ColumnHeaderMenu from '@/components/herd/ColumnHeaderMenu';
 import { Input } from '@/components/ui/input';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
 import { logTagHistory } from '@/lib/tagHistoryLogger';
@@ -185,7 +186,15 @@ function BulkBar({ count, pastures, onChangeStatus, onChangeLocation, onExport, 
 // ── Add Row Modal ─────────────────────────────────────────────────────────────
 
 function AddRowModal({ pastures, seasons, existingAnimals, onSave, onClose, currentUser }) {
-  const [form, setForm] = useState({ tag_number: '', sex: '', animal_type: '', status: 'Alive', date_of_birth: new Date().toISOString().split('T')[0] });
+  const [form, setForm] = useState({
+    tag_number: '',
+    sex: '',
+    animal_type: '',
+    status: 'Alive',
+    birth_year: new Date().getFullYear(),
+    date_of_birth: new Date().toISOString().split('T')[0]
+  });
+  const [advancedOpen, setAdvancedOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const upd = (k, v) => setForm(prev => ({ ...prev, [k]: v }));
 
@@ -196,7 +205,10 @@ function AddRowModal({ pastures, seasons, existingAnimals, onSave, onClose, curr
     const dup = existingAnimals.find(a => a.tag_number === form.tag_number.trim());
     if (dup) { toast.error(`Tag #${form.tag_number} already exists`); return; }
     setSaving(true);
-    const birthYear = form.date_of_birth ? new Date(form.date_of_birth).getFullYear() : undefined;
+    const parsedBirthYear = Number(form.birth_year);
+    const birthYear = Number.isNaN(parsedBirthYear) || parsedBirthYear <= 0
+      ? (form.date_of_birth ? new Date(form.date_of_birth).getFullYear() : undefined)
+      : parsedBirthYear;
     const season = seasons.find(s => s.year === birthYear);
     await onSave({ ...form, tag_number: form.tag_number.trim(), birth_year: birthYear, calving_season_id: season?.id || '', is_archived: false });
     setSaving(false);
@@ -237,33 +249,58 @@ function AddRowModal({ pastures, seasons, existingAnimals, onSave, onClose, curr
             ))}
           </div>
         </div>
-        <div className="grid grid-cols-2 gap-3">
-          <div>
-            <label className="text-xs font-semibold text-gray-500">Date Tagged</label>
-            <Input type="date" value={form.date_of_birth} onChange={e => upd('date_of_birth', e.target.value)} className="h-12 mt-1" />
-          </div>
-          <div>
-            <label className="text-xs font-semibold text-gray-500">Status</label>
-            <select value={form.status} onChange={e => upd('status', e.target.value)}
-              className="w-full h-12 mt-1 rounded-xl border border-gray-200 px-3 text-sm">
-              {STATUSES.map(s => <option key={s} value={s}>{s}</option>)}
-            </select>
-          </div>
-        </div>
         <div>
-          <label className="text-xs font-semibold text-gray-500">Mother Tag # (optional)</label>
-          <Input value={form.mother_animal_number || ''} onChange={e => upd('mother_animal_number', e.target.value)} className="h-12 mt-1" placeholder="Mother's tag number" />
+          <label className="text-xs font-semibold text-gray-500">Birth Year</label>
+          <Input
+            type="number"
+            min="1900"
+            max="3000"
+            value={form.birth_year ?? ''}
+            onChange={e => upd('birth_year', e.target.value)}
+            className="h-12 mt-1"
+            placeholder="e.g. 2025"
+          />
         </div>
-        {pastures.length > 0 && (
-          <div>
-            <label className="text-xs font-semibold text-gray-500">Location</label>
-            <select value={form.pasture_id || ''} onChange={e => upd('pasture_id', e.target.value)}
-              className="w-full h-12 mt-1 rounded-xl border border-gray-200 px-3 text-sm">
-              <option value="">— No location —</option>
-              {pastures.map(p => <option key={p.id} value={p.id}>{p.pasture_name}</option>)}
-            </select>
-          </div>
-        )}
+        <Collapsible open={advancedOpen} onOpenChange={setAdvancedOpen}>
+          <CollapsibleTrigger asChild>
+            <button
+              type="button"
+              className="w-full h-10 rounded-xl border border-gray-200 bg-gray-50 text-sm font-semibold text-gray-700 flex items-center justify-center gap-2"
+            >
+              {advancedOpen ? 'Hide Advanced Fields' : 'Show Advanced Fields'}
+              {advancedOpen ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+            </button>
+          </CollapsibleTrigger>
+          <CollapsibleContent className="pt-3 space-y-3">
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="text-xs font-semibold text-gray-500">Date Tagged</label>
+                <Input type="date" value={form.date_of_birth} onChange={e => upd('date_of_birth', e.target.value)} className="h-12 mt-1" />
+              </div>
+              <div>
+                <label className="text-xs font-semibold text-gray-500">Status</label>
+                <select value={form.status} onChange={e => upd('status', e.target.value)}
+                  className="w-full h-12 mt-1 rounded-xl border border-gray-200 px-3 text-sm">
+                  {STATUSES.map(s => <option key={s} value={s}>{s}</option>)}
+                </select>
+              </div>
+            </div>
+            <div>
+              <label className="text-xs font-semibold text-gray-500">Mother Tag # (optional)</label>
+              <Input value={form.mother_animal_number || ''} onChange={e => upd('mother_animal_number', e.target.value)} className="h-12 mt-1" placeholder="Mother's tag number" />
+            </div>
+            {pastures.length > 0 && (
+              <div>
+                <label className="text-xs font-semibold text-gray-500">Location</label>
+                <select value={form.pasture_id || ''} onChange={e => upd('pasture_id', e.target.value)}
+                  className="w-full h-12 mt-1 rounded-xl border border-gray-200 px-3 text-sm">
+                  <option value="">— No location —</option>
+                  {pastures.map(p => <option key={p.id} value={p.id}>{p.pasture_name}</option>)}
+                </select>
+              </div>
+            )}
+          </CollapsibleContent>
+        </Collapsible>
         <div className="flex gap-3 pt-1">
           <button onClick={onClose} className="flex-1 h-13 py-3 rounded-xl border-2 border-gray-200 font-semibold text-gray-600">Cancel</button>
           <button onClick={handleSave} disabled={saving}
