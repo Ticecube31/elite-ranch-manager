@@ -421,22 +421,18 @@ export default function QuickCalfForm({ animals = [], seasons = [], pastures = [
 
               <div>
                 <Label className="text-sm font-semibold">Birth Year (optional)</Label>
-                <Select
+                <select
                   value={newCowForm.birth_year || 'unknown'}
-                  onValueChange={(value) => setNewCowForm(prev => ({ ...prev, birth_year: value === 'unknown' ? '' : value }))}
+                  onChange={(e) => setNewCowForm(prev => ({ ...prev, birth_year: e.target.value === 'unknown' ? '' : e.target.value }))}
+                  className="h-12 mt-1 w-full rounded-md border border-input bg-background px-3 text-sm"
                 >
-                  <SelectTrigger className="h-12 mt-1">
-                    <SelectValue placeholder="Select birth year" />
-                  </SelectTrigger>
-                  <SelectContent className="max-h-64">
-                    <SelectItem value="unknown">Unknown</SelectItem>
-                    {Array.from({ length: new Date().getFullYear() - 1949 }, (_, i) => String(new Date().getFullYear() - i)).map((year) => (
-                      <SelectItem key={year} value={year}>
-                        {year}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                  <option value="unknown">Unknown</option>
+                  {Array.from({ length: new Date().getFullYear() - 1949 }, (_, i) => String(new Date().getFullYear() - i)).map((year) => (
+                    <option key={year} value={year}>
+                      {year}
+                    </option>
+                  ))}
+                </select>
               </div>
             </div>
 
