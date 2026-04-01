@@ -209,6 +209,11 @@ export default function QuickCalfForm({ animals = [], seasons = [], pastures = [
               suggestCalfTagFromMother(match.tag_number);
             }
           }}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') {
+              e.preventDefault();
+            }
+          }}
           placeholder="Mother's tag #"
           className={`h-14 text-base mt-1 ${
             motherTagInput && !motherId ? 'border-orange-400 bg-orange-50' : motherId ? 'border-green-400 bg-green-50' : ''
