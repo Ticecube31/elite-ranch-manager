@@ -30,6 +30,7 @@ export default function FastSortingInputScreen() {
   const [showNoteDialog, setShowNoteDialog] = useState(false);
   const [noteText, setNoteText] = useState('');
   const [showExitConfirm, setShowExitConfirm] = useState(false);
+  const [twinWarningSeenForCow, setTwinWarningSeenForCow] = useState(false);
 
   // Fetch session details
   const { data: session, isLoading: sessionLoading } = useQuery({
@@ -43,6 +44,24 @@ export default function FastSortingInputScreen() {
     queryKey: ['animals'],
     queryFn: () => base44.entities.Animals.list('-created_date'),
     initialData: [],
+  });
+
+  const { data: seasons = [] } = useQuery({
+    queryKey: ['calving-seasons'],
+    queryFn: () => base44.entities.CalvingSeasons.list('-year'),
+    initialData: [],
+  });
+
+  const { data: currentUser } = useQuery({
+    queryKey: ['current-user'],
+    queryFn: async () => {
+      try {
+        return await base44.auth.me();
+      } catch {
+        return null;
+      }
+    },
+    staleTime: 5 * 60 * 1000,
   });
 
   // Update session mutation
@@ -67,29 +86,38 @@ export default function FastSortingInputScreen() {
       setMatchedAnimal(null);
       setDuplicates([]);
       setShowDuplicateSelector(false);
+      setTwinWarningSeenForCow(false);
       return;
     }
+
     const cowTypes = ['Cow', '1st Calf Heifer'];
-    const matches = animals.filter(a => a.tag_number === cowNumber.trim() && cowTypes.includes(a.animal_type));
+    const matches = animals.filter(a =>
+      a.tag_number === cowNumber.trim() &&
+      cowTypes.includes(a.animal_type)
+    );
     if (matches.length === 1) {
       setMatchedAnimal(matches[0]);
       setDuplicates([]);
       setShowDuplicateSelector(false);
+      setTwinWarningSeenForCow(false);
     } else if (matches.length > 1) {
       setDuplicates(matches);
       setShowDuplicateSelector(true);
       setMatchedAnimal(null);
+      setTwinWarningSeenForCow(false);
     } else {
       setMatchedAnimal(null);
       setDuplicates([]);
       setShowDuplicateSelector(false);
+      setTwinWarningSeenForCow(false);
     }
-  }, [cowNumber, animals]);
+  }, [cowNumber, animals, session, seasons]);
 
-  const getMotherBirthYear = (animal) => {
-    if (!animal?.mother_animal_number) return null;
-    const mother = animals.find(a => a.tag_number === animal.mother_animal_number);
-    return mother?.birth_year || 'unknown';
+  const getCowBirthYear = (animal) => {
+    if (!animal) return 'Unknown';
+    if (animal.birth_year) return animal.birth_year;
+    if (animal.date_of_birth) return new Date(animal.date_of_birth).getFullYear();
+    return 'Unknown';
   };
 
   const handleKeypadInput = (digit) => {
@@ -120,7 +148,7 @@ export default function FastSortingInputScreen() {
       mother_animal_number: matchedAnimal.mother_animal_number || '',
       location: '',
       timestamp: new Date().toISOString(),
-      sorted_by: (await base44.auth.me())?.email || 'unknown',
+      sorted_by: currentUser?.email || 'unknown',
     };
 
     const updatedSorted = [...(session.sorted_animals || []), newEntry];
@@ -140,12 +168,19 @@ export default function FastSortingInputScreen() {
     toast.success(`✓ #${matchedAnimal.tag_number} → ${direction}`);
     setCowNumber('');
     setNoteSynced(false);
+    setTwinWarningSeenForCow(false);
   };
 
   const handleSortAndNext = async () => {
     if (!matchedAnimal) return;
+    const sessionYear = session?.session_date ? Number(session.session_date.split('-')[0]) : null;
+    const sessionSeasonId = session?.calving_season_id || seasons.find((season) => season.year === sessionYear)?.id;
     // Sort to the pen matching the calf's sex if available
-    const calf = animals.find(a => a.mother_animal_number === matchedAnimal.tag_number);
+    const calf = animals.find(a =>
+      a.mother_animal_number === matchedAnimal.tag_number &&
+      ['Calf - Heifer', 'Calf - Steer'].includes(a.animal_type) &&
+      (!sessionSeasonId || a.calving_season_id === sessionSeasonId)
+    );
     if (calf?.sex === 'Male') {
       await handleSort('Left');
     } else if (calf?.sex === 'Female') {
@@ -193,6 +228,18 @@ export default function FastSortingInputScreen() {
     );
   }
 
+  const sessionYear = session?.session_date ? Number(session.session_date.split('-')[0]) : null;
+  const sessionSeasonId = session?.calving_season_id || seasons.find((season) => season.year === sessionYear)?.id;
+  const calvesForMatchedCow = matchedAnimal
+    ? animals.filter((animal) =>
+        animal.mother_animal_number === matchedAnimal.tag_number &&
+        ['Calf - Heifer', 'Calf - Steer'].includes(animal.animal_type) &&
+        (!sessionSeasonId || animal.calving_season_id === sessionSeasonId)
+      )
+    : [];
+  const hasTwinsForMatchedCow = calvesForMatchedCow.length > 1 || calvesForMatchedCow.some((animal) => animal.twin);
+  const needsTwinWarningAck = matchedAnimal && hasTwinsForMatchedCow && !twinWarningSeenForCow;
+
   return (
     <div className="min-h-screen flex flex-col pb-4" style={{ background: BLUE_LIGHT }}>
 
@@ -223,7 +270,7 @@ export default function FastSortingInputScreen() {
         <div className="flex gap-3">
           <button
             onClick={() => matchedAnimal && handleSort('Left')}
-            disabled={!matchedAnimal}
+            disabled={!matchedAnimal || needsTwinWarningAck}
             className="flex-1 h-20 rounded-2xl font-heading font-black text-2xl text-white shadow-lg transition-all active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center"
             style={{ background: BLUE_DARK }}
             title={`${session.left_pen_label || 'LEFT'}`}
@@ -232,7 +279,7 @@ export default function FastSortingInputScreen() {
           </button>
           <button
             onClick={() => matchedAnimal && handleSort('Right')}
-            disabled={!matchedAnimal}
+            disabled={!matchedAnimal || needsTwinWarningAck}
             className="flex-1 h-20 rounded-2xl font-heading font-black text-2xl text-white shadow-lg transition-all active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center"
             style={{ background: BLUE_DARK }}
             title={`${session.right_pen_label || 'RIGHT'}`}
@@ -255,7 +302,7 @@ export default function FastSortingInputScreen() {
             <div className="bg-white rounded-2xl border-2 border-blue-300 p-3 text-center h-full flex flex-col items-center justify-center">
               <p className="text-xs text-gray-500 font-semibold">Year</p>
               <p className="font-heading font-black text-2xl" style={{ color: BLUE_DARK }}>
-                {matchedAnimal?.birth_year || '—'}
+                {matchedAnimal ? getCowBirthYear(matchedAnimal) : '—'}
               </p>
             </div>
           </div>
@@ -264,7 +311,7 @@ export default function FastSortingInputScreen() {
         {/* ── MATCHED ANIMAL DISPLAY ────────────────────────────────── */}
         {showDuplicateSelector && duplicates.length > 1 && (
           <div className="bg-white rounded-2xl border-2 p-3 space-y-2" style={{ borderColor: SKY_BLUE }}>
-            <p className="text-xs font-bold text-gray-600 text-center">Multiple cows found:</p>
+            <p className="text-xs font-bold text-gray-600 text-center">Multiple cows found — select the correct birth year:</p>
             {duplicates.map(dup => (
               <button
                 key={dup.id}
@@ -274,7 +321,7 @@ export default function FastSortingInputScreen() {
                 }}
                 className="w-full px-3 py-2 rounded-xl text-sm font-bold bg-blue-50 border border-blue-200 text-left"
               >
-                #{dup.tag_number} {dup.animal_type} {getMotherBirthYear(dup) && `(Mom: ${getMotherBirthYear(dup)})`}
+                #{dup.tag_number} • Birth year: {getCowBirthYear(dup)} • {dup.animal_type}
               </button>
             ))}
           </div>
@@ -286,12 +333,40 @@ export default function FastSortingInputScreen() {
               ✓ #{matchedAnimal.tag_number}
             </p>
             <p className="text-sm text-gray-600 mt-1">{matchedAnimal.animal_type}</p>
+            <p className="text-xs text-gray-500 mt-1">Birth year: {getCowBirthYear(matchedAnimal)}</p>
+          </div>
+        )}
+
+        {matchedAnimal && calvesForMatchedCow.length === 0 && (
+          <div className="bg-yellow-50 border-2 border-yellow-300 rounded-2xl p-4 text-center">
+            <p className="font-heading font-black text-yellow-700">No calf from this calving season</p>
+            <p className="text-sm text-yellow-700 mt-1">
+              You can still sort cow #{matchedAnimal.tag_number} left or right so this movement is tracked.
+            </p>
+          </div>
+        )}
+
+        {needsTwinWarningAck && (
+          <div className="bg-amber-50 border-2 border-amber-300 rounded-2xl p-4 text-center space-y-2">
+            <p className="font-heading font-black text-amber-700">⚠️ Twin calves detected</p>
+            <p className="text-sm text-amber-700">
+              Cow #{matchedAnimal.tag_number} has {calvesForMatchedCow.length} calves in this calving season.
+              Confirm this before choosing left or right.
+            </p>
+            <Button
+              type="button"
+              onClick={() => setTwinWarningSeenForCow(true)}
+              className="w-full"
+              style={{ background: '#D97706', color: 'white' }}
+            >
+              I understand — continue sorting
+            </Button>
           </div>
         )}
 
         {cowNumber.trim() && !matchedAnimal && !showDuplicateSelector && (
           <div className="text-center bg-white rounded-2xl border-2 border-red-300 p-4">
-            <p className="font-heading font-black text-lg text-red-500">❌ Not Found</p>
+            <p className="font-heading font-black text-lg text-red-500">❌ Cow tag not found</p>
           </div>
         )}
 
@@ -310,7 +385,7 @@ export default function FastSortingInputScreen() {
         <div className="flex gap-3">
           <button
             onClick={handleSortAndNext}
-            disabled={!matchedAnimal}
+            disabled={!matchedAnimal || needsTwinWarningAck}
             className="flex-1 h-14 rounded-2xl font-heading font-black text-lg text-white shadow-lg transition-all active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed"
             style={{ background: GREEN_DARK }}
           >
