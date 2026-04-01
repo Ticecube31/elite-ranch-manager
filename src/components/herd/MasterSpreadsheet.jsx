@@ -24,6 +24,7 @@ const PURPLE_LIGHT = '#F3E8F0';
 
 const ANIMAL_TYPES = ['Cow', '1st Calf Heifer', 'Calf - Heifer', 'Bull', 'Calf - Steer'];
 const STATUSES = ['Alive', 'Sold', 'Died', 'Missing'];
+const MIN_BIRTH_YEAR = 1900;
 
 const SEX_FOR_TYPE = {
   'Cow': 'Female', '1st Calf Heifer': 'Female', 'Calf - Heifer': 'Female',
@@ -195,6 +196,13 @@ function AddRowModal({ pastures, seasons, existingAnimals, onSave, onClose, curr
     date_of_birth: new Date().toISOString().split('T')[0]
   });
   const [advancedOpen, setAdvancedOpen] = useState(false);
+  const birthYearOptions = useMemo(() => {
+    const currentYear = new Date().getFullYear();
+    return Array.from(
+      { length: currentYear - MIN_BIRTH_YEAR + 1 },
+      (_, i) => String(currentYear - i),
+    );
+  }, []);
   const [saving, setSaving] = useState(false);
   const upd = (k, v) => setForm(prev => ({ ...prev, [k]: v }));
 
@@ -251,15 +259,18 @@ function AddRowModal({ pastures, seasons, existingAnimals, onSave, onClose, curr
         </div>
         <div>
           <label className="text-xs font-semibold text-gray-500">Birth Year</label>
-          <Input
-            type="number"
-            min="1900"
-            max="3000"
+          <select
             value={form.birth_year ?? ''}
             onChange={e => upd('birth_year', e.target.value)}
-            className="h-12 mt-1"
-            placeholder="e.g. 2025"
-          />
+            className="w-full h-12 mt-1 rounded-xl border border-gray-200 px-3 text-base bg-white"
+          >
+            <option value="">Select birth year</option>
+            {birthYearOptions.map(year => (
+              <option key={year} value={year}>
+                {year}
+              </option>
+            ))}
+          </select>
         </div>
         <Collapsible open={advancedOpen} onOpenChange={setAdvancedOpen}>
           <CollapsibleTrigger asChild>
