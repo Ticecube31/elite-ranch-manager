@@ -4,6 +4,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Save, X, Plus } from 'lucide-react';
 import { toast } from 'sonner';
 import NumericInput from '@/components/shared/NumericInput';
@@ -29,7 +30,7 @@ export default function QuickCalfForm({ animals = [], seasons = [], pastures = [
   const [showPastureSuggestions, setShowPastureSuggestions] = useState(false);
   const [saving, setSaving] = useState(false);
   const [showAddCowModal, setShowAddCowModal] = useState(false);
-  const [newCowForm, setNewCowForm] = useState({ tag_number: '', animal_type: 'Cow', date_of_birth: '' });
+  const [newCowForm, setNewCowForm] = useState({ tag_number: '', animal_type: 'Cow', birth_year: '' });
   const [creatingCow, setCreatingCow] = useState(false);
   const [creatingPasture, setCreatingPasture] = useState(false);
 
@@ -69,14 +70,13 @@ export default function QuickCalfForm({ animals = [], seasons = [], pastures = [
     if (exists) { toast.error(`Tag #${newCowForm.tag_number} already exists`); return; }
 
     setCreatingCow(true);
-    const birthYear = newCowForm.date_of_birth ? new Date(newCowForm.date_of_birth).getFullYear() : undefined;
+    const birthYear = newCowForm.birth_year ? Number(newCowForm.birth_year) : undefined;
     
     try {
       const created = await base44.entities.Animals.create({
         tag_number: newCowForm.tag_number.trim(),
         sex: 'Female',
         animal_type: newCowForm.animal_type,
-        date_of_birth: newCowForm.date_of_birth || undefined,
         birth_year: birthYear,
         status: 'Alive',
         is_archived: false,
@@ -84,7 +84,7 @@ export default function QuickCalfForm({ animals = [], seasons = [], pastures = [
       
       toast.success(`${newCowForm.animal_type} #${newCowForm.tag_number} created!`);
       setShowAddCowModal(false);
-      setNewCowForm({ tag_number: '', animal_type: 'Cow', date_of_birth: '' });
+      setNewCowForm({ tag_number: '', animal_type: 'Cow', birth_year: '' });
       
       // Refresh animals list
       onAnimalsRefresh?.();
@@ -221,7 +221,7 @@ export default function QuickCalfForm({ animals = [], seasons = [], pastures = [
             <button
               type="button"
               onClick={() => {
-                setNewCowForm({ ...newCowForm, tag_number: motherTagInput });
+                    setNewCowForm({ ...newCowForm, tag_number: motherTagInput });
                 setShowAddCowModal(true);
               }}
               className="w-full h-10 rounded-xl border-2 border-orange-300 text-orange-600 font-semibold text-sm hover:bg-orange-50 transition-colors flex items-center justify-center gap-2"
@@ -415,18 +415,25 @@ export default function QuickCalfForm({ animals = [], seasons = [], pastures = [
                 </div>
               </div>
 
-             <div>
-  <Label className="text-sm font-semibold">Birth Year (optional)</Label>
-  <Input
-    type="number"
-    placeholder="YYYY"
-    value={newCowForm.date_of_birth}
-    onChange={e => setNewCowForm(prev => ({ ...prev, date_of_birth: e.target.value }))}
-    className="h-12 mt-1"
-    min="1950"
-    max="2030"
-  />
-</div>
+              <div>
+                <Label className="text-sm font-semibold">Birth Year (optional)</Label>
+                <Select
+                  value={newCowForm.birth_year || 'unknown'}
+                  onValueChange={(value) => setNewCowForm(prev => ({ ...prev, birth_year: value === 'unknown' ? '' : value }))}
+                >
+                  <SelectTrigger className="h-12 mt-1">
+                    <SelectValue placeholder="Select birth year" />
+                  </SelectTrigger>
+                  <SelectContent className="max-h-64">
+                    <SelectItem value="unknown">Unknown</SelectItem>
+                    {Array.from({ length: new Date().getFullYear() - 1949 }, (_, i) => String(new Date().getFullYear() - i)).map((year) => (
+                      <SelectItem key={year} value={year}>
+                        {year}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
 
             <div className="flex gap-3 pt-2">
