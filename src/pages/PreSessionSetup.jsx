@@ -38,6 +38,7 @@ export default function PreSessionSetup() {
   const [rightSex, setRightSex] = useState(null);
   const [leftLabel, setLeftLabel] = useState('Left');
   const [rightLabel, setRightLabel] = useState('Right');
+  const [selectedSeasonId, setSelectedSeasonId] = useState('');
   const [notes, setNotes] = useState('');
   const [saving, setSaving] = useState(false);
 
@@ -46,6 +47,13 @@ export default function PreSessionSetup() {
     queryFn: () => base44.entities.CalvingSeasons.list('-year'),
     initialData: [],
   });
+
+  useEffect(() => {
+    if (!seasons.length) return;
+    const sessionYear = Number(sessionDate?.split('-')?.[0]);
+    const matchedSeason = seasons.find((season) => season.year === sessionYear);
+    setSelectedSeasonId((currentSeasonId) => currentSeasonId || matchedSeason?.id || '');
+  }, [seasons, sessionDate]);
 
   // Display current sex assignment
   const leftSexDisplay = leftSex === 'Male' ? '♂ Male / Steer' : '♀ Female / Heifer';
@@ -89,12 +97,10 @@ export default function PreSessionSetup() {
   const handleStart = async () => {
     if (!isReady) return;
     setSaving(true);
-    const sessionYear = Number(sessionDate?.split('-')?.[0]);
-    const matchedSeason = seasons.find((season) => season.year === sessionYear);
     await createMutation.mutateAsync({
       session_name: sessionName,
       session_date: sessionDate,
-      calving_season_id: matchedSeason?.id,
+      calving_season_id: selectedSeasonId || undefined,
       status: 'Active',
       left_pen_label: leftLabel,
       right_pen_label: rightLabel,
@@ -141,6 +147,23 @@ export default function PreSessionSetup() {
             onChange={(e) => setSessionDate(e.target.value)}
             className="w-full h-12 px-4 rounded-2xl border border-blue-200 bg-white text-base font-medium focus:outline-none focus:ring-2 focus:ring-blue-400"
           />
+        </div>
+
+        {/* ── Calving Season ─────────────────────────────── */}
+        <div className="space-y-3">
+          <label className="text-xs font-semibold text-gray-400 uppercase tracking-wide">Calving Season</label>
+          <select
+            value={selectedSeasonId}
+            onChange={(e) => setSelectedSeasonId(e.target.value)}
+            className="w-full h-12 px-4 rounded-2xl border border-blue-200 bg-white text-base font-medium focus:outline-none focus:ring-2 focus:ring-blue-400"
+          >
+            <option value="">None selected</option>
+            {seasons.map((season) => (
+              <option key={season.id} value={season.id}>
+                {season.label || `Calving Season ${season.year}`}
+              </option>
+            ))}
+          </select>
         </div>
 
         {/* ── Assign Pens to Sexes (MAIN SECTION) ────────── */}
