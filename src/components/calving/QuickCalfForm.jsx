@@ -145,6 +145,10 @@ export default function QuickCalfForm({ animals = [], seasons = [], pastures = [
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    const submitter = e?.nativeEvent?.submitter;
+    const isExplicitSave = submitter?.dataset?.action === 'save-calf';
+    if (!isExplicitSave) return;
+
     const missingFields = [];
     if (!sex) missingFields.push('Sex');
     if (!motherId) missingFields.push('Mother Tag #');
@@ -397,6 +401,7 @@ export default function QuickCalfForm({ animals = [], seasons = [], pastures = [
         </Button>
         <Button
           type="submit"
+          data-action="save-calf"
           disabled={saving || motherInSameSeasonYear}
           className="flex-1 h-14 text-base font-semibold text-white"
           style={{ background: `linear-gradient(135deg, ${GREEN}, ${GREEN_DARK})`, border: 'none' }}
