@@ -64,12 +64,34 @@ export default function QuickCalfForm({ animals = [], seasons = [], pastures = [
   const handleAddCow = async () => {
     if (!newCowForm.tag_number.trim()) { toast.error('Tag number required'); return; }
     if (!newCowForm.animal_type) { toast.error('Animal type required'); return; }
-    
-    const exists = animals.find(a => a.tag_number === newCowForm.tag_number.trim());
-    if (exists) { toast.error(`Tag #${newCowForm.tag_number} already exists`); return; }
 
     setCreatingCow(true);
     const birthYear = newCowForm.birth_year ? Number(newCowForm.birth_year) : undefined;
+    const normalizedTag = newCowForm.tag_number.trim().toLowerCase();
+    const animalsWithSameTag = animals.filter(
+      a => a.tag_number?.trim().toLowerCase() === normalizedTag
+    );
+
+    if (animalsWithSameTag.length > 0 && !birthYear) {
+      toast.error('Birth year is required when reusing an existing tag number');
+      setCreatingCow(false);
+      return;
+    }
+
+    const animalsWithSameBirthYear = animalsWithSameTag.filter((a) => {
+      const existingBirthYear = a.birth_year || (a.date_of_birth ? new Date(a.date_of_birth).getFullYear() : undefined);
+      return existingBirthYear && birthYear && existingBirthYear === birthYear;
+    });
+
+    if (animalsWithSameBirthYear.length > 0) {
+      const shouldContinue = window.confirm(
+        `Tag #${newCowForm.tag_number} already exists for birth year ${birthYear}. Do you want to add another animal with this same tag and birth year?`
+      );
+      if (!shouldContinue) {
+        setCreatingCow(false);
+        return;
+      }
+    }
     
     try {
       const created = await base44.entities.Animals.create({
