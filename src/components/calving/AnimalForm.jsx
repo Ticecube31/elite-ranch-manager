@@ -3,9 +3,9 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import MobileSelect, { MobileSelectItem } from '@/components/shared/MobileSelect';
 import { base44 } from '@/api/base44Client';
-import { Camera, Save, X, TreePine } from 'lucide-react';
+import { Camera, Save, X } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { allowedTypesForSex, validateSexType } from '@/lib/animalRules';
@@ -229,6 +229,7 @@ export default function AnimalForm({ animal, onSave, onCancel, existingAnimals =
           onChange={(e) => update('tag_number', e.target.value)}
           placeholder="e.g. 142, A-55"
           className="h-14 text-xl font-bold mt-1"
+          inputMode="numeric"
         />
       </div>
 
@@ -312,58 +313,53 @@ export default function AnimalForm({ animal, onSave, onCancel, existingAnimals =
       {seasons.length > 0 && (
         <div>
           <Label className="text-sm font-semibold">Calving Season</Label>
-          <Select value={form.calving_season_id || ''} onValueChange={(v) => update('calving_season_id', v === '__none__' ? '' : v)}>
-            <SelectTrigger className="h-14 text-base mt-1">
-              <SelectValue placeholder="Select season..." />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="__none__">— No season assigned —</SelectItem>
-              {seasons.map(s => (
-                <SelectItem key={s.id} value={s.id}>
-                  {s.label || `Calving Season ${s.year}`}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <MobileSelect
+            value={form.calving_season_id || '__none__'}
+            onValueChange={(v) => update('calving_season_id', v === '__none__' ? '' : v)}
+            placeholder="Select season..."
+            triggerClassName="h-14 text-base mt-1"
+          >
+            <MobileSelectItem value="__none__">— No season assigned —</MobileSelectItem>
+            {seasons.map(s => (
+              <MobileSelectItem key={s.id} value={s.id}>
+                {s.label || `Calving Season ${s.year}`}
+              </MobileSelectItem>
+            ))}
+          </MobileSelect>
         </div>
       )}
 
       {/* Status */}
       <div>
         <Label className="text-sm font-semibold">Status</Label>
-        <Select value={form.status} onValueChange={(v) => update('status', v)}>
-          <SelectTrigger className="h-14 text-lg mt-1"><SelectValue /></SelectTrigger>
-          <SelectContent>
-            <SelectItem value="Alive">✅ Alive</SelectItem>
-            <SelectItem value="Sold">💰 Sold</SelectItem>
-            <SelectItem value="Died">💀 Died</SelectItem>
-            <SelectItem value="Missing">❓ Missing</SelectItem>
-          </SelectContent>
-        </Select>
+        <MobileSelect
+          value={form.status}
+          onValueChange={(v) => update('status', v)}
+          triggerClassName="h-14 text-lg mt-1"
+        >
+          <MobileSelectItem value="Alive">✅ Alive</MobileSelectItem>
+          <MobileSelectItem value="Sold">💰 Sold</MobileSelectItem>
+          <MobileSelectItem value="Died">💀 Died</MobileSelectItem>
+          <MobileSelectItem value="Missing">❓ Missing</MobileSelectItem>
+        </MobileSelect>
       </div>
 
       {/* Pasture / Location */}
       <div>
         <Label className="text-sm font-semibold">Pasture / Location</Label>
-        <Select value={form.pasture_id || ''} onValueChange={(v) => update('pasture_id', v === '__none__' ? '' : v)}>
-          <SelectTrigger className="h-14 text-base mt-1">
-            <SelectValue placeholder="Select pasture..." />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="__none__">— No pasture assigned —</SelectItem>
-            {pastures.map(p => (
-              <SelectItem key={p.id} value={p.id}>
-                <span className="flex items-center gap-2">
-                  <TreePine className="w-4 h-4 text-amber-600" />
-                  {p.pasture_name}
-                  {p.current_herd_count !== undefined && (
-                    <span className="text-xs text-muted-foreground">({p.current_herd_count} animals)</span>
-                  )}
-                </span>
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        <MobileSelect
+          value={form.pasture_id || '__none__'}
+          onValueChange={(v) => update('pasture_id', v === '__none__' ? '' : v)}
+          placeholder="Select pasture..."
+          triggerClassName="h-14 text-base mt-1"
+        >
+          <MobileSelectItem value="__none__">— No pasture assigned —</MobileSelectItem>
+          {pastures.map(p => (
+            <MobileSelectItem key={p.id} value={p.id}>
+              🌿 {p.pasture_name}{p.current_herd_count !== undefined ? ` (${p.current_herd_count})` : ''}
+            </MobileSelectItem>
+          ))}
+        </MobileSelect>
         {pastures.length === 0 && (
           <p className="text-xs text-muted-foreground mt-1">Add pastures in the Pastures tab to assign locations.</p>
         )}

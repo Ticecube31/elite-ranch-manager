@@ -107,10 +107,20 @@ export default function CalfSortingDashboard() {
 
   const updateSessionMutation = useMutation({
     mutationFn: ({ id, data }) => base44.entities.SortingSessions.update(id, data),
+    onMutate: async ({ id, data }) => {
+      await queryClient.cancelQueries({ queryKey: ['sorting-sessions'] });
+      const previous = queryClient.getQueryData(['sorting-sessions']) ?? [];
+      queryClient.setQueryData(['sorting-sessions'], previous.map(s => s.id === id ? { ...s, ...data } : s));
+      return { previous };
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['sorting-sessions'] });
       toast.success('Session updated');
       setEditingSession(null);
+    },
+    onError: (err, vars, context) => {
+      if (context?.previous) queryClient.setQueryData(['sorting-sessions'], context.previous);
+      toast.error('Failed to update session');
     },
   });
 

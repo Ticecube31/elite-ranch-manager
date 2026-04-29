@@ -99,12 +99,21 @@ export default function HerdManagement() {
 
   const updateMutation = useMutation({
     mutationFn: ({ id, data }) => base44.entities.Animals.update(id, data),
+    onMutate: async ({ id, data }) => {
+      await queryClient.cancelQueries({ queryKey: ['animals'] });
+      const previous = queryClient.getQueryData(['animals']) ?? [];
+      queryClient.setQueryData(['animals'], previous.map(a => a.id === id ? { ...a, ...data } : a));
+      setSelectedAnimal(prev => prev?.id === id ? { ...prev, ...data } : prev);
+      return { previous };
+    },
     onSuccess: (_, { id, data }) => {
       queryClient.invalidateQueries({ queryKey: ['animals'] });
       toast.success(`#${data.tag_number} updated!`);
-      // refresh selected animal
-      setSelectedAnimal(prev => prev ? { ...prev, ...data } : prev);
       setView('detail');
+    },
+    onError: (err, vars, context) => {
+      if (context?.previous) queryClient.setQueryData(['animals'], context.previous);
+      toast.error('Failed to update animal');
     },
   });
 

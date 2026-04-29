@@ -64,19 +64,38 @@ export default function FastSortingInputScreen() {
     staleTime: 5 * 60 * 1000,
   });
 
-  // Update session mutation
+  // Update session mutation with optimistic update
   const updateSessionMutation = useMutation({
     mutationFn: ({ id, data }) => base44.entities.SortingSessions.update(id, data),
+    onMutate: async ({ id, data }) => {
+      await queryClient.cancelQueries({ queryKey: ['sorting-session', sessionId] });
+      const previous = queryClient.getQueryData(['sorting-session', sessionId]);
+      queryClient.setQueryData(['sorting-session', sessionId], prev => prev ? { ...prev, ...data } : prev);
+      return { previous };
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['sorting-session', sessionId] });
+      queryClient.invalidateQueries({ queryKey: ['sorting-sessions'] });
+    },
+    onError: (err, vars, context) => {
+      if (context?.previous) queryClient.setQueryData(['sorting-session', sessionId], context.previous);
     },
   });
 
-  // Update animal mutation for notes
+  // Update animal mutation for notes with optimistic update
   const updateAnimalMutation = useMutation({
     mutationFn: ({ id, data }) => base44.entities.Animals.update(id, data),
+    onMutate: async ({ id, data }) => {
+      await queryClient.cancelQueries({ queryKey: ['animals'] });
+      const previous = queryClient.getQueryData(['animals']) ?? [];
+      queryClient.setQueryData(['animals'], previous.map(a => a.id === id ? { ...a, ...data } : a));
+      return { previous };
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['animals'] });
+    },
+    onError: (err, vars, context) => {
+      if (context?.previous) queryClient.setQueryData(['animals'], context.previous);
     },
   });
 

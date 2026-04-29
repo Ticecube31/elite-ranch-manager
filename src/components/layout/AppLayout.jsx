@@ -1,11 +1,12 @@
 import React, { useEffect, useState, createContext, useContext } from 'react';
-import { Outlet, Link, useLocation } from 'react-router-dom';
+import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
 import { Home, Baby, ArrowLeftRight, TreePine, HeartPulse, Rows3, Moon, Sun, Settings, LogOut, User } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { base44 } from '@/api/base44Client';
 import { useTheme } from '@/lib/ThemeContext';
 import AISearchBar from '@/components/layout/AISearchBar';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger, DropdownMenuSeparator, DropdownMenuItem } from '@/components/ui/dropdown-menu';
+import { saveTabPath, getTabPath } from '@/lib/tabHistory';
 
 // Context so CalvingSeason page can register its AI open handler
 export const CalvingAIContext = createContext({ openCalvingAI: null, setOpenCalvingAI: () => {} });
@@ -32,6 +33,7 @@ function UserAvatar({ user }) {
 
 export default function AppLayout() {
   const location = useLocation();
+  const navigate = useNavigate();
   const { sectionTheme, headerStyle, isDark, toggleTheme } = useTheme();
   const [user, setUser] = useState(null);
   const [ranchName, setRanchName] = useState('Elite Ranch Manager');
@@ -48,6 +50,9 @@ export default function AppLayout() {
   useEffect(() => {
     base44.auth.me().then(setUser).catch(() => {});
   }, []);
+
+  // Save current path for tab restoration
+  useEffect(() => { saveTabPath(location.pathname); }, [location.pathname]);
 
   useEffect(() => {
     base44.entities.RanchSettings.list().then(list => {
@@ -192,9 +197,13 @@ export default function AppLayout() {
               ? location.pathname === '/'
               : location.pathname.startsWith(path);
             return (
-              <Link
+              <button
                 key={path}
-                to={path}
+                onClick={() => {
+                  // If already on this tab, go to root; otherwise restore last path
+                  const alreadyOnTab = path === '/' ? location.pathname === '/' : location.pathname.startsWith(path);
+                  navigate(alreadyOnTab ? path : getTabPath(path));
+                }}
                 className={cn(
                   'flex flex-col items-center justify-center gap-[2px] flex-1 rounded-lg my-1 transition-all',
                   isActive ? `${activeColor} ${activeBg}` : 'text-muted-foreground'
@@ -204,7 +213,7 @@ export default function AppLayout() {
                 <span className={cn('text-[9px] leading-none font-medium', isActive && 'font-bold')}>
                   {label}
                 </span>
-              </Link>
+              </button>
             );
           })}
         </div>

@@ -103,20 +103,36 @@ export default function CalvingSeason() {
 
   const createMutation = useMutation({
     mutationFn: (data) => base44.entities.Animals.create(data),
+    onMutate: async (data) => {
+      await queryClient.cancelQueries({ queryKey: ['animals'] });
+      const previous = queryClient.getQueryData(['animals']) ?? [];
+      const optimistic = { ...data, id: `temp-${Date.now()}`, created_date: new Date().toISOString() };
+      queryClient.setQueryData(['animals'], [optimistic, ...previous]);
+      return { previous };
+    },
     onSuccess: async (created, data) => {
       queryClient.invalidateQueries({ queryKey: ['animals'] });
       queryClient.invalidateQueries({ queryKey: ['animals-stats'] });
       setLastAdded(data);
       logAudit({ action: 'Created', entityType: 'Animal', entityId: created.id, entityLabel: `Animal #${data.tag_number}`, changeSummary: `New ${data.animal_type} (${data.sex}) created`, newValue: data, user: currentUser });
-      // Log initial tag assignment to TagHistory
       logTagHistory({ animalId: created.id, oldTagNumber: null, newTagNumber: data.tag_number, reason: 'Calf tagging — same tag as mother per ranch rules', user: currentUser });
       toast.success(`Calf #${data.tag_number} added!`);
       setView('success');
+    },
+    onError: (err, data, context) => {
+      if (context?.previous) queryClient.setQueryData(['animals'], context.previous);
+      toast.error('Failed to save calf');
     },
   });
 
   const updateMutation = useMutation({
     mutationFn: ({ id, data }) => base44.entities.Animals.update(id, data),
+    onMutate: async ({ id, data }) => {
+      await queryClient.cancelQueries({ queryKey: ['animals'] });
+      const previous = queryClient.getQueryData(['animals']) ?? [];
+      queryClient.setQueryData(['animals'], previous.map(a => a.id === id ? { ...a, ...data } : a));
+      return { previous };
+    },
     onSuccess: (_, { id, data }) => {
       queryClient.invalidateQueries({ queryKey: ['animals'] });
       queryClient.invalidateQueries({ queryKey: ['animals-stats'] });
@@ -124,6 +140,10 @@ export default function CalvingSeason() {
       setView('main');
       toast.success(`Animal #${data.tag_number} updated!`);
       logAudit({ action: 'Updated', entityType: 'Animal', entityId: id, entityLabel: `Animal #${data.tag_number}`, changeSummary: `Record updated`, newValue: data, user: currentUser });
+    },
+    onError: (err, vars, context) => {
+      if (context?.previous) queryClient.setQueryData(['animals'], context.previous);
+      toast.error('Failed to update animal');
     },
   });
 
@@ -493,6 +513,7 @@ export default function CalvingSeason() {
             <Label className="text-sm font-semibold">Year</Label>
             <Input
               type="number"
+              inputMode="numeric"
               value={newSeasonYear}
               onChange={e => setNewSeasonYear(e.target.value)}
               className="h-12 text-lg mt-1"
@@ -518,6 +539,7 @@ export default function CalvingSeason() {
               <Label className="text-sm font-semibold">Year</Label>
               <Input
                 type="number"
+                inputMode="numeric"
                 value={editSeasonForm.year || ''}
                 onChange={e => setEditSeasonForm(prev => ({ ...prev, year: parseInt(e.target.value) || '' }))}
                 className="h-12 text-lg mt-1"
