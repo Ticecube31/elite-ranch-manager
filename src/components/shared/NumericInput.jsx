@@ -37,8 +37,8 @@ export default function NumericInput({ value, onChange, placeholder, className, 
 
       {/* Numeric Keypad Modal */}
       {showKeypad && (
-        <div className="fixed inset-0 z-50 flex flex-col items-center justify-end bg-black/40 safe-bottom">
-          <div className="w-full bg-white rounded-t-3xl shadow-2xl p-4 space-y-3 max-h-[70vh] overflow-y-auto">
+        <div className="fixed inset-0 z-50 flex flex-col items-center justify-end bg-black/40">
+          <div className="w-full bg-white rounded-t-3xl shadow-2xl p-4 pb-[calc(1rem+env(safe-area-inset-bottom,0px)+60px)] space-y-3 max-h-[80vh] overflow-y-auto">
             {/* Input display */}
             <div className="text-center bg-gray-50 rounded-2xl p-4 border border-gray-200">
               <p className="text-xs text-gray-500 font-semibold mb-1">Tag Number</p>
