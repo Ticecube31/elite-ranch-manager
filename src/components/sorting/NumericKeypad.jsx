@@ -34,7 +34,7 @@ export default function NumericKeypad({ value, onInput, onBackspace, onSubmit, d
                   onClick={onSubmit}
                   disabled={disabled || !value.trim()}
                   className="h-14 rounded-xl font-bold border-2 border-green-400 text-green-600 bg-white hover:bg-green-50 active:scale-95 transition-all disabled:opacity-40 disabled:cursor-not-allowed text-sm flex items-center justify-center"
-                  title="Sort and move to next animal"
+                  title="Done"
                 >
                   <ArrowRight className="w-5 h-5" />
                 </button>

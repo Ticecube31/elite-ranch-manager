@@ -88,14 +88,7 @@ export default function NumericInput({ value, onChange, placeholder, className, 
               </>
             )}
 
-            {/* Done button */}
-            <button
-              type="button"
-              onMouseDown={handleKeypadSubmit}
-              className="w-full h-12 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-base transition-colors"
-            >
-              Done
-            </button>
+
           </div>
         </div>
       )}
