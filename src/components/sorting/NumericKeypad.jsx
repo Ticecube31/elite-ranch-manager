@@ -20,10 +20,16 @@ export default function NumericKeypad({ value, onInput, onBackspace, onSubmit, d
                   key={key}
                   onClick={onBackspace}
                   disabled={disabled || value.length === 0}
-                  className="h-14 rounded-xl font-bold border-2 border-blue-300 text-blue-600 bg-white hover:bg-blue-50 active:scale-95 transition-all disabled:opacity-40 disabled:cursor-not-allowed text-sm flex items-center justify-center"
+                  className="h-16 rounded-2xl font-black text-sm flex items-center justify-center transition-all disabled:opacity-40 disabled:cursor-not-allowed active:translate-y-1 active:shadow-none"
+                  style={{
+                    background: 'linear-gradient(180deg, #ef4444 0%, #b91c1c 100%)',
+                    color: '#fff',
+                    boxShadow: '0 6px 0 #7f1d1d, 0 8px 12px rgba(0,0,0,0.35)',
+                    border: '1px solid #7f1d1d',
+                  }}
                   title="Delete last digit"
                 >
-                  <Delete className="w-5 h-5" />
+                  <Delete className="w-6 h-6" />
                 </button>
               );
             }
@@ -33,10 +39,16 @@ export default function NumericKeypad({ value, onInput, onBackspace, onSubmit, d
                   key={key}
                   onClick={onSubmit}
                   disabled={disabled || !value.trim()}
-                  className="h-14 rounded-xl font-bold border-2 border-green-400 text-green-600 bg-white hover:bg-green-50 active:scale-95 transition-all disabled:opacity-40 disabled:cursor-not-allowed text-sm flex items-center justify-center"
+                  className="h-16 rounded-2xl font-black text-sm flex items-center justify-center transition-all disabled:opacity-40 disabled:cursor-not-allowed active:translate-y-1 active:shadow-none"
+                  style={{
+                    background: 'linear-gradient(180deg, #22c55e 0%, #15803d 100%)',
+                    color: '#fff',
+                    boxShadow: '0 6px 0 #14532d, 0 8px 12px rgba(0,0,0,0.35)',
+                    border: '1px solid #14532d',
+                  }}
                   title="Done"
                 >
-                  <ArrowRight className="w-5 h-5" />
+                  <ArrowRight className="w-6 h-6" />
                 </button>
               );
             }
@@ -45,7 +57,13 @@ export default function NumericKeypad({ value, onInput, onBackspace, onSubmit, d
                 key={key}
                 onClick={() => onInput(key)}
                 disabled={disabled}
-                className="h-14 rounded-xl font-bold border-2 border-blue-300 text-lg text-blue-600 bg-white hover:bg-blue-50 active:scale-95 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+                className="h-16 rounded-2xl font-black text-2xl transition-all disabled:opacity-40 disabled:cursor-not-allowed active:translate-y-1 active:shadow-none"
+                style={{
+                  background: 'linear-gradient(180deg, #ffffff 0%, #dbeafe 100%)',
+                  color: '#1e3a8a',
+                  boxShadow: '0 6px 0 #1e40af, 0 8px 12px rgba(0,0,0,0.3)',
+                  border: '1px solid #1e40af',
+                }}
               >
                 {key}
               </button>
