@@ -69,6 +69,12 @@ export default function HerdManagement() {
   useEffect(() => { base44.auth.me().then(setCurrentUser).catch(() => {}); }, []);
   useEffect(() => { window.scrollTo(0, 0); }, [view, selectedAnimal]);
 
+  const { data: animals = [], isLoading } = useQuery({
+    queryKey: ['animals'],
+    queryFn: () => base44.entities.Animals.list('-created_date'),
+    initialData: [],
+  });
+
   // Handle ?animal= query param (from Family Tree navigation)
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -78,12 +84,6 @@ export default function HerdManagement() {
       if (found) { setSelectedAnimal(found); setView('detail'); }
     }
   }, [animals]);
-
-  const { data: animals = [], isLoading } = useQuery({
-    queryKey: ['animals'],
-    queryFn: () => base44.entities.Animals.list('-created_date'),
-    initialData: [],
-  });
 
   const { data: seasons = [] } = useQuery({
     queryKey: ['calving-seasons'],
