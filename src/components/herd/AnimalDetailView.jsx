@@ -1,6 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Camera, Edit2, Download, Archive, ChevronRight, Tag, MapPin, Calendar, AlertTriangle } from 'lucide-react';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
@@ -157,7 +158,8 @@ function exportAnimalCSV(animal, tagHistory, calves, sortEvents, pastures) {
 }
 
 // ── Main Component ────────────────────────────────────────────────────────────
-export default function AnimalDetailView({ animalId, onBack, onNavigateToAnimal, currentUser }) {
+export default function AnimalDetailView({ animalId, onNavigateToAnimal, currentUser }) {
+  const navigate = useNavigate();
   const [editMode, setEditMode] = useState(false);
   const [showArchiveConfirm, setShowArchiveConfirm] = useState(false);
   const photoRef = useRef();
@@ -263,7 +265,7 @@ export default function AnimalDetailView({ animalId, onBack, onNavigateToAnimal,
 
       {/* ── Header ──────────────────────────────────────────── */}
       <div className="sticky top-0 z-20 shrink-0 flex items-center justify-between px-4 h-14" style={{ background: PURPLE_DARK }}>
-        <button onClick={onBack} className="text-white/80 hover:text-white p-2 -ml-2">
+        <button onClick={() => navigate(-1)} className="text-white/80 hover:text-white p-2 -ml-2">
           <ArrowLeft className="w-6 h-6" />
         </button>
         <div className="text-center">

@@ -225,7 +225,6 @@ export default function HerdManagement() {
     return (
       <AnimalDetailView
         animalId={selectedAnimal.id}
-        onBack={() => setView('all-animals')}
         onNavigateToAnimal={(id) => setSelectedAnimal(animals.find(a => a.id === id) || { id })}
         currentUser={currentUser}
       />
