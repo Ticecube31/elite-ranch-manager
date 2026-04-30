@@ -17,38 +17,38 @@ export default function SectionCard({
 }) {
   const Inner = (
     <div className={cn(
-      'rounded-3xl p-6 text-white shadow-lg overflow-hidden relative',
+      'rounded-2xl p-4 text-white shadow-lg overflow-hidden relative',
       gradient
     )}>
       {/* Decorative circle */}
       <div className="absolute -top-6 -right-6 w-28 h-28 rounded-full bg-white/10 pointer-events-none" />
       <div className="absolute -bottom-8 -left-4 w-24 h-24 rounded-full bg-white/5 pointer-events-none" />
 
-      {/* Top row: icon + badge */}
-      <div className="flex items-start justify-between mb-4 relative">
-        <div className={cn('w-16 h-16 rounded-2xl flex items-center justify-center text-3xl shadow-inner', iconBg)}>
-          {emoji ?? <Icon className="w-8 h-8 text-white" />}
+      {/* Top row: icon + title + badge */}
+      <div className="flex items-center gap-3 mb-2 relative">
+        <div className={cn('w-11 h-11 shrink-0 rounded-xl flex items-center justify-center text-2xl shadow-inner', iconBg)}>
+          {emoji ?? <Icon className="w-6 h-6 text-white" />}
         </div>
+        <h2 className="font-heading font-black text-lg leading-tight tracking-tight flex-1">
+          {title}
+        </h2>
         {badge && (
-          <span className="text-[11px] font-bold bg-white/25 backdrop-blur-sm px-3 py-1 rounded-full border border-white/20">
+          <span className="text-[10px] font-bold bg-white/25 backdrop-blur-sm px-2 py-1 rounded-full border border-white/20 shrink-0">
             {badge}
           </span>
         )}
       </div>
 
-      {/* Text */}
-      <h2 className="font-heading font-black text-2xl leading-tight tracking-tight mb-2">
-        {title}
-      </h2>
-      <p className="text-white/80 text-sm leading-relaxed mb-5">
+      {/* Description */}
+      <p className="text-white/80 text-xs leading-relaxed mb-3">
         {description}
       </p>
 
       {/* CTA Button */}
       <div className="flex">
-        <span className="inline-flex items-center gap-2 bg-white/20 hover:bg-white/30 active:bg-white/10 border border-white/30 text-white font-semibold text-sm px-5 py-3 rounded-xl transition-all min-h-[48px]">
+        <span className="inline-flex items-center gap-1.5 bg-white/20 hover:bg-white/30 active:bg-white/10 border border-white/30 text-white font-semibold text-xs px-3 py-2 rounded-lg transition-all">
           {buttonLabel}
-          <ChevronRight className="w-4 h-4" />
+          <ChevronRight className="w-3.5 h-3.5" />
         </span>
       </div>
     </div>
