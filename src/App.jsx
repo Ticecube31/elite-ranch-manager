@@ -46,6 +46,7 @@ import PregChecking from '@/pages/PregChecking';
 import HerdManagement from '@/pages/HerdManagement';
 import HerdFamilyTree from '@/pages/HerdFamilyTree';
 import CalvingSeasonSpreadsheet from '@/components/herd/CalvingSeasonSpreadsheet';
+import SortedAnimalsTable from '@/pages/SortedAnimalsTable';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -80,6 +81,7 @@ const AuthenticatedApp = () => {
         <Route path="/sorting" element={<RouteTransition><CalfSortingDashboard /></RouteTransition>} />
         <Route path="/sorting/setup" element={<RouteTransition><PreSessionSetup /></RouteTransition>} />
         <Route path="/sorting/:sessionId" element={<RouteTransition><FastSortingInputScreen /></RouteTransition>} />
+        <Route path="/sorting/:sessionId/log" element={<RouteTransition><SortedAnimalsTable /></RouteTransition>} />
         <Route path="/pastures" element={<RouteTransition><PastureManagement /></RouteTransition>} />
         <Route path="/settings" element={<RouteTransition><Settings /></RouteTransition>} />
         <Route path="/ai-assistant" element={<RouteTransition><AIAssistant /></RouteTransition>} />

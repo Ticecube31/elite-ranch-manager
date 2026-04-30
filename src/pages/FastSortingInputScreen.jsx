@@ -277,12 +277,15 @@ export default function FastSortingInputScreen() {
       {/* ── MAIN LAYOUT (scrollable content) ──────────────────────────── */}
       <div className="flex-1 overflow-y-auto px-4 py-5 max-w-lg mx-auto w-full space-y-4">
 
-        {/* ── COUNT DISPLAY ────────────────────────────────────────── */}
+        {/* ── COUNT DISPLAY (tap to view log) ──────────────────────── */}
         <div className="text-center">
-          <div className="bg-white rounded-2xl border-2 border-blue-300 p-3">
-            <p className="font-heading font-black text-sm text-gray-600 uppercase tracking-wider">Count</p>
+          <button
+            onClick={() => navigate(`/sorting/${sessionId}/log`)}
+            className="w-full bg-white rounded-2xl border-2 border-blue-300 p-3 active:scale-95 transition-all"
+          >
+            <p className="font-heading font-black text-sm text-gray-600 uppercase tracking-wider">Count — Tap to View Log</p>
             <p className="font-heading font-black text-3xl" style={{ color: BLUE_DARK }}>{session.total_sorted || 0}</p>
-          </div>
+          </button>
         </div>
 
         {/* ── PEN DIRECTION BUTTONS ────────────────────────────────── */}
