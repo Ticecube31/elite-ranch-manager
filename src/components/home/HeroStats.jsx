@@ -13,16 +13,16 @@ export default function HeroStats({ values }) {
       {stats.map(({ key, label, icon: Icon, bg, text }) => (
         <div
           key={key}
-          className="bg-card rounded-2xl border border-border p-4 flex flex-col items-center justify-center gap-2 min-h-[90px]"
+          className="bg-card rounded-xl border border-border px-2 py-3 flex flex-col items-center justify-center gap-1.5"
         >
-          <div className={`w-11 h-11 rounded-xl ${bg} flex items-center justify-center`}>
-            <Icon className={`w-5 h-5 ${text}`} />
+          <div className={`w-8 h-8 rounded-lg ${bg} flex items-center justify-center`}>
+            <Icon className={`w-4 h-4 ${text}`} />
           </div>
           <div className="text-center">
-            <p className={`text-2xl font-heading font-black leading-none ${text}`}>
+            <p className={`text-xl font-heading font-black leading-none ${text}`}>
               {values[key] ?? 0}
             </p>
-            <p className="text-[11px] text-muted-foreground font-medium mt-0.5 leading-tight">{label}</p>
+            <p className="text-[10px] text-muted-foreground font-medium mt-0.5 leading-tight">{label}</p>
           </div>
         </div>
       ))}
