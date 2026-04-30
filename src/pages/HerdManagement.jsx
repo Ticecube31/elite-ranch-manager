@@ -4,7 +4,8 @@ import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { usePullToRefresh } from '@/hooks/usePullToRefresh';
 import PullToRefreshIndicator from '@/components/shared/PullToRefreshIndicator';
-import { Search, Filter, ArrowLeft, Edit2, ChevronRight, TableProperties, List, BarChart3, Tag } from 'lucide-react';
+import { Search, Filter, ArrowLeft, Edit2, ChevronRight, TableProperties, List, BarChart3, Tag, GitBranch } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import HerdReports from '@/components/herd/HerdReports';
 import HerdManagementAIAssistant from '@/components/herd/HerdManagementAIAssistant';
 import MasterSpreadsheet from '@/components/herd/MasterSpreadsheet';
@@ -47,6 +48,7 @@ function SummaryCard({ emoji, label, value, accent }) {
 }
 
 export default function HerdManagement() {
+  const navigate = useNavigate();
   const [view, setView] = useState('dashboard'); // 'dashboard' | 'spreadsheet' | 'all-animals' | 'detail' | 'edit'
   const [search, setSearch] = useState('');
   const [typeFilter, setTypeFilter] = useState('all');
@@ -66,6 +68,16 @@ export default function HerdManagement() {
 
   useEffect(() => { base44.auth.me().then(setCurrentUser).catch(() => {}); }, []);
   useEffect(() => { window.scrollTo(0, 0); }, [view, selectedAnimal]);
+
+  // Handle ?animal= query param (from Family Tree navigation)
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const animalId = params.get('animal');
+    if (animalId && animals.length > 0) {
+      const found = animals.find(a => a.id === animalId);
+      if (found) { setSelectedAnimal(found); setView('detail'); }
+    }
+  }, [animals]);
 
   const { data: animals = [], isLoading } = useQuery({
     queryKey: ['animals'],
@@ -528,6 +540,14 @@ export default function HerdManagement() {
           >
             <BarChart3 className="w-5 h-5" />
             Herd Reports
+          </button>
+          <button
+            onClick={() => navigate('/family-tree')}
+            className="col-span-2 h-16 rounded-2xl font-heading font-bold text-base border-2 bg-white active:scale-[0.98] transition-all flex items-center justify-center gap-2"
+            style={{ borderColor: PURPLE, color: PURPLE }}
+          >
+            <GitBranch className="w-5 h-5" />
+            Herd Family Tree
           </button>
         </div>
 

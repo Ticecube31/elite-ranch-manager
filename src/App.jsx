@@ -44,6 +44,7 @@ import Settings from '@/pages/Settings';
 import AIAssistant from '@/pages/AIAssistant';
 import PregChecking from '@/pages/PregChecking';
 import HerdManagement from '@/pages/HerdManagement';
+import HerdFamilyTree from '@/pages/HerdFamilyTree';
 import CalvingSeasonSpreadsheet from '@/components/herd/CalvingSeasonSpreadsheet';
 
 const AuthenticatedApp = () => {
@@ -84,6 +85,7 @@ const AuthenticatedApp = () => {
         <Route path="/ai-assistant" element={<RouteTransition><AIAssistant /></RouteTransition>} />
         <Route path="/preg-checking" element={<RouteTransition><PregChecking /></RouteTransition>} />
         <Route path="/herd/*" element={<RouteTransition><HerdManagement /></RouteTransition>} />
+        <Route path="/family-tree" element={<RouteTransition><HerdFamilyTree /></RouteTransition>} />
       </Route>
       <Route path="*" element={<PageNotFound />} />
     </Routes>
