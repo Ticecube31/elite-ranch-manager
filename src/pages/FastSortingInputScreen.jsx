@@ -111,7 +111,7 @@ export default function FastSortingInputScreen() {
 
     const cowTypes = ['Cow', '1st Calf Heifer'];
     const matches = animals.filter(a =>
-      a.tag_number === cowNumber.trim() &&
+      a.tag_number?.toLowerCase() === cowNumber.trim().toLowerCase() &&
       cowTypes.includes(a.animal_type)
     );
     if (matches.length === 1) {
