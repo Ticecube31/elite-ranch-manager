@@ -401,15 +401,15 @@ export default function FastSortingInputScreen() {
         </div>
 
         {/* ── NOTE BUTTON ────────────────────────────────────────── */}
-        <div className="flex justify-end">
+        <div className="flex justify-center">
           <button
             onClick={() => setShowNoteDialog(true)}
             disabled={!matchedAnimal}
-            className="h-14 w-14 rounded-2xl flex items-center justify-center border-2 shadow-lg transition-all active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed bg-white"
+            className="h-14 w-full rounded-2xl flex items-center justify-center gap-2 border-2 shadow-lg transition-all active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed bg-white font-heading font-bold text-lg"
             style={{ borderColor: BLUE, color: BLUE }}
-            title="Add note"
           >
             <Plus className="w-6 h-6" />
+            Add Note
           </button>
         </div>
 
