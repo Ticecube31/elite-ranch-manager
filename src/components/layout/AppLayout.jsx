@@ -82,13 +82,11 @@ export default function AppLayout() {
               <img src={logoUrl} alt="Ranch Logo" className="w-8 h-8 rounded-lg object-cover" />
             ) : (
               <div className={cn(
-                'w-8 h-8 rounded-lg flex items-center justify-center shrink-0',
-                isColoredHeader ? 'bg-white/20' : 'bg-primary'
-              )}>
-                <span className={cn('font-heading font-black text-xs', isColoredHeader ? 'text-white' : 'text-primary-foreground')}>
-                  ER
-                </span>
-              </div>
+                    'w-8 h-8 rounded-lg flex items-center justify-center shrink-0',
+                    isColoredHeader ? 'bg-white/20' : 'bg-primary'
+                  )}>
+                    <Home className={cn('w-4 h-4', isColoredHeader ? 'text-white' : 'text-primary-foreground')} />
+                  </div>
             )}
             <span className={cn(
               'font-heading font-bold text-sm truncate hidden sm:block max-w-[120px]',
