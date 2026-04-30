@@ -400,16 +400,8 @@ export default function FastSortingInputScreen() {
           />
         </div>
 
-        {/* ── SORT & NEXT + NOTE BUTTON ────────────────────────────── */}
-        <div className="flex gap-3">
-          <button
-            onClick={handleSortAndNext}
-            disabled={!matchedAnimal || needsTwinWarningAck}
-            className="flex-1 h-14 rounded-2xl font-heading font-black text-lg text-white shadow-lg transition-all active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed"
-            style={{ background: GREEN_DARK }}
-          >
-            Sort & Next
-          </button>
+        {/* ── NOTE BUTTON ────────────────────────────────────────── */}
+        <div className="flex justify-end">
           <button
             onClick={() => setShowNoteDialog(true)}
             disabled={!matchedAnimal}
