@@ -195,7 +195,12 @@ function AddRowModal({ pastures, seasons, existingAnimals, onSave, onClose, curr
     birth_year: new Date().getFullYear(),
     date_of_birth: ''
   });
+  const [motherSearch, setMotherSearch] = useState('');
+  const [showMotherSuggestions, setShowMotherSuggestions] = useState(false);
   const [advancedOpen, setAdvancedOpen] = useState(false);
+  const motherInputRef = useRef(null);
+  const motherSuggestionsRef = useRef(null);
+
   const birthYearOptions = useMemo(() => {
     const currentYear = new Date().getFullYear();
     return Array.from(
@@ -205,6 +210,29 @@ function AddRowModal({ pastures, seasons, existingAnimals, onSave, onClose, curr
   }, []);
   const [saving, setSaving] = useState(false);
   const upd = (k, v) => setForm(prev => ({ ...prev, [k]: v }));
+
+  // Find mother suggestions
+  const motherSuggestions = useMemo(() => {
+    if (!motherSearch.trim()) return [];
+    return existingAnimals.filter(a => 
+      (a.animal_type === 'Cow' || a.animal_type === '1st Calf Heifer') && 
+      a.tag_number.toString().includes(motherSearch.trim())
+    );
+  }, [motherSearch, existingAnimals]);
+
+  // Close mother suggestions on outside click
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (motherSuggestionsRef.current && !motherSuggestionsRef.current.contains(event.target) && 
+          motherInputRef.current && !motherInputRef.current.contains(event.target)) {
+        setShowMotherSuggestions(false);
+      }
+    }
+    if (showMotherSuggestions) {
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => document.removeEventListener('mousedown', handleClickOutside);
+    }
+  }, [showMotherSuggestions]);
 
   const handleSave = async () => {
     if (!form.tag_number.trim()) { toast.error('Tag number required'); return; }
@@ -296,9 +324,47 @@ function AddRowModal({ pastures, seasons, existingAnimals, onSave, onClose, curr
                 </select>
               </div>
             </div>
-            <div>
+            <div className="relative">
               <label className="text-xs font-semibold text-gray-500">Mother Tag # (optional)</label>
-              <Input value={form.mother_animal_number || ''} onChange={e => upd('mother_animal_number', e.target.value)} className="h-12 mt-1" placeholder="Mother's tag number" />
+              <Input 
+                ref={motherInputRef}
+                value={motherSearch} 
+                onChange={e => {
+                  setMotherSearch(e.target.value);
+                  setShowMotherSuggestions(true);
+                }} 
+                onFocus={() => setShowMotherSuggestions(true)}
+                className="h-12 mt-1" 
+                placeholder="Search by tag number..." 
+              />
+              {showMotherSuggestions && motherSuggestions.length > 0 && (
+                <div ref={motherSuggestionsRef} className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-50 max-h-48 overflow-y-auto">
+                  {motherSuggestions.map(mother => (
+                    <button
+                      key={mother.id}
+                      type="button"
+                      onClick={() => {
+                        upd('mother_animal_number', mother.tag_number);
+                        setMotherSearch('');
+                        setShowMotherSuggestions(false);
+                      }}
+                      className="w-full text-left px-3 py-2 text-sm hover:bg-purple-50 border-b border-gray-100 last:border-0"
+                    >
+                      <span className="font-semibold">#{mother.tag_number}</span>
+                      <span className="text-xs text-gray-500 ml-2">({mother.birth_year || '—'})</span>
+                    </button>
+                  ))}
+                </div>
+              )}
+              {form.mother_animal_number && (
+                <p className="text-xs text-gray-500 mt-1">
+                  Selected: #{form.mother_animal_number}
+                  {(() => {
+                    const selected = existingAnimals.find(a => a.tag_number === form.mother_animal_number);
+                    return selected ? ` (${selected.birth_year || '—'})` : '';
+                  })()}
+                </p>
+              )}
             </div>
             {pastures.length > 0 && (
               <div>
