@@ -454,6 +454,16 @@ export default function MasterSpreadsheet({ onBack }) {
   const createMutation = useMutation({
     mutationFn: (data) => base44.entities.Animals.create(data),
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['animals'] }); toast.success('Animal added!'); },
+    onError: (error) => {
+      console.error('Create animal error:', error);
+      if (error?.message?.includes('Permission')) {
+        toast.error('You do not have permission to add animals');
+      } else if (error?.message?.includes('already exists')) {
+        toast.error('Tag number already exists');
+      } else {
+        toast.error('Failed to add animal: ' + (error?.message || 'Unknown error'));
+      }
+    },
   });
   const deleteMutation = useMutation({
     mutationFn: (id) => base44.entities.Animals.delete(id),
