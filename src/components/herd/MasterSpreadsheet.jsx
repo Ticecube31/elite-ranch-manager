@@ -223,8 +223,8 @@ function AddRowModal({ pastures, seasons, existingAnimals, onSave, onClose, curr
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 px-0 pb-0">
-      <div className="bg-white rounded-t-3xl p-6 w-full max-w-lg shadow-2xl space-y-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4 py-4">
+      <div className="bg-white rounded-2xl p-6 w-full max-w-lg shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between">
           <h3 className="font-heading font-bold text-xl" style={{ color: PURPLE_DARK }}>Add New Animal</h3>
           <button onClick={onClose}><X className="w-6 h-6 text-gray-400" /></button>
