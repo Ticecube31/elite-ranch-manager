@@ -12,7 +12,7 @@ export default function MoveAnimalsSheet({ open, onOpenChange, pasture, onDone }
   const [targetPastureId, setTargetPastureId] = useState('');
   const [headCount, setHeadCount] = useState('');
   const [moveDate, setMoveDate] = useState(new Date().toISOString().split('T')[0]);
-  const [reason, setReason] = useState('Rotation');
+  const [reason, setReason] = useState('');
   const [saving, setSaving] = useState(false);
 
   const { data: allPastures = [] } = useQuery({
@@ -75,13 +75,13 @@ export default function MoveAnimalsSheet({ open, onOpenChange, pasture, onDone }
           </div>
 
           <div>
-            <Label className="text-sm font-semibold">Reason</Label>
-            <Select value={reason} onValueChange={setReason}>
-              <SelectTrigger className="h-12 mt-1"><SelectValue /></SelectTrigger>
-              <SelectContent>
-                {['Rotation', 'Weaning', 'Sale', 'Health', 'Other'].map(r => <SelectItem key={r} value={r}>{r}</SelectItem>)}
-              </SelectContent>
-            </Select>
+            <Label className="text-sm font-semibold">Reason <span className="text-muted-foreground font-normal">(optional)</span></Label>
+            <Input
+              value={reason}
+              onChange={e => setReason(e.target.value)}
+              placeholder="e.g. Rotation, Sale, Weaning..."
+              className="h-12 mt-1"
+            />
           </div>
 
           <div>
