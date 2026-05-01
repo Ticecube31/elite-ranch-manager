@@ -70,11 +70,56 @@
     "photo_url": {
       "type": "string"
     },
-    "gps_lat": {
-      "type": "number"
+    "geometry": {
+      "type": "array",
+      "items": {
+        "type": "array",
+        "items": {
+          "type": "number"
+        },
+        "minItems": 2,
+        "maxItems": 2
+      },
+      "description": "Polygon boundary as [[lat, lng], [lat, lng], ...] drawn on the map"
     },
-    "gps_lng": {
-      "type": "number"
+    "water_sources": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "Water Tank",
+              "Pond",
+              "Dam",
+              "Lake"
+            ]
+          },
+          "lat": {
+            "type": "number"
+          },
+          "lng": {
+            "type": "number"
+          }
+        }
+      },
+      "description": "Locations of water sources within the pasture"
+    },
+    "gates": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "lat": {
+            "type": "number"
+          },
+          "lng": {
+            "type": "number"
+          }
+        }
+      },
+      "description": "Locations of gates along the pasture boundary"
     }
   },
   "required": [

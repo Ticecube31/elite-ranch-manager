@@ -4,6 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import { Plus } from 'lucide-react';
 import { differenceInDays } from 'date-fns';
 import PastureCard from '@/components/pastures/PastureCard';
+import PastureMap from '@/components/pastures/PastureMap';
 
 const TABS = ['Map', 'Overview', 'Table'];
 const TODAY = new Date();
@@ -99,9 +100,8 @@ export default function PastureManagement() {
         )}
 
         {activeTab === 'Map' && (
-          <div className="flex flex-col items-center justify-center py-24 gap-3">
-            <span className="text-5xl">🗺️</span>
-            <p className="font-heading font-bold text-xl" style={{ color: '#7A4A2A' }}>Map Coming Soon</p>
+          <div className="pt-2">
+            <PastureMap pastures={pastures} />
           </div>
         )}
 
