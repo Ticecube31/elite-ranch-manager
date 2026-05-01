@@ -762,11 +762,9 @@ export default function MasterSpreadsheet({ onBack, currentUser }) {
             <p className="text-sm mt-1">Try clearing filters or adding a new animal.</p>
           </div>
         ) : (
-          <DragDropContext onDragEnd={handleDragEnd}>
           <div className="flex-1 overflow-y-auto bg-white border border-gray-300">
-            {/* Column headers */}
+            {/* Headers (checkbox + columns + actions) */}
             <div className="flex items-center bg-gray-50 sticky top-0 z-10" style={{ borderBottom: '2px solid #999' }}>
-              {/* Select-all checkbox */}
               <div style={{ width: 40, minWidth: 40, maxWidth: 40, borderRight: '1px solid #ccc' }} className="flex items-center justify-center px-2 py-3 shrink-0">
                 <button onClick={toggleAll}>
                   {selected.size === filtered.length && filtered.length > 0
@@ -776,204 +774,190 @@ export default function MasterSpreadsheet({ onBack, currentUser }) {
               </div>
 
               {colOrder.map(colKey => {
-                 const col = COLS.find(c => c.key === colKey);
-                 if (!col || !visibleCols.has(col.key)) return null;
-                 const width = getColWidth(col.key);
-                 return (
-                   <div
-                     key={col.key}
-                     style={{ width, minWidth: width, maxWidth: width, borderRight: '1px solid #ccc', opacity: draggedCol === col.key ? 0.5 : 1 }}
-                     className="relative shrink-0 group flex items-center cursor-move select-none bg-gray-50 hover:bg-gray-100 transition-colors"
-                     draggable
-                     onDragStart={(e) => handleColDragStart(e, col.key)}
-                     onDragOver={handleColDragOver}
-                     onDrop={(e) => handleColDrop(e, col.key)}
-                   >
-                     <ColumnHeaderMenu
-                       colKey={col.key}
-                       label={col.label}
-                       onSort={(dir) => handleSort(col.key, dir)}
-                       onClear={() => handleClearSort(col.key)}
-                       sortCol={sortCol}
-                       sortDir={sortDir}
-                       activeFilters={columnFilters}
-                     />
-                     <div
-                       onMouseDown={(e) => {
-                         e.preventDefault();
-                         setResizing(col.key);
-                         const startX = e.clientX;
-                         const startW = width;
-
-                         const onMove = (e) => {
-                           const delta = e.clientX - startX;
-                           handleColResize(col.key, startW + delta);
-                         };
-
-                         const onUp = () => {
-                           document.removeEventListener('mousemove', onMove);
-                           document.removeEventListener('mouseup', onUp);
-                           setResizing(null);
-                         };
-
-                         document.addEventListener('mousemove', onMove);
-                         document.addEventListener('mouseup', onUp);
-                       }}
-                       className="absolute right-0 top-0 h-full w-1 bg-gray-400 hover:bg-purple-500 cursor-col-resize opacity-0 group-hover:opacity-100 transition-opacity"
-                     />
-                   </div>
-                 );
-               })}
-              <div style={{ width: 40, minWidth: 40, maxWidth: 40, borderRight: '1px solid #ccc' }} className="shrink-0" />
-            </div>
-
-            {/* Rows */}
-            <Droppable droppableId="animals-list">
-              {(provided, snapshot) => (
-                <div ref={provided.innerRef} {...provided.droppableProps}>
-            {sortedAnimals.map((animal, idx) => (
-              <Draggable key={animal.id} draggableId={animal.id} index={idx}>
-                {(provided, snapshot) => (
+                const col = COLS.find(c => c.key === colKey);
+                if (!col || !visibleCols.has(col.key)) return null;
+                const width = getColWidth(col.key);
+                return (
                   <div
-                    ref={provided.innerRef}
-                    {...provided.draggableProps}
-                    {...provided.dragHandleProps}
-                    className={`flex transition-all ${snapshot.isDragging ? 'bg-blue-100 shadow-lg' : selected.has(animal.id) ? 'bg-purple-100' : 'bg-white'}`}
-                    style={{ borderBottom: '1px solid #ccc', ...provided.draggableProps.style }}
+                    key={col.key}
+                    style={{ width, minWidth: width, maxWidth: width, borderRight: '1px solid #ccc', opacity: draggedCol === col.key ? 0.5 : 1 }}
+                    className="relative shrink-0 group flex items-center cursor-move select-none bg-gray-50 hover:bg-gray-100 transition-colors"
+                    draggable
+                    onDragStart={(e) => handleColDragStart(e, col.key)}
+                    onDragOver={handleColDragOver}
+                    onDrop={(e) => handleColDrop(e, col.key)}
                   >
-                    {/* Checkbox */}
-                    <div style={{ width: 40, minWidth: 40, maxWidth: 40, borderRight: '1px solid #ccc' }} className="flex items-center justify-center shrink-0 py-2">
-                      <button onClick={() => toggleSelect(animal.id)}>
-                        {selected.has(animal.id)
-                          ? <CheckSquare className="w-5 h-5" style={{ color: PURPLE }} />
-                          : <Square className="w-5 h-5 text-gray-200" />}
-                      </button>
-                    </div>
+                    <ColumnHeaderMenu
+                      colKey={col.key}
+                      label={col.label}
+                      onSort={(dir) => handleSort(col.key, dir)}
+                      onClear={() => handleClearSort(col.key)}
+                      sortCol={sortCol}
+                      sortDir={sortDir}
+                      activeFilters={columnFilters}
+                    />
+                    <div
+                      onMouseDown={(e) => {
+                        e.preventDefault();
+                        setResizing(col.key);
+                        const startX = e.clientX;
+                        const startW = width;
 
-                    {/* Dynamic cells */}
-                {visibleCols.has('tag_number') && (
-                  <div style={{ width: getColWidth('tag_number'), minWidth: getColWidth('tag_number'), maxWidth: getColWidth('tag_number'), borderRight: '1px solid #ccc', color: PURPLE_DARK }} className="px-2 py-2 shrink-0 font-bold text-sm overflow-hidden flex items-center">
-                    <CellText value={animal.tag_number} onCommit={v => handleCellUpdate(animal, 'tag_number', v)} />
-                  </div>
-                )}
-                {visibleCols.has('sex') && (
-                  <div style={{ width: getColWidth('sex'), minWidth: getColWidth('sex'), maxWidth: getColWidth('sex'), borderRight: '1px solid #ccc' }} className="px-2 py-2 shrink-0 text-sm overflow-hidden flex items-center">
-                    <CellSelect value={animal.sex} options={['Male', 'Female']} onCommit={v => handleCellUpdate(animal, 'sex', v)} />
-                  </div>
-                )}
-                {visibleCols.has('animal_type') && (
-                  <div style={{ width: getColWidth('animal_type'), minWidth: getColWidth('animal_type'), maxWidth: getColWidth('animal_type'), borderRight: '1px solid #ccc' }} className="px-2 py-2 shrink-0 text-sm overflow-hidden flex items-center">
-                    <CellSelect value={animal.animal_type} options={ANIMAL_TYPES} onCommit={v => handleCellUpdate(animal, 'animal_type', v)} />
-                  </div>
-                )}
-                {visibleCols.has('mother_animal_number') && (
-                  <div style={{ width: getColWidth('mother_animal_number'), minWidth: getColWidth('mother_animal_number'), maxWidth: getColWidth('mother_animal_number'), borderRight: '1px solid #ccc' }} className="px-2 py-2 shrink-0 text-sm overflow-hidden flex items-center">
-                    <CellText value={animal.mother_animal_number} onCommit={v => handleCellUpdate(animal, 'mother_animal_number', v)} placeholder="—" />
-                  </div>
-                )}
-                {visibleCols.has('date_of_birth') && (
-                  <div style={{ width: getColWidth('date_of_birth'), minWidth: getColWidth('date_of_birth'), maxWidth: getColWidth('date_of_birth'), borderRight: '1px solid #ccc' }} className="px-2 py-2 shrink-0 text-sm overflow-hidden flex items-center">
-                    <CellDate value={animal.date_of_birth} onCommit={v => handleCellUpdate(animal, 'date_of_birth', v)} />
-                  </div>
-                )}
-                {visibleCols.has('birth_year') && (
-                  <div style={{ width: getColWidth('birth_year'), minWidth: getColWidth('birth_year'), maxWidth: getColWidth('birth_year'), borderRight: '1px solid #ccc' }} className="px-2 py-2 shrink-0 text-sm overflow-hidden flex items-center">
-                    <span className="text-sm">{animal.birth_year || '—'}</span>
-                  </div>
-                )}
-                {visibleCols.has('status') && (
-                  <div style={{ width: getColWidth('status'), minWidth: getColWidth('status'), maxWidth: getColWidth('status'), borderRight: '1px solid #ccc' }} className="px-2 py-2 shrink-0 text-sm overflow-hidden flex items-center">
-                    <div className={`text-xs font-bold px-2 py-0.5 rounded-full inline-block ${statusBadgeColor(animal.status)}`}>
-                      <CellSelect value={animal.status} options={STATUSES} onCommit={v => handleCellUpdate(animal, 'status', v)} />
-                    </div>
-                  </div>
-                )}
-                {visibleCols.has('pasture_id') && (
-                  <div style={{ width: getColWidth('pasture_id'), minWidth: getColWidth('pasture_id'), maxWidth: getColWidth('pasture_id'), borderRight: '1px solid #ccc' }} className="px-2 py-2 shrink-0 text-sm overflow-hidden flex items-center">
-                    <CellSelect
-                      value={getPastureName(animal.pasture_id)}
-                      options={pastures.map(p => p.pasture_name)}
-                      onCommit={v => {
-                        const p = pastures.find(p => p.pasture_name === v);
-                        handleCellUpdate(animal, 'pasture_id', p?.id || '');
+                        const onMove = (e) => {
+                          const delta = e.clientX - startX;
+                          handleColResize(col.key, startW + delta);
+                        };
+
+                        const onUp = () => {
+                          document.removeEventListener('mousemove', onMove);
+                          document.removeEventListener('mouseup', onUp);
+                          setResizing(null);
+                        };
+
+                        document.addEventListener('mousemove', onMove);
+                        document.addEventListener('mouseup', onUp);
                       }}
+                      className="absolute right-0 top-0 h-full w-1 bg-gray-400 hover:bg-purple-500 cursor-col-resize opacity-0 group-hover:opacity-100 transition-opacity"
                     />
                   </div>
-                )}
-                {visibleCols.has('born_pasture_id') && (
-                  <div style={{ width: getColWidth('born_pasture_id'), minWidth: getColWidth('born_pasture_id'), maxWidth: getColWidth('born_pasture_id'), borderRight: '1px solid #ccc' }} className="px-2 py-2 shrink-0 text-sm overflow-hidden flex items-center">
-                    <span className="text-sm">{getPastureName(animal.born_pasture_id) || '—'}</span>
+                );
+              })}
+              <div style={{ width: 40, minWidth: 40, maxWidth: 40, borderRight: '1px solid #ccc' }} className="shrink-0" />
+              <div style={{ width: 32, minWidth: 32, maxWidth: 32, borderRight: '1px solid #ccc' }} className="shrink-0" />
+              <div style={{ width: 40, minWidth: 40, maxWidth: 40 }} className="shrink-0" />
+            </div>
+
+            {/* Rows with DragDropContext for row reordering */}
+            <DragDropContext onDragEnd={handleDragEnd}>
+              <Droppable droppableId="animals-list">
+                {(provided, snapshot) => (
+                  <div ref={provided.innerRef} {...provided.droppableProps}>
+                    {sortedAnimals.map((animal, idx) => (
+                      <Draggable key={animal.id} draggableId={animal.id} index={idx}>
+                        {(provided, snapshot) => (
+                          <div
+                            ref={provided.innerRef}
+                            {...provided.draggableProps}
+                            {...provided.dragHandleProps}
+                            className={`flex transition-all ${snapshot.isDragging ? 'bg-blue-100 shadow-lg' : selected.has(animal.id) ? 'bg-purple-100' : 'bg-white'}`}
+                            style={{ borderBottom: '1px solid #ccc', ...provided.draggableProps.style }}
+                          >
+                            {/* Checkbox */}
+                            <div style={{ width: 40, minWidth: 40, maxWidth: 40, borderRight: '1px solid #ccc' }} className="flex items-center justify-center shrink-0 py-2">
+                              <button onClick={() => toggleSelect(animal.id)}>
+                                {selected.has(animal.id)
+                                  ? <CheckSquare className="w-5 h-5" style={{ color: PURPLE }} />
+                                  : <Square className="w-5 h-5 text-gray-200" />}
+                              </button>
+                            </div>
+
+                            {/* Dynamic cells in column order */}
+                            {colOrder.map(colKey => {
+                              const col = COLS.find(c => c.key === colKey);
+                              if (!col || !visibleCols.has(col.key)) return null;
+                              const width = getColWidth(col.key);
+
+                              return (
+                                <div key={colKey} style={{ width, minWidth: width, maxWidth: width, borderRight: '1px solid #ccc' }} className="px-2 py-2 shrink-0 text-sm overflow-hidden flex items-center">
+                                  {col.key === 'tag_number' && (
+                                    <CellText value={animal.tag_number} onCommit={v => handleCellUpdate(animal, 'tag_number', v)} />
+                                  )}
+                                  {col.key === 'sex' && (
+                                    <CellSelect value={animal.sex} options={['Male', 'Female']} onCommit={v => handleCellUpdate(animal, 'sex', v)} />
+                                  )}
+                                  {col.key === 'animal_type' && (
+                                    <CellSelect value={animal.animal_type} options={ANIMAL_TYPES} onCommit={v => handleCellUpdate(animal, 'animal_type', v)} />
+                                  )}
+                                  {col.key === 'mother_animal_number' && (
+                                    <CellText value={animal.mother_animal_number} onCommit={v => handleCellUpdate(animal, 'mother_animal_number', v)} placeholder="—" />
+                                  )}
+                                  {col.key === 'date_of_birth' && (
+                                    <CellDate value={animal.date_of_birth} onCommit={v => handleCellUpdate(animal, 'date_of_birth', v)} />
+                                  )}
+                                  {col.key === 'birth_year' && (
+                                    <span className="text-sm">{animal.birth_year || '—'}</span>
+                                  )}
+                                  {col.key === 'status' && (
+                                    <div className={`text-xs font-bold px-2 py-0.5 rounded-full inline-block ${statusBadgeColor(animal.status)}`}>
+                                      <CellSelect value={animal.status} options={STATUSES} onCommit={v => handleCellUpdate(animal, 'status', v)} />
+                                    </div>
+                                  )}
+                                  {col.key === 'pasture_id' && (
+                                    <CellSelect
+                                      value={getPastureName(animal.pasture_id)}
+                                      options={pastures.map(p => p.pasture_name)}
+                                      onCommit={v => {
+                                        const p = pastures.find(p => p.pasture_name === v);
+                                        handleCellUpdate(animal, 'pasture_id', p?.id || '');
+                                      }}
+                                    />
+                                  )}
+                                  {col.key === 'born_pasture_id' && (
+                                    <span className="text-sm">{getPastureName(animal.born_pasture_id) || '—'}</span>
+                                  )}
+                                  {col.key === 'twin' && (
+                                    <span className="text-sm">{animal.twin ? '✓' : '—'}</span>
+                                  )}
+                                  {col.key === 'children' && (
+                                    <ChildrenCell 
+                                      animalId={animal.id} 
+                                      animals={animals}
+                                      onAddChild={async (childId) => {
+                                        const child = animals.find(a => a.id === childId);
+                                        if (child) {
+                                          await handleCellUpdate(child, 'mother_animal_number', animal.tag_number);
+                                          await handleCellUpdate(child, 'mother_id', animal.id);
+                                        }
+                                      }}
+                                      onRemoveChild={async (childId) => {
+                                        const child = animals.find(a => a.id === childId);
+                                        if (child) {
+                                          await handleCellUpdate(child, 'mother_animal_number', '');
+                                          await handleCellUpdate(child, 'mother_id', '');
+                                        }
+                                      }}
+                                    />
+                                  )}
+                                  {col.key === 'notes' && (
+                                    <CellText value={animal.notes} onCommit={v => handleCellUpdate(animal, 'notes', v)} placeholder="—" />
+                                  )}
+                                  {col.key === 'photo_url' && (
+                                    <div className="flex items-center justify-center">
+                                      <CellPhoto value={animal.photo_url} onCommit={v => handleCellUpdate(animal, 'photo_url', v)} />
+                                    </div>
+                                  )}
+                                  {col.key === 'is_archived' && (
+                                    <span className="text-sm">{animal.is_archived ? '✓' : '—'}</span>
+                                  )}
+                                  {col.key === 'created_date' && (
+                                    <span className="text-xs text-gray-400">{animal.created_date ? format(new Date(animal.created_date), 'MM/dd/yy') : '—'}</span>
+                                  )}
+                                </div>
+                              );
+                            })}
+
+                            {/* View detail */}
+                            <div style={{ width: 32, minWidth: 32, maxWidth: 32, borderRight: '1px solid #ccc' }} className="flex items-center justify-center shrink-0">
+                              <button onClick={() => setDetailAnimalId(animal.id)} className="p-1.5 hover:bg-gray-100" title="View Details">
+                                <ExternalLink className="w-4 h-4" style={{ color: PURPLE }} />
+                              </button>
+                            </div>
+                            {/* Delete */}
+                            <div style={{ width: 40, minWidth: 40, maxWidth: 40 }} className="flex items-center justify-center shrink-0">
+                              <button onClick={() => setDeleteTarget(animal)} className="p-1.5 hover:bg-gray-100">
+                                <Trash2 className="w-4 h-4 text-red-300 hover:text-red-500" />
+                              </button>
+                            </div>
+                          </div>
+                        )}
+                      </Draggable>
+                    ))}
+                    {provided.placeholder}
                   </div>
                 )}
-                {visibleCols.has('twin') && (
-                   <div style={{ width: getColWidth('twin'), minWidth: getColWidth('twin'), maxWidth: getColWidth('twin'), borderRight: '1px solid #ccc' }} className="px-2 py-2 shrink-0 text-sm overflow-hidden flex items-center">
-                     <span className="text-sm">{animal.twin ? '✓' : '—'}</span>
-                   </div>
-                 )}
-                 {visibleCols.has('children') && (
-                   <div style={{ width: getColWidth('children'), minWidth: getColWidth('children'), maxWidth: getColWidth('children'), borderRight: '1px solid #ccc' }} className="px-2 py-2 shrink-0 text-sm overflow-hidden flex items-center">
-                     <ChildrenCell 
-                       animalId={animal.id} 
-                       animals={animals}
-                       onAddChild={async (childId) => {
-                         const child = animals.find(a => a.id === childId);
-                         if (child) {
-                           await handleCellUpdate(child, 'mother_animal_number', animal.tag_number);
-                           await handleCellUpdate(child, 'mother_id', animal.id);
-                         }
-                       }}
-                       onRemoveChild={async (childId) => {
-                         const child = animals.find(a => a.id === childId);
-                         if (child) {
-                           await handleCellUpdate(child, 'mother_animal_number', '');
-                           await handleCellUpdate(child, 'mother_id', '');
-                         }
-                       }}
-                     />
-                   </div>
-                 )}
-                 {visibleCols.has('notes') && (
-                  <div style={{ width: getColWidth('notes'), minWidth: getColWidth('notes'), maxWidth: getColWidth('notes'), borderRight: '1px solid #ccc' }} className="px-2 py-2 shrink-0 text-sm overflow-hidden flex items-center">
-                    <CellText value={animal.notes} onCommit={v => handleCellUpdate(animal, 'notes', v)} placeholder="—" />
-                  </div>
-                )}
-                {visibleCols.has('photo_url') && (
-                  <div style={{ width: getColWidth('photo_url'), minWidth: getColWidth('photo_url'), maxWidth: getColWidth('photo_url'), borderRight: '1px solid #ccc' }} className="px-2 py-2 shrink-0 flex items-center justify-center overflow-hidden">
-                    <CellPhoto value={animal.photo_url} onCommit={v => handleCellUpdate(animal, 'photo_url', v)} />
-                  </div>
-                )}
-                {visibleCols.has('is_archived') && (
-                  <div style={{ width: getColWidth('is_archived'), minWidth: getColWidth('is_archived'), maxWidth: getColWidth('is_archived'), borderRight: '1px solid #ccc' }} className="px-2 py-2 shrink-0 text-sm overflow-hidden flex items-center">
-                    <span className="text-sm">{animal.is_archived ? '✓' : '—'}</span>
-                  </div>
-                )}
-                {visibleCols.has('created_date') && (
-                  <div style={{ width: getColWidth('created_date'), minWidth: getColWidth('created_date'), maxWidth: getColWidth('created_date'), borderRight: '1px solid #ccc' }} className="px-2 py-2 shrink-0 text-xs text-gray-400 overflow-hidden flex items-center">
-                    {animal.created_date ? format(new Date(animal.created_date), 'MM/dd/yy') : '—'}
-                  </div>
-                )}
-                {/* View detail */}
-                <div style={{ width: 32, minWidth: 32, maxWidth: 32, borderRight: '1px solid #ccc' }} className="flex items-center justify-center shrink-0">
-                  <button onClick={() => setDetailAnimalId(animal.id)} className="p-1.5 hover:bg-gray-100" title="View Details">
-                    <ExternalLink className="w-4 h-4" style={{ color: PURPLE }} />
-                  </button>
-                </div>
-                    {/* Delete */}
-                    <div style={{ width: 40, minWidth: 40, maxWidth: 40, borderRight: '1px solid #ccc' }} className="flex items-center justify-center shrink-0">
-                      <button onClick={() => setDeleteTarget(animal)} className="p-1.5 hover:bg-gray-100">
-                        <Trash2 className="w-4 h-4 text-red-300 hover:text-red-500" />
-                      </button>
-                    </div>
-                  </div>
-                )}
-              </Draggable>
-            ))}
-            {provided.placeholder}
-                </div>
-              )}
-            </Droppable>
+              </Droppable>
+            </DragDropContext>
           </div>
-          </DragDropContext>
           )}
           </div>
 
