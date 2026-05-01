@@ -165,7 +165,7 @@ export default function PastureDetail() {
         </div>
 
         {/* ── Pasture Information ────────────────────────────────── */}
-        <div className="rounded-2xl p-4" style={{ background: 'rgba(255,255,255,0.12)', border: '1px solid rgba(255,255,255,0.25)' }}>
+        <div className="rounded-2xl p-4" style={{ background: 'rgba(255,255,255,0.25)', border: '1px solid rgba(255,255,255,0.35)' }}>
           <h2 className="font-heading font-bold text-base text-white mb-1">Pasture Information</h2>
           <InfoRow icon={MapPin} label="Acreage" value={pasture.acreage ? `${pasture.acreage} acres` : null} />
           {/* Water Sources row — tappable */}
@@ -177,7 +177,7 @@ export default function PastureDetail() {
             <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style={{ background: 'rgba(255,255,255,0.15)' }}>
               <Droplets className="w-4 h-4" style={{ color: 'rgba(255,255,255,0.8)' }} />
             </div>
-            <span className="text-sm flex-1" style={{ color: 'rgba(255,255,255,0.8)' }}>Water Sources</span>
+            <span className="text-sm flex-1 font-semibold" style={{ color: 'rgba(255,255,255,0.95)' }}>Water Sources</span>
             <div className="flex items-center gap-1">
               {(() => {
                 const sources = pasture.water_sources || [];
@@ -204,12 +204,12 @@ export default function PastureDetail() {
 
         {/* ── Notes ─────────────────────────────────────────────── */}
         {pasture.notes && (
-          <div className="rounded-2xl p-4" style={{ background: 'rgba(255,255,255,0.12)', border: '1px solid rgba(255,255,255,0.25)' }}>
+          <div className="rounded-2xl p-4" style={{ background: 'rgba(255,255,255,0.25)', border: '1px solid rgba(255,255,255,0.35)' }}>
             <div className="flex items-center gap-2 mb-2">
-              <FileText className="w-4 h-4" style={{ color: 'rgba(255,255,255,0.4)' }} />
+              <FileText className="w-4 h-4" style={{ color: 'rgba(255,255,255,0.6)' }} />
               <h2 className="font-heading font-bold text-base text-white">Notes</h2>
             </div>
-            <p className="text-sm whitespace-pre-wrap" style={{ color: 'rgba(255,255,255,0.55)' }}>{pasture.notes}</p>
+            <p className="text-sm whitespace-pre-wrap font-semibold" style={{ color: 'rgba(255,255,255,0.85)' }}>{pasture.notes}</p>
           </div>
         )}
 
@@ -217,7 +217,7 @@ export default function PastureDetail() {
         <PastureDrawMap pasture={pasture} />
 
         {/* ── Pasture History ────────────────────────────────────── */}
-        <div className="rounded-2xl p-4" style={{ background: 'rgba(255,255,255,0.12)', border: '1px solid rgba(255,255,255,0.25)' }}>
+        <div className="rounded-2xl p-4" style={{ background: 'rgba(255,255,255,0.25)', border: '1px solid rgba(255,255,255,0.35)' }}>
           <h2 className="font-heading font-bold text-base text-white mb-3">Movement History</h2>
           {sortedMovements.length === 0 ? (
             <p className="text-sm text-center py-4" style={{ color: 'rgba(255,255,255,0.4)' }}>No movement history yet</p>
@@ -227,8 +227,8 @@ export default function PastureDetail() {
                 <div key={m.id || i} className="flex items-start gap-3 py-2 last:border-0" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
                   <div className="w-2 h-2 rounded-full mt-1.5 shrink-0" style={{ background: '#1976d2' }} />
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold text-white">#{m.animal_number} → {m.to_location}</p>
-                    {m.move_reason && <p className="text-xs" style={{ color: 'rgba(255,255,255,0.45)' }}>{m.move_reason}</p>}
+                    <p className="text-sm font-bold text-white">#{m.animal_number} → {m.to_location}</p>
+                     {m.move_reason && <p className="text-xs font-semibold" style={{ color: 'rgba(255,255,255,0.65)' }}>{m.move_reason}</p>}
                   </div>
                   <span className="text-xs shrink-0" style={{ color: 'rgba(255,255,255,0.4)' }}>
                     {m.move_date ? format(new Date(m.move_date), 'MMM d, yy') : '—'}
@@ -256,7 +256,7 @@ export default function PastureDetail() {
         <button
           onClick={() => setShowNote(true)}
           className="h-14 w-14 rounded-2xl flex items-center justify-center shadow-lg active:scale-95 transition-transform"
-          style={{ background: 'rgba(255,255,255,0.12)', border: '1px solid rgba(255,255,255,0.25)' }}
+          style={{ background: 'rgba(255,255,255,0.25)', border: '1px solid rgba(255,255,255,0.35)' }}
         >
           <Plus className="w-6 h-6 text-white" />
         </button>
