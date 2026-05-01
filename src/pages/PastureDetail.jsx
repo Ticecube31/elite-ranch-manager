@@ -97,15 +97,15 @@ export default function PastureDetail() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ background: '#1e3a6e' }}>
-        <div className="w-8 h-8 border-4 border-white/10 border-t-blue-500 rounded-full animate-spin" />
+      <div className="min-h-screen flex items-center justify-center" style={{ background: '#d4e8f7' }}>
+        <div className="w-8 h-8 border-4 border-blue-300 border-t-blue-500 rounded-full animate-spin" />
       </div>
     );
   }
 
   if (!pasture) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center gap-4" style={{ background: '#1e3a6e' }}>
+      <div className="min-h-screen flex flex-col items-center justify-center gap-4" style={{ background: '#d4e8f7' }}>
         <p className="font-heading font-bold text-xl text-white">Pasture not found</p>
         <Button variant="outline" onClick={() => navigate('/pastures')}>Back to Pastures</Button>
       </div>
@@ -117,18 +117,18 @@ export default function PastureDetail() {
   const sortedMovements = [...movements].sort((a, b) => new Date(b.move_date) - new Date(a.move_date));
 
   return (
-    <div className="min-h-screen pb-32" style={{ background: '#1e3a6e' }}>
+    <div className="min-h-screen pb-32" style={{ background: '#d4e8f7' }}>
 
       {/* ── Header ─────────────────────────────────────────────── */}
       <div
         className="sticky top-0 z-20 px-4 h-14 flex items-center justify-between"
-        style={{ background: '#1e3a6e', borderBottom: '1px solid rgba(255,255,255,0.2)' }}
+        style={{ background: '#d4e8f7', borderBottom: '1px solid rgba(0,0,0,0.1)' }}
       >
-        <button onClick={() => navigate('/pastures')} className="text-white/80 hover:text-white p-2 -ml-2">
+        <button onClick={() => navigate('/pastures')} className="text-[#1e3a6e]/70 hover:text-[#1e3a6e] p-2 -ml-2">
           <ArrowLeft className="w-6 h-6" />
         </button>
-        <p className="font-heading font-bold text-white text-lg truncate max-w-[60%] text-center">{pasture.pasture_name}</p>
-        <button onClick={() => setShowEdit(true)} className="text-white/80 hover:text-white p-2 -mr-2">
+        <p className="font-heading font-bold text-[#1e3a6e] text-lg truncate max-w-[60%] text-center">{pasture.pasture_name}</p>
+        <button onClick={() => setShowEdit(true)} className="text-[#1e3a6e]/70 hover:text-[#1e3a6e] p-2 -mr-2">
           <Edit2 className="w-5 h-5" />
         </button>
       </div>
@@ -244,7 +244,7 @@ export default function PastureDetail() {
       {/* ── Action Buttons ─────────────────────────────────────────── */}
       <div
         className="fixed bottom-0 left-0 right-0 px-4 pb-[calc(5rem+env(safe-area-inset-bottom,0px))] pt-3 flex gap-3"
-        style={{ background: 'linear-gradient(to top, #1e3a6e 70%, transparent)' }}
+        style={{ background: 'linear-gradient(to top, rgba(212,232,247,1) 70%, transparent)' }}
       >
         <button
           onClick={() => setShowMove(true)}
