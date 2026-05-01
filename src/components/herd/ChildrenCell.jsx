@@ -2,7 +2,6 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Plus, X } from 'lucide-react';
 
 const PURPLE = '#6B2D5E';
-const PURPLE_DARK = '#4A1F40';
 
 export default function ChildrenCell({ animalId, animals, onAddChild, onRemoveChild }) {
   const [showMenu, setShowMenu] = useState(false);
@@ -10,8 +9,12 @@ export default function ChildrenCell({ animalId, animals, onAddChild, onRemoveCh
   const [search, setSearch] = useState('');
   const buttonRef = useRef(null);
   
-  // Find all calves with this animal as parent
-  const calves = animals.filter(a => a.mother_id === animalId || (a.mother_animal_number && animals.find(p => p.id === animalId)?.tag_number === a.mother_animal_number));
+  // Get current animal and check if female
+  const currentAnimal = animals.find(a => a.id === animalId);
+  const isFemale = currentAnimal?.sex === 'Female';
+  
+  // Find all calves with this animal as mother (strict mother_id relationship)
+  const calves = isFemale ? animals.filter(a => a.mother_id === animalId) : [];
   
   // Get potential children (animals not already linked as calves)
   const potentialChildren = animals.filter(a => 
@@ -39,6 +42,11 @@ export default function ChildrenCell({ animalId, animals, onAddChild, onRemoveCh
     }
   }, [showMenu]);
 
+  // Non-female animals show only a dash
+  if (!isFemale) {
+    return <span className="text-xs text-gray-300">—</span>;
+  }
+
   return (
     <div className="relative">
       <div className="flex flex-wrap gap-1 items-start">
@@ -65,7 +73,7 @@ export default function ChildrenCell({ animalId, animals, onAddChild, onRemoveCh
           <span className="text-xs text-gray-300">—</span>
         )}
         
-        {/* Add child button */}
+        {/* Add child button - only for females */}
         <button
           ref={buttonRef}
           onClick={() => setShowMenu(!showMenu)}
