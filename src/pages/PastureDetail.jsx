@@ -28,8 +28,8 @@ function getDaysLabel(pasture) {
 
 function StatusBadge({ status }) {
   const map = {
-    Active: { bg: '#16a34a', text: 'Active' },
-    Inactive: { bg: '#6b7280', text: 'Inactive' },
+    Active: { bg: 'rgba(25,118,210,0.8)', text: 'Active' },
+    Inactive: { bg: 'rgba(255,255,255,0.12)', text: 'Inactive' },
   };
   const s = map[status] || map.Inactive;
   return (
@@ -42,12 +42,12 @@ function StatusBadge({ status }) {
 function InfoRow({ icon: IconComp, label, value }) {
   if (!value && value !== 0) return null;
   return (
-    <div className="flex items-center gap-3 py-3 border-b border-border last:border-0">
-      <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center shrink-0">
-        <IconComp className="w-4 h-4 text-muted-foreground" />
+    <div className="flex items-center gap-3 py-3 last:border-0" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+      <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style={{ background: 'rgba(255,255,255,0.06)' }}>
+        <IconComp className="w-4 h-4" style={{ color: 'rgba(255,255,255,0.4)' }} />
       </div>
-      <span className="text-sm text-muted-foreground flex-1">{label}</span>
-      <span className="text-sm font-semibold text-foreground">{value}</span>
+      <span className="text-sm flex-1" style={{ color: 'rgba(255,255,255,0.5)' }}>{label}</span>
+      <span className="text-sm font-semibold text-white">{value}</span>
     </div>
   );
 }
@@ -86,16 +86,16 @@ export default function PastureDetail() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="w-8 h-8 border-4 border-primary/20 border-t-primary rounded-full animate-spin" />
+      <div className="min-h-screen flex items-center justify-center" style={{ background: '#0d1117' }}>
+        <div className="w-8 h-8 border-4 border-white/10 border-t-blue-500 rounded-full animate-spin" />
       </div>
     );
   }
 
   if (!pasture) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center gap-4 bg-background">
-        <p className="font-heading font-bold text-xl text-foreground">Pasture not found</p>
+      <div className="min-h-screen flex flex-col items-center justify-center gap-4" style={{ background: '#0d1117' }}>
+        <p className="font-heading font-bold text-xl text-white">Pasture not found</p>
         <Button variant="outline" onClick={() => navigate('/pastures')}>Back to Pastures</Button>
       </div>
     );
@@ -106,12 +106,12 @@ export default function PastureDetail() {
   const sortedMovements = [...movements].sort((a, b) => new Date(b.move_date) - new Date(a.move_date));
 
   return (
-    <div className="min-h-screen bg-background pb-32">
+    <div className="min-h-screen pb-32" style={{ background: '#0d1117' }}>
 
       {/* ── Header ─────────────────────────────────────────────── */}
       <div
         className="sticky top-0 z-20 px-4 h-14 flex items-center justify-between"
-        style={{ background: 'linear-gradient(135deg, #C0592A 0%, #A0421E 100%)' }}
+        style={{ background: '#0d1117', borderBottom: '1px solid rgba(255,255,255,0.08)' }}
       >
         <button onClick={() => navigate('/pastures')} className="text-white/80 hover:text-white p-2 -ml-2">
           <ArrowLeft className="w-6 h-6" />
@@ -127,7 +127,7 @@ export default function PastureDetail() {
         {/* ── Current Status ─────────────────────────────────────── */}
         <div
           className="rounded-2xl p-5 text-white"
-          style={{ background: isActive ? 'linear-gradient(135deg,#C0592A,#A0421E)' : 'linear-gradient(135deg,#6b7280,#4b5563)' }}
+          style={{ background: isActive ? 'linear-gradient(135deg,#1a2f50,#1e3a6e)' : 'linear-gradient(135deg,#151e2d,#1a2232)', border: isActive ? '1px solid rgba(25,118,210,0.5)' : '1px solid rgba(255,255,255,0.07)' }}
         >
           <div className="flex items-center justify-between mb-3">
             <StatusBadge status={pasture.status} />
@@ -154,8 +154,8 @@ export default function PastureDetail() {
         </div>
 
         {/* ── Pasture Information ────────────────────────────────── */}
-        <div className="bg-card rounded-2xl border border-border p-4">
-          <h2 className="font-heading font-bold text-base text-foreground mb-1">Pasture Information</h2>
+        <div className="rounded-2xl p-4" style={{ background: '#151e2d', border: '1px solid rgba(255,255,255,0.07)' }}>
+          <h2 className="font-heading font-bold text-base text-white mb-1">Pasture Information</h2>
           <InfoRow icon={MapPin} label="Acreage" value={pasture.acreage ? `${pasture.acreage} acres` : null} />
           <InfoRow icon={Leaf} label="Grass Condition" value={pasture.grass_condition} />
           <InfoRow icon={Droplets} label="Water Status" value={pasture.water_status} />
@@ -168,30 +168,30 @@ export default function PastureDetail() {
 
         {/* ── Notes ─────────────────────────────────────────────── */}
         {pasture.notes && (
-          <div className="bg-card rounded-2xl border border-border p-4">
+          <div className="rounded-2xl p-4" style={{ background: '#151e2d', border: '1px solid rgba(255,255,255,0.07)' }}>
             <div className="flex items-center gap-2 mb-2">
-              <FileText className="w-4 h-4 text-muted-foreground" />
-              <h2 className="font-heading font-bold text-base text-foreground">Notes</h2>
+              <FileText className="w-4 h-4" style={{ color: 'rgba(255,255,255,0.4)' }} />
+              <h2 className="font-heading font-bold text-base text-white">Notes</h2>
             </div>
-            <p className="text-sm text-muted-foreground whitespace-pre-wrap">{pasture.notes}</p>
+            <p className="text-sm whitespace-pre-wrap" style={{ color: 'rgba(255,255,255,0.55)' }}>{pasture.notes}</p>
           </div>
         )}
 
         {/* ── Pasture History ────────────────────────────────────── */}
-        <div className="bg-card rounded-2xl border border-border p-4">
-          <h2 className="font-heading font-bold text-base text-foreground mb-3">Movement History</h2>
+        <div className="rounded-2xl p-4" style={{ background: '#151e2d', border: '1px solid rgba(255,255,255,0.07)' }}>
+          <h2 className="font-heading font-bold text-base text-white mb-3">Movement History</h2>
           {sortedMovements.length === 0 ? (
-            <p className="text-sm text-muted-foreground text-center py-4">No movement history yet</p>
+            <p className="text-sm text-center py-4" style={{ color: 'rgba(255,255,255,0.4)' }}>No movement history yet</p>
           ) : (
             <div className="space-y-2">
               {sortedMovements.map((m, i) => (
-                <div key={m.id || i} className="flex items-start gap-3 py-2 border-b border-border last:border-0">
-                  <div className="w-2 h-2 rounded-full bg-primary mt-1.5 shrink-0" />
+                <div key={m.id || i} className="flex items-start gap-3 py-2 last:border-0" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+                  <div className="w-2 h-2 rounded-full mt-1.5 shrink-0" style={{ background: '#1976d2' }} />
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold text-foreground">#{m.animal_number} → {m.to_location}</p>
-                    {m.move_reason && <p className="text-xs text-muted-foreground">{m.move_reason}</p>}
+                    <p className="text-sm font-semibold text-white">#{m.animal_number} → {m.to_location}</p>
+                    {m.move_reason && <p className="text-xs" style={{ color: 'rgba(255,255,255,0.45)' }}>{m.move_reason}</p>}
                   </div>
-                  <span className="text-xs text-muted-foreground shrink-0">
+                  <span className="text-xs shrink-0" style={{ color: 'rgba(255,255,255,0.4)' }}>
                     {m.move_date ? format(new Date(m.move_date), 'MMM d, yy') : '—'}
                   </span>
                 </div>
@@ -201,10 +201,10 @@ export default function PastureDetail() {
         </div>
 
         {/* ── Map Placeholder ────────────────────────────────────── */}
-        <div className="bg-card rounded-2xl border border-border p-6 flex flex-col items-center gap-2">
+        <div className="rounded-2xl p-6 flex flex-col items-center gap-2" style={{ background: '#151e2d', border: '1px solid rgba(255,255,255,0.07)' }}>
           <span className="text-4xl">🗺️</span>
-          <p className="font-heading font-bold text-foreground">Pasture Map</p>
-          <p className="text-sm text-muted-foreground text-center">GPS boundary mapping coming soon</p>
+          <p className="font-heading font-bold text-white">Pasture Map</p>
+          <p className="text-sm text-center" style={{ color: 'rgba(255,255,255,0.45)' }}>GPS boundary mapping coming soon</p>
         </div>
 
       </div>
@@ -212,20 +212,21 @@ export default function PastureDetail() {
       {/* ── Action Buttons ─────────────────────────────────────────── */}
       <div
         className="fixed bottom-0 left-0 right-0 px-4 pb-[calc(5rem+env(safe-area-inset-bottom,0px))] pt-3 flex gap-3"
-        style={{ background: 'linear-gradient(to top, hsl(var(--background)) 70%, transparent)' }}
+        style={{ background: 'linear-gradient(to top, #0d1117 70%, transparent)' }}
       >
         <button
           onClick={() => setShowMove(true)}
           className="flex-1 h-14 rounded-2xl flex items-center justify-center gap-2 font-heading font-bold text-white shadow-lg active:scale-95 transition-transform"
-          style={{ background: 'linear-gradient(135deg,#C0592A,#A0421E)' }}
+          style={{ background: 'linear-gradient(135deg, #1565c0, #1976d2)', boxShadow: '0 4px 20px rgba(21,101,192,0.4)' }}
         >
           <ArrowRightLeft className="w-5 h-5" /> Move Animals
         </button>
         <button
           onClick={() => setShowNote(true)}
-          className="h-14 w-14 rounded-2xl flex items-center justify-center shadow-lg active:scale-95 transition-transform bg-card border-2 border-border"
+          className="h-14 w-14 rounded-2xl flex items-center justify-center shadow-lg active:scale-95 transition-transform"
+          style={{ background: '#151e2d', border: '1px solid rgba(255,255,255,0.15)' }}
         >
-          <Plus className="w-6 h-6 text-foreground" />
+          <Plus className="w-6 h-6 text-white" />
         </button>
       </div>
 

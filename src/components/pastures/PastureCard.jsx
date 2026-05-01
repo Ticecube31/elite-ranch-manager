@@ -11,11 +11,12 @@ export default function PastureCard({ pasture, daysValue, isActive }) {
       className="w-full text-left rounded-2xl active:scale-[0.98] transition-transform"
       style={{
         background: isActive
-          ? 'linear-gradient(135deg, #C0592A 0%, #A0421E 100%)'
-          : 'linear-gradient(135deg, #D9855A 0%, #C4714A 100%)',
+          ? 'linear-gradient(135deg, #1a2f50 0%, #1e3a6e 100%)'
+          : 'linear-gradient(135deg, #151e2d 0%, #1a2232 100%)',
+        border: isActive ? '1px solid rgba(25,118,210,0.5)' : '1px solid rgba(255,255,255,0.07)',
         boxShadow: isActive
-          ? '0 4px 16px rgba(160,66,30,0.35)'
-          : '0 2px 8px rgba(180,100,60,0.18)',
+          ? '0 4px 20px rgba(21,101,192,0.25)'
+          : '0 2px 8px rgba(0,0,0,0.3)',
       }}
     >
       <div className="flex items-center justify-between px-5 py-4">
@@ -26,11 +27,11 @@ export default function PastureCard({ pasture, daysValue, isActive }) {
           >
             {pasture.pasture_name}
           </p>
-          <p className="text-sm mt-0.5" style={{ color: 'rgba(255,255,255,0.85)' }}>
+          <p className="text-sm mt-0.5" style={{ color: 'rgba(255,255,255,0.55)' }}>
             {isActive ? (
-              <>Days w/ Cows: <strong>{daysValue}</strong></>
+              <>Days w/ Cows: <strong className="text-white">{daysValue}</strong></>
             ) : (
-              <>Days <strong>w/o</strong> Cows: <strong>{daysValue}</strong></>
+              <>Days <strong className="text-white">w/o</strong> Cows: <strong className="text-white">{daysValue}</strong></>
             )}
           </p>
         </div>
@@ -38,13 +39,13 @@ export default function PastureCard({ pasture, daysValue, isActive }) {
         <div className="flex items-center gap-3 ml-4 shrink-0">
           <span
             className="font-heading font-black text-white"
-            style={{ fontSize: isActive ? '2rem' : '1.6rem', opacity: isActive ? 1 : 0.8 }}
+            style={{ fontSize: isActive ? '2rem' : '1.6rem', opacity: isActive ? 1 : 0.85 }}
           >
             {pasture.current_herd_count ?? 0}
           </span>
           <div
             className="w-9 h-9 rounded-xl flex items-center justify-center"
-            style={{ background: '#1E5F8E' }}
+            style={{ background: 'linear-gradient(135deg, #1565c0, #1976d2)' }}
           >
             <ArrowRight className="w-5 h-5 text-white" />
           </div>
