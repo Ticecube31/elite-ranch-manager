@@ -105,7 +105,7 @@ export default function MoveCowsSheet({ open, onOpenChange, pastures }) {
                     key={n}
                     type="button"
                     onClick={() => setCount(prev => prev === '0' ? n : (prev + n))}
-                    className="h-12 rounded-xl bg-gray-100 active:bg-gray-200 font-heading font-bold text-xl text-gray-800 transition-colors"
+                    className="h-12 rounded-xl bg-gray-200 border-2 border-gray-300 active:bg-gray-300 font-heading font-black text-xl text-gray-900 transition-colors shadow-sm"
                   >
                     {n}
                   </button>
@@ -113,23 +113,23 @@ export default function MoveCowsSheet({ open, onOpenChange, pastures }) {
                 <button
                   type="button"
                   onClick={() => setCount('')}
-                  className="h-12 rounded-xl bg-gray-100 active:bg-gray-200 font-bold text-sm text-gray-500 transition-colors"
+                  className="h-12 rounded-xl bg-gray-200 border-2 border-gray-300 active:bg-gray-300 font-bold text-sm text-gray-700 transition-colors shadow-sm"
                 >
                   C
                 </button>
                 <button
                   type="button"
                   onClick={() => setCount(prev => prev === '0' ? '0' : (prev + '0'))}
-                  className="h-12 rounded-xl bg-gray-100 active:bg-gray-200 font-heading font-bold text-xl text-gray-800 transition-colors"
+                  className="h-12 rounded-xl bg-gray-200 border-2 border-gray-300 active:bg-gray-300 font-heading font-black text-xl text-gray-900 transition-colors shadow-sm"
                 >
                   0
                 </button>
                 <button
                   type="button"
                   onClick={() => setCount(prev => prev.slice(0, -1))}
-                  className="h-12 rounded-xl bg-gray-100 active:bg-gray-200 flex items-center justify-center transition-colors"
+                  className="h-12 rounded-xl bg-gray-200 border-2 border-gray-300 active:bg-gray-300 flex items-center justify-center transition-colors shadow-sm"
                 >
-                  <Delete className="w-5 h-5 text-gray-600" />
+                  <Delete className="w-5 h-5 text-gray-700" />
                 </button>
               </div>
             )}
