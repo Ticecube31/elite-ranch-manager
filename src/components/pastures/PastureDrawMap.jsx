@@ -5,6 +5,7 @@ import 'leaflet/dist/leaflet.css';
 import { base44 } from '@/api/base44Client';
 import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
+import MarkerPopup from './MarkerPopup';
 
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
@@ -13,12 +14,12 @@ L.Icon.Default.mergeOptions({
   shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
 });
 
-function createSvgIcon(emoji, size = 24) {
+function createSvgIcon(emoji, size = 24, hasLabel = false) {
   return L.divIcon({
-    html: `<div style="font-size:${size}px;line-height:1;filter:drop-shadow(0 1px 3px rgba(0,0,0,0.6));">${emoji}</div>`,
+    html: `<div style="font-size:${hasLabel ? size * 0.65 : size}px;line-height:1;filter:drop-shadow(0 1px 3px rgba(0,0,0,0.6));text-align:center;">${emoji}</div>`,
     className: '',
     iconAnchor: [size / 2, size / 2],
-    iconSize: [size, size],
+    iconSize: [size, hasLabel ? size + 16 : size],
   });
 }
 
@@ -135,6 +136,8 @@ function FullscreenDrawMap({ pasture, onSave, onCancel, initialMode = 'draw' }) 
   // Local copies of water sources & gates so they save immediately
   const [waterSources, setWaterSources] = useState(pasture.water_sources || []);
   const [gates, setGates] = useState(pasture.gates || []);
+  // Selected marker popup: { itemType: 'water'|'gate', index: number }
+  const [selectedMarker, setSelectedMarker] = useState(null);
 
   const handleAddPoint = useCallback((latlng) => {
     if (mode === 'draw') setDrawPoints(prev => [...prev, latlng]);
@@ -176,6 +179,42 @@ function FullscreenDrawMap({ pasture, onSave, onCancel, initialMode = 'draw' }) 
     setSaving(true);
     await onSave(drawPoints);
     setSaving(false);
+  };
+
+  const handleMarkerSaveName = async (newName) => {
+    if (!selectedMarker) return;
+    const { itemType, index } = selectedMarker;
+    if (itemType === 'water') {
+      const updated = waterSources.map((ws, i) => i === index ? { ...ws, name: newName || null } : ws);
+      setWaterSources(updated);
+      await base44.entities.Pastures.update(pasture.id, { water_sources: updated });
+    } else {
+      const updated = gates.map((g, i) => i === index ? { ...g, name: newName || null } : g);
+      setGates(updated);
+      await base44.entities.Pastures.update(pasture.id, { gates: updated });
+    }
+    queryClient.invalidateQueries({ queryKey: ['pasture', pasture.id] });
+    queryClient.invalidateQueries({ queryKey: ['pastures'] });
+    toast.success('Name saved');
+  };
+
+  const handleMarkerDelete = async () => {
+    if (!selectedMarker) return;
+    const { itemType, index } = selectedMarker;
+    if (itemType === 'water') {
+      const updated = waterSources.filter((_, i) => i !== index);
+      setWaterSources(updated);
+      await base44.entities.Pastures.update(pasture.id, { water_sources: updated });
+      toast.success('Water source removed');
+    } else {
+      const updated = gates.filter((_, i) => i !== index);
+      setGates(updated);
+      await base44.entities.Pastures.update(pasture.id, { gates: updated });
+      toast.success('Gate removed');
+    }
+    queryClient.invalidateQueries({ queryKey: ['pasture', pasture.id] });
+    queryClient.invalidateQueries({ queryKey: ['pastures'] });
+    setSelectedMarker(null);
   };
 
   const defaultCenter = pasture.geometry?.length > 2 ? pasture.geometry[0] : [39.5, -105.0];
@@ -263,6 +302,22 @@ function FullscreenDrawMap({ pasture, onSave, onCancel, initialMode = 'draw' }) 
         </div>
       )}
 
+      {/* Marker popup */}
+      {selectedMarker && mode !== 'pin-place' && (() => {
+        const { itemType, index } = selectedMarker;
+        const item = itemType === 'water' ? waterSources[index] : gates[index];
+        if (!item) return null;
+        return (
+          <MarkerPopup
+            item={item}
+            itemType={itemType}
+            onClose={() => setSelectedMarker(null)}
+            onSave={handleMarkerSaveName}
+            onDelete={handleMarkerDelete}
+          />
+        );
+      })()}
+
       {/* Pin type selector (bottom sheet) */}
       {mode === 'pin-select' && (
         <div className="absolute bottom-6 left-4 right-4 z-[9100]">
@@ -272,7 +327,7 @@ function FullscreenDrawMap({ pasture, onSave, onCancel, initialMode = 'draw' }) 
               {PIN_TYPES.map(t => (
                 <button
                   key={t.label}
-                  onClick={() => { setPinType(t.label); setMode('pin-place'); }}
+                  onClick={() => { setPinType(t.label); setMode('pin-place'); setSelectedMarker(null); }}
                   className="flex flex-col items-center gap-1 py-3 rounded-2xl border-2 border-gray-100 bg-gray-50 active:scale-95 transition-transform"
                 >
                   <span className="text-2xl">{t.icon}</span>
@@ -344,12 +399,32 @@ function FullscreenDrawMap({ pasture, onSave, onCancel, initialMode = 'draw' }) 
 
         {/* Water source markers */}
         {waterSources.filter(ws => ws.lat != null && ws.lng != null).map((ws, i) => (
-          <Marker key={`ws-${i}`} position={[ws.lat, ws.lng]} icon={createSvgIcon(WATER_ICONS[ws.type] || '💧', 30)} />
+          <Marker
+            key={`ws-${i}`}
+            position={[ws.lat, ws.lng]}
+            icon={createSvgIcon(
+              ws.name
+                ? `<span style="font-size:22px">${WATER_ICONS[ws.type] || '💧'}</span><span style="display:block;font-size:10px;font-weight:700;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,0.9);white-space:nowrap;text-align:center">${ws.name}</span>`
+                : (WATER_ICONS[ws.type] || '💧'),
+              ws.name ? 36 : 30, ws.name
+            )}
+            eventHandlers={{ click: () => { if (mode !== 'pin-place') setSelectedMarker({ itemType: 'water', index: i }); } }}
+          />
         ))}
 
         {/* Gate markers */}
         {gates.filter(g => g.lat != null && g.lng != null).map((g, i) => (
-          <Marker key={`gate-${i}`} position={[g.lat, g.lng]} icon={createSvgIcon('🚧', 30)} />
+          <Marker
+            key={`gate-${i}`}
+            position={[g.lat, g.lng]}
+            icon={createSvgIcon(
+              g.name
+                ? `<span style="font-size:22px">🚧</span><span style="display:block;font-size:10px;font-weight:700;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,0.9);white-space:nowrap;text-align:center">${g.name}</span>`
+                : '🚧',
+              g.name ? 36 : 30, g.name
+            )}
+            eventHandlers={{ click: () => { if (mode !== 'pin-place') setSelectedMarker({ itemType: 'gate', index: i }); } }}
+          />
         ))}
       </MapContainer>
     </div>
@@ -447,10 +522,20 @@ export default function PastureDrawMap({ pasture }) {
                 pathOptions={{ color: '#3b82f6', fillColor: '#3b82f6', fillOpacity: 0.3, weight: 2 }}
               />
               {(pasture.water_sources || []).filter(ws => ws.lat != null && ws.lng != null).map((ws, i) => (
-                <Marker key={`ws-${i}`} position={[ws.lat, ws.lng]} icon={createSvgIcon(WATER_ICONS[ws.type] || '💧', 30)} />
+                <Marker key={`ws-${i}`} position={[ws.lat, ws.lng]} icon={createSvgIcon(
+                  ws.name
+                    ? `<span style="font-size:22px">${WATER_ICONS[ws.type] || '💧'}</span><span style="display:block;font-size:10px;font-weight:700;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,0.9);white-space:nowrap;margin-top:1px;text-align:center">${ws.name}</span>`
+                    : (WATER_ICONS[ws.type] || '💧'),
+                  ws.name ? 36 : 30, ws.name
+                )} />
               ))}
               {(pasture.gates || []).filter(g => g.lat != null && g.lng != null).map((g, i) => (
-                <Marker key={`gate-${i}`} position={[g.lat, g.lng]} icon={createSvgIcon('🚧', 30)} />
+                <Marker key={`gate-${i}`} position={[g.lat, g.lng]} icon={createSvgIcon(
+                  g.name
+                    ? `<span style="font-size:22px">🚧</span><span style="display:block;font-size:10px;font-weight:700;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,0.9);white-space:nowrap;margin-top:1px;text-align:center">${g.name}</span>`
+                    : '🚧',
+                  g.name ? 36 : 30, g.name
+                )} />
               ))}
             </MapContainer>
           </div>

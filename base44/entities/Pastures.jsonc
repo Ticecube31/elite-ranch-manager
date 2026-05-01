@@ -96,6 +96,10 @@
               "Lake"
             ]
           },
+          "name": {
+            "type": "string",
+            "description": "Optional name for this water source (e.g. East Tank, Spring Pond)"
+          },
           "lat": {
             "type": "number"
           },
@@ -111,6 +115,10 @@
       "items": {
         "type": "object",
         "properties": {
+          "name": {
+            "type": "string",
+            "description": "Optional name for this gate (e.g. North Entry, Main Gate)"
+          },
           "lat": {
             "type": "number"
           },
