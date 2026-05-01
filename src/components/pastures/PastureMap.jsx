@@ -527,7 +527,7 @@ export default function PastureMap({ pastures }) {
       {/* ── Fullscreen Button (bottom-left) ──────── */}
       <button
         onClick={() => setFullscreen(f => !f)}
-        className="absolute bottom-4 left-3 z-[1001] w-10 h-10 rounded-xl flex items-center justify-center shadow-lg text-white text-base font-bold"
+        className="absolute bottom-4 left-3 z-[999] w-10 h-10 rounded-xl flex items-center justify-center shadow-lg text-white text-base font-bold"
         style={{ background: '#1E5F8E' }}
       >
         {fullscreen ? '⊠' : '⛶'}
