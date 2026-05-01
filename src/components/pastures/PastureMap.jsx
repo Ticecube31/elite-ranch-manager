@@ -7,6 +7,7 @@ import { useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
+import MapFilterPanel from './MapFilterPanel';
 
 // Fix default Leaflet icon paths
 delete L.Icon.Default.prototype._getIconUrl;
@@ -288,6 +289,11 @@ export default function PastureMap({ pastures }) {
   const queryClient = useQueryClient();
 
   const [viewMode, setViewMode] = useState('satellite'); // 'satellite' | 'outlines'
+  const [filters, setFilters] = useState({
+    waterTypes: new Set(['Water Tank', 'Pond', 'Dam', 'Lake']),
+    showGates: true,
+    pastures: new Set(pastures.map(p => p.id)),
+  });
   const [mode, setMode] = useState('view'); // 'view' | 'draw' | 'pin-select' | 'pin-place'
   const [drawPoints, setDrawPoints] = useState([]);
   const [showNameDialog, setShowNameDialog] = useState(false);
@@ -400,7 +406,7 @@ export default function PastureMap({ pastures }) {
         <PinPlacementHandler placingPin={mode === 'pin-place'} onPlacePin={handlePlacePin} />
 
         {/* Saved pasture polygons */}
-        {pastures.filter(p => p.geometry?.length > 2).map(p => (
+        {pastures.filter(p => p.geometry?.length > 2 && filters.pastures.has(p.id)).map(p => (
           <Polygon
             key={p.id}
             positions={p.geometry}
@@ -432,35 +438,30 @@ export default function PastureMap({ pastures }) {
         ))}
 
         {/* Water source markers */}
-        {pastures.flatMap(p => (p.water_sources || []).map((ws, i) => (
-          <Marker key={`ws-${p.id}-${i}`} position={[ws.lat, ws.lng]} icon={createSvgIcon(WATER_ICONS[ws.type] || '💧', 30)} />
-        )))}
+        {pastures.flatMap(p => (p.water_sources || [])
+          .filter(ws => filters.waterTypes.has(ws.type))
+          .map((ws, i) => (
+            <Marker key={`ws-${p.id}-${i}`} position={[ws.lat, ws.lng]} icon={createSvgIcon(WATER_ICONS[ws.type] || '💧', 30)} />
+          ))
+        )}
 
         {/* Gate markers */}
-        {pastures.flatMap(p => (p.gates || []).map((g, i) => (
+        {filters.showGates && pastures.flatMap(p => (p.gates || []).map((g, i) => (
           <Marker key={`gate-${p.id}-${i}`} position={[g.lat, g.lng]} icon={createSvgIcon('🚧', 30)} />
         )))}
+
       </MapContainer>
 
       {/* ── Top Controls ─────────────────────────── */}
       <div className="absolute top-3 left-3 right-3 z-[1000] flex gap-2">
-        {/* View toggle */}
-        <div className="flex rounded-xl overflow-hidden shadow-lg border border-white/30">
-          <button
-            onClick={() => setViewMode('satellite')}
-            className="px-3 py-2 text-xs font-bold transition-all"
-            style={{ background: viewMode === 'satellite' ? '#1E5F8E' : 'rgba(255,255,255,0.85)', color: viewMode === 'satellite' ? '#fff' : '#333' }}
-          >
-            🛰 Satellite
-          </button>
-          <button
-            onClick={() => setViewMode('outlines')}
-            className="px-3 py-2 text-xs font-bold transition-all"
-            style={{ background: viewMode === 'outlines' ? '#1E5F8E' : 'rgba(255,255,255,0.85)', color: viewMode === 'outlines' ? '#fff' : '#333' }}
-          >
-            🗺 Outlines
-          </button>
-        </div>
+        {/* Filter Panel */}
+        <MapFilterPanel
+          viewMode={viewMode}
+          setViewMode={setViewMode}
+          filters={filters}
+          setFilters={setFilters}
+          pastures={pastures}
+        />
 
         {/* Mode controls */}
         {mode === 'view' && (
