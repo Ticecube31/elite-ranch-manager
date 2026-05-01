@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
-import { ArrowRight, Plus, Play, Check, Edit2 } from 'lucide-react';
+import { ArrowRight, Plus, Play, Check, Edit2, Trash2 } from 'lucide-react';
 import { format, isToday, isValid, parseISO } from 'date-fns';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -23,7 +23,7 @@ function SummaryCard({ emoji, label, value, accent }) {
   );
 }
 
-function SessionCard({ session, onResume, onFinish, onEdit }) {
+function SessionCard({ session, onResume, onFinish, onEdit, onDelete }) {
   const isActive = session.status === 'Active';
   const sessionDate = session.session_date ? parseISO(session.session_date) : null;
   const hasValidSessionDate = sessionDate && isValid(sessionDate);
@@ -86,6 +86,13 @@ function SessionCard({ session, onResume, onFinish, onEdit }) {
         >
           <Edit2 className="w-4 h-4" />
         </button>
+        <button
+          onClick={() => onDelete(session)}
+          className="h-9 w-9 rounded-lg flex items-center justify-center border-2 transition-all border-red-300 text-red-400 hover:border-red-500 hover:text-red-600"
+          title="Delete session"
+        >
+          <Trash2 className="w-4 h-4" />
+        </button>
       </div>
     </div>
   );
@@ -98,6 +105,7 @@ export default function CalfSortingDashboard() {
   const [editName, setEditName] = useState('');
   const [editLeftLabel, setEditLeftLabel] = useState('');
   const [editRightLabel, setEditRightLabel] = useState('');
+  const [deletingSession, setDeletingSession] = useState(null);
 
   const { data: sortingSessions = [] } = useQuery({
     queryKey: ['sorting-sessions'],
@@ -158,6 +166,16 @@ export default function CalfSortingDashboard() {
     setEditLeftLabel(session.left_pen_label || 'Left');
     setEditRightLabel(session.right_pen_label || 'Right');
   };
+
+  const deleteSessionMutation = useMutation({
+    mutationFn: (id) => base44.entities.SortingSessions.delete(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['sorting-sessions'] });
+      toast.success('Session deleted');
+      setDeletingSession(null);
+    },
+    onError: () => toast.error('Failed to delete session'),
+  });
 
   const handleSaveEdit = async () => {
     await updateSessionMutation.mutateAsync({
@@ -237,6 +255,7 @@ export default function CalfSortingDashboard() {
                    onResume={handleResume}
                    onFinish={handleFinish}
                    onEdit={handleEdit}
+                   onDelete={setDeletingSession}
                  />
                ))}
              </div>
@@ -254,6 +273,27 @@ export default function CalfSortingDashboard() {
          </button>
 
         </div>
+
+        {/* ── Delete Confirmation Dialog ───────────────────── */}
+        <Dialog open={!!deletingSession} onOpenChange={(open) => !open && setDeletingSession(null)}>
+          <DialogContent className="max-w-sm">
+            <DialogHeader>
+              <DialogTitle>Delete Session?</DialogTitle>
+            </DialogHeader>
+            <p className="text-gray-600 py-2">
+              Are you sure you want to delete <strong>{deletingSession?.session_name}</strong>? This cannot be undone.
+            </p>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setDeletingSession(null)}>Cancel</Button>
+              <Button
+                onClick={() => deleteSessionMutation.mutate(deletingSession.id)}
+                style={{ background: '#ef4444', color: 'white', border: 'none' }}
+              >
+                Delete
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
 
         {/* ── Edit Session Dialog ──────────────────────────── */}
         <Dialog open={!!editingSession} onOpenChange={(open) => !open && setEditingSession(null)}>
