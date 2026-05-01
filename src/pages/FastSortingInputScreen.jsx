@@ -278,13 +278,16 @@ export default function FastSortingInputScreen() {
       <div className="flex-1 overflow-y-auto px-4 py-5 max-w-lg mx-auto w-full space-y-4">
 
         {/* ── COUNT DISPLAY (tap to view log) ──────────────────────── */}
-        <div className="text-center">
+        <div className="bg-white rounded-2xl border-2 border-blue-300 p-3 flex items-center justify-between">
+          <div className="flex-1 flex items-center justify-center">
+            <p className="font-heading font-black text-3xl" style={{ color: BLUE_DARK }}>{session.total_sorted || 0}</p>
+          </div>
           <button
             onClick={() => navigate(`/sorting/${sessionId}/log`)}
-            className="w-full bg-white rounded-2xl border-2 border-blue-300 p-3 active:scale-95 transition-all"
+            className="text-xs font-bold px-3 py-1.5 rounded-lg border-2 active:scale-95 transition-all"
+            style={{ borderColor: BLUE_DARK, color: BLUE_DARK }}
           >
-            <p className="font-heading font-black text-sm text-gray-600 uppercase tracking-wider">Count — Tap to View Log</p>
-            <p className="font-heading font-black text-3xl" style={{ color: BLUE_DARK }}>{session.total_sorted || 0}</p>
+            View Log
           </button>
         </div>
 
