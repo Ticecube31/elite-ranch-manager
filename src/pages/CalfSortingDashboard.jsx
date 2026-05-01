@@ -192,10 +192,8 @@ export default function CalfSortingDashboard() {
     <div className="min-h-screen pb-20" style={{ background: BLUE_BG }}>
 
       {/* ── Header ──────────────────────────────────────────── */}
-      <div className="px-4 pt-6 pb-5" style={{ background: `linear-gradient(135deg, ${BLUE_DARK}, ${BLUE})` }}>
-        <p className="text-white/60 text-xs font-semibold uppercase tracking-widest">Phase 2</p>
-        <h1 className="font-heading font-black text-white text-3xl leading-tight mt-0.5">Calf Sorting</h1>
-        <p className="text-white/70 text-sm mt-1">Organize and sort your calves into groups</p>
+      <div className="px-4 pt-3 pb-3" style={{ background: `linear-gradient(135deg, ${BLUE_DARK}, ${BLUE})` }}>
+        <h1 className="font-heading font-black text-white text-2xl leading-tight">Calf Sorting</h1>
       </div>
 
       <div className="px-4 py-6 max-w-lg mx-auto space-y-6">
