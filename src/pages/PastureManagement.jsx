@@ -51,7 +51,7 @@ export default function PastureManagement() {
   const sorted = [...active, ...inactive];
 
   return (
-    <div className="min-h-screen flex flex-col" style={{ background: '#1e3a6e' }}>
+    <div className="min-h-screen flex flex-col" style={{ background: '#4a7ab5' }}>
 
       {/* ── Tabs ─────────────────────────────────────────── */}
       <div className="px-4 pt-5 pb-3">
