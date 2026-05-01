@@ -123,10 +123,10 @@ function PinPlacementHandler({ placing, onPlace }) {
 }
 
 // ── Fullscreen drawing overlay ──────────────────────────────────────────────
-function FullscreenDrawMap({ pasture, onSave, onCancel }) {
+function FullscreenDrawMap({ pasture, onSave, onCancel, initialMode = 'draw' }) {
   const queryClient = useQueryClient();
   const [viewMode, setViewMode] = useState('satellite');
-  const [mode, setMode] = useState('draw'); // 'draw' | 'pin-select' | 'pin-place'
+  const [mode, setMode] = useState(initialMode); // 'draw' | 'pin-select' | 'pin-place'
   const [drawPoints, setDrawPoints] = useState([]);
   const [pinType, setPinType] = useState(null);
   const [saving, setSaving] = useState(false);
@@ -335,6 +335,7 @@ export default function PastureDrawMap({ pasture }) {
   const queryClient = useQueryClient();
   const hasGeometry = pasture.geometry?.length > 2;
   const [drawing, setDrawing] = useState(false);
+  const [drawInitialMode, setDrawInitialMode] = useState('draw');
 
   const handleSave = async (drawPoints) => {
     await base44.entities.Pastures.update(pasture.id, { geometry: drawPoints });
@@ -354,6 +355,7 @@ export default function PastureDrawMap({ pasture }) {
           pasture={pasture}
           onSave={handleSave}
           onCancel={() => setDrawing(false)}
+          initialMode={drawInitialMode}
         />
       )}
 
@@ -368,15 +370,15 @@ export default function PastureDrawMap({ pasture }) {
           <div className="flex gap-2">
             {hasGeometry && (pasture.water_sources || []).some(ws => ws.lat == null || ws.lng == null) && (
               <button
-                onClick={() => setDrawing(true)}
-                className="h-8 px-3 rounded-xl text-xs font-bold text-white"
+                onClick={() => { setDrawInitialMode('pin-select'); setDrawing(true); }}
+                className="h-8 px-3 rounded-xl text-xs font-bold"
                 style={{ background: 'rgba(234,179,8,0.3)', border: '1px solid rgba(234,179,8,0.6)', color: '#fcd34d' }}
               >
                 📍 Add Pins
               </button>
             )}
             <button
-              onClick={() => setDrawing(true)}
+              onClick={() => { setDrawInitialMode('draw'); setDrawing(true); }}
               className="h-8 px-3 rounded-xl text-xs font-bold text-white"
               style={{ background: hasGeometry ? 'rgba(255,255,255,0.15)' : 'linear-gradient(135deg,#1565c0,#1976d2)' }}
             >
