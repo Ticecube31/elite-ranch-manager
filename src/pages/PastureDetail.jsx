@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { differenceInDays, format } from 'date-fns';
-import { ArrowLeft, Edit2, ArrowRightLeft, Plus, MapPin, Droplets, Fence, Leaf, FileText, Users } from 'lucide-react';
+import { ArrowLeft, Edit2, ArrowRightLeft, Plus, MapPin, Droplets, Fence, Leaf, FileText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import PastureEditSheet from '@/components/pastures/PastureEditSheet';
@@ -74,12 +74,6 @@ export default function PastureDetail() {
   const { data: movements = [] } = useQuery({
     queryKey: ['movements', id],
     queryFn: () => base44.entities.AnimalMovements.filter({ pasture_id: id }),
-    enabled: !!id,
-  });
-
-  const { data: animals = [] } = useQuery({
-    queryKey: ['pasture-animals', id],
-    queryFn: () => base44.entities.Animals.filter({ pasture_id: id }),
     enabled: !!id,
   });
 
@@ -166,7 +160,7 @@ export default function PastureDetail() {
           <InfoRow icon={Leaf} label="Grass Condition" value={pasture.grass_condition} />
           <InfoRow icon={Droplets} label="Water Status" value={pasture.water_status} />
           <InfoRow icon={Fence} label="Fence Status" value={pasture.fence_status} />
-          <InfoRow icon={Users} label="Max Capacity" value={pasture.max_capacity ? `${pasture.max_capacity} head` : null} />
+          <InfoRow icon={MapPin} label="Max Capacity" value={pasture.max_capacity ? `${pasture.max_capacity} head` : null} />
           {pasture.last_grazed_date && (
             <InfoRow icon={Leaf} label="Last Grazed" value={format(new Date(pasture.last_grazed_date), 'MMM d, yyyy')} />
           )}
@@ -182,26 +176,6 @@ export default function PastureDetail() {
             <p className="text-sm text-muted-foreground whitespace-pre-wrap">{pasture.notes}</p>
           </div>
         )}
-
-        {/* ── Current Animals ────────────────────────────────────── */}
-        <div className="bg-card rounded-2xl border border-border p-4">
-          <h2 className="font-heading font-bold text-base text-foreground mb-3">Current Animals</h2>
-          {animals.length === 0 ? (
-            <p className="text-sm text-muted-foreground text-center py-4">No animals currently in this pasture</p>
-          ) : (
-            <div className="space-y-2">
-              {animals.slice(0, 10).map(a => (
-                <div key={a.id} className="flex items-center justify-between py-2 border-b border-border last:border-0">
-                  <span className="font-bold text-sm text-foreground">#{a.tag_number}</span>
-                  <span className="text-xs text-muted-foreground">{a.animal_type}</span>
-                </div>
-              ))}
-              {animals.length > 10 && (
-                <p className="text-xs text-muted-foreground text-center pt-1">+{animals.length - 10} more</p>
-              )}
-            </div>
-          )}
-        </div>
 
         {/* ── Pasture History ────────────────────────────────────── */}
         <div className="bg-card rounded-2xl border border-border p-4">
@@ -268,7 +242,6 @@ export default function PastureDetail() {
         pasture={pasture}
         onDone={() => {
           queryClient.invalidateQueries({ queryKey: ['pasture', id] });
-          queryClient.invalidateQueries({ queryKey: ['pasture-animals', id] });
           queryClient.invalidateQueries({ queryKey: ['movements', id] });
           setShowMove(false);
         }}
