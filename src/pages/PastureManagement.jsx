@@ -6,6 +6,7 @@ import { differenceInDays } from 'date-fns';
 import PastureCard from '@/components/pastures/PastureCard';
 import PastureMap from '@/components/pastures/PastureMap';
 import MoveCowsSheet from '@/components/pastures/MoveCowsSheet';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 const TABS = ['Map', 'Overview', 'Table'];
 const TODAY = new Date();
@@ -30,6 +31,7 @@ function getDaysValue(pasture, isActive) {
 export default function PastureManagement() {
   const [activeTab, setActiveTab] = useState('Overview');
   const [showMoveCows, setShowMoveCows] = useState(false);
+  const [sortOrder, setSortOrder] = useState('status');
 
   const { data: pastures = [] } = useQuery({
     queryKey: ['pastures'],
@@ -37,18 +39,25 @@ export default function PastureManagement() {
     initialData: [],
   });
 
-  // Split and sort pastures
-  const active = pastures
-    .filter(p => (p.current_herd_count ?? 0) > 0)
-    .map(p => ({ ...p, daysValue: getDaysValue(p, true) }))
-    .sort((a, b) => b.daysValue - a.daysValue);
+  const enriched = pastures.map(p => {
+    const isActive = (p.current_herd_count ?? 0) > 0;
+    return { ...p, daysValue: getDaysValue(p, isActive), isActive };
+  });
 
-  const inactive = pastures
-    .filter(p => (p.current_herd_count ?? 0) === 0)
-    .map(p => ({ ...p, daysValue: getDaysValue(p, false) }))
-    .sort((a, b) => b.daysValue - a.daysValue);
-
-  const sorted = [...active, ...inactive];
+  const sorted = [...enriched].sort((a, b) => {
+    switch (sortOrder) {
+      case 'name_az': return a.pasture_name.localeCompare(b.pasture_name);
+      case 'name_za': return b.pasture_name.localeCompare(a.pasture_name);
+      case 'herd_high': return (b.current_herd_count ?? 0) - (a.current_herd_count ?? 0);
+      case 'herd_low': return (a.current_herd_count ?? 0) - (b.current_herd_count ?? 0);
+      case 'days_high': return b.daysValue - a.daysValue;
+      case 'days_low': return a.daysValue - b.daysValue;
+      case 'status':
+      default:
+        if (a.isActive !== b.isActive) return a.isActive ? -1 : 1;
+        return b.daysValue - a.daysValue;
+    }
+  });
 
   return (
     <div className="min-h-screen flex flex-col" style={{ background: '#4a7ab5' }}>
@@ -78,7 +87,23 @@ export default function PastureManagement() {
 
         {activeTab === 'Overview' && (
           <div className="space-y-3 pt-2">
-            <h2 className="font-heading font-black text-white text-2xl tracking-wide uppercase mb-2">Pasture Overview</h2>
+            <div className="flex items-center justify-between mb-2">
+              <h2 className="font-heading font-black text-white text-2xl tracking-wide uppercase">Pasture Overview</h2>
+              <Select value={sortOrder} onValueChange={setSortOrder}>
+                <SelectTrigger className="h-8 w-36 text-xs font-bold border-0 rounded-xl" style={{ background: 'rgba(255,255,255,0.15)', color: '#fff' }}>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="status">Active First</SelectItem>
+                  <SelectItem value="name_az">Name A–Z</SelectItem>
+                  <SelectItem value="name_za">Name Z–A</SelectItem>
+                  <SelectItem value="herd_high">Herd Count ↓</SelectItem>
+                  <SelectItem value="herd_low">Herd Count ↑</SelectItem>
+                  <SelectItem value="days_high">Days ↓</SelectItem>
+                  <SelectItem value="days_low">Days ↑</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
             {sorted.length === 0 && (
               <div className="text-center py-16">
                 <p className="text-2xl mb-2">🌾</p>
@@ -91,7 +116,7 @@ export default function PastureManagement() {
                 key={p.id}
                 pasture={p}
                 daysValue={p.daysValue}
-                isActive={(p.current_herd_count ?? 0) > 0}
+                isActive={p.isActive}
               />
             ))}
           </div>
