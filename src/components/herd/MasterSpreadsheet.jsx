@@ -907,16 +907,26 @@ export default function MasterSpreadsheet({ onBack, currentUser }) {
                                       animals={animals}
                                       onAddChild={async (childId) => {
                                         const child = animals.find(a => a.id === childId);
-                                        if (child) {
-                                          await handleCellUpdate(child, 'mother_animal_number', animal.tag_number);
-                                          await handleCellUpdate(child, 'mother_id', animal.id);
+                                        if (child && child.id) {
+                                          try {
+                                            await handleCellUpdate(child, 'mother_animal_number', animal.tag_number);
+                                            await handleCellUpdate(child, 'mother_id', animal.id);
+                                          } catch (e) {
+                                            console.error('Error adding child:', e);
+                                            toast.error('Failed to add child');
+                                          }
                                         }
                                       }}
                                       onRemoveChild={async (childId) => {
                                         const child = animals.find(a => a.id === childId);
-                                        if (child) {
-                                          await handleCellUpdate(child, 'mother_animal_number', '');
-                                          await handleCellUpdate(child, 'mother_id', '');
+                                        if (child && child.id) {
+                                          try {
+                                            await handleCellUpdate(child, 'mother_animal_number', '');
+                                            await handleCellUpdate(child, 'mother_id', '');
+                                          } catch (e) {
+                                            console.error('Error removing child:', e);
+                                            toast.error('Failed to remove child');
+                                          }
                                         }
                                       }}
                                     />
