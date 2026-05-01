@@ -9,6 +9,7 @@ import { toast } from 'sonner';
 import PastureEditSheet from '@/components/pastures/PastureEditSheet';
 import MoveAnimalsSheet from '@/components/pastures/MoveAnimalsSheet';
 import AddNoteSheet from '@/components/pastures/AddNoteSheet';
+import PastureDrawMap from '@/components/pastures/PastureDrawMap';
 
 const TODAY = new Date();
 
@@ -200,12 +201,8 @@ export default function PastureDetail() {
           )}
         </div>
 
-        {/* ── Map Placeholder ────────────────────────────────────── */}
-        <div className="rounded-2xl p-6 flex flex-col items-center gap-2" style={{ background: 'rgba(255,255,255,0.12)', border: '1px solid rgba(255,255,255,0.25)' }}>
-          <span className="text-4xl">🗺️</span>
-          <p className="font-heading font-bold text-white">Pasture Map</p>
-          <p className="text-sm text-center" style={{ color: 'rgba(255,255,255,0.45)' }}>GPS boundary mapping coming soon</p>
-        </div>
+        {/* ── Pasture Map ────────────────────────────────────────── */}
+        <PastureDrawMap pasture={pasture} />
 
       </div>
 
