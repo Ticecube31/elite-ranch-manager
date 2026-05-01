@@ -185,6 +185,16 @@ export default function AnimalDetailView({ animalId, onNavigateToAnimal, current
       toast.success('Animal updated!');
       setEditMode(false);
     },
+    onError: (error) => {
+      if (error?.message?.includes('not found')) {
+        toast.error('Animal not found — it may have been deleted');
+        navigate(-1);
+      } else if (error?.message?.includes('Permission')) {
+        toast.error('You do not have permission to update this animal');
+      } else {
+        toast.error('Failed to update animal');
+      }
+    },
   });
 
   const handleSave = async (formData) => {
@@ -198,17 +208,25 @@ export default function AnimalDetailView({ animalId, onNavigateToAnimal, current
   };
 
   const handleArchive = async (status) => {
-    await updateMutation.mutateAsync({ id: animal.id, data: { status, is_archived: true } });
-    logAudit({ action: 'Archived', entityType: 'Animal', entityId: animal.id, entityLabel: `Animal #${animal.tag_number}`, changeSummary: `Status changed to ${status}`, user: currentUser });
-    setShowArchiveConfirm(false);
-    toast.success(`#${animal.tag_number} archived as ${status}`);
+    try {
+      await updateMutation.mutateAsync({ id: animal.id, data: { status, is_archived: true } });
+      logAudit({ action: 'Archived', entityType: 'Animal', entityId: animal.id, entityLabel: `Animal #${animal.tag_number}`, changeSummary: `Status changed to ${status}`, user: currentUser });
+      setShowArchiveConfirm(false);
+      toast.success(`#${animal.tag_number} archived as ${status}`);
+    } catch (error) {
+      // Error handled by mutation's onError
+    }
   };
 
   const handlePhotoUpload = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    const { file_url } = await base44.integrations.Core.UploadFile({ file });
-    await updateMutation.mutateAsync({ id: animal.id, data: { photo_url: file_url } });
+    try {
+      const { file_url } = await base44.integrations.Core.UploadFile({ file });
+      await updateMutation.mutateAsync({ id: animal.id, data: { photo_url: file_url } });
+    } catch (error) {
+      // Error handled by mutation's onError
+    }
   };
 
   if (!animal) return (

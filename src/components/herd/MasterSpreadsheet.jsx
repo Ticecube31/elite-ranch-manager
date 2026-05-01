@@ -427,9 +427,19 @@ export default function MasterSpreadsheet({ onBack, currentUser }) {
   };
 
   const handleDelete = async () => {
-    await deleteMutation.mutateAsync(deleteTarget.id);
-    setDeleteTarget(null);
-    setSelected(prev => { const n = new Set(prev); n.delete(deleteTarget.id); return n; });
+    try {
+      await deleteMutation.mutateAsync(deleteTarget.id);
+      setDeleteTarget(null);
+      setSelected(prev => { const n = new Set(prev); n.delete(deleteTarget.id); return n; });
+    } catch (error) {
+      if (error?.message?.includes('not found')) {
+        toast.error('Animal not found — it may have already been deleted');
+        setDeleteTarget(null);
+      } else {
+        toast.error('Failed to delete animal');
+      }
+      queryClient.invalidateQueries({ queryKey: ['animals'] });
+    }
   };
 
   const handleBulkStatus = async (status) => {
