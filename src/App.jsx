@@ -40,6 +40,7 @@ import CalfSortingDashboard from '@/pages/CalfSortingDashboard';
 import PreSessionSetup from '@/pages/PreSessionSetup';
 import FastSortingInputScreen from '@/pages/FastSortingInputScreen';
 import PastureManagement from '@/pages/PastureManagement';
+import PastureDetail from '@/pages/PastureDetail';
 import Settings from '@/pages/Settings';
 import AIAssistant from '@/pages/AIAssistant';
 import PregChecking from '@/pages/PregChecking';
@@ -83,6 +84,7 @@ const AuthenticatedApp = () => {
         <Route path="/sorting/:sessionId" element={<RouteTransition><FastSortingInputScreen /></RouteTransition>} />
         <Route path="/sorting/:sessionId/log" element={<RouteTransition><SortedAnimalsTable /></RouteTransition>} />
         <Route path="/pastures" element={<RouteTransition><PastureManagement /></RouteTransition>} />
+        <Route path="/pastures/:id" element={<RouteTransition><PastureDetail /></RouteTransition>} />
         <Route path="/settings" element={<RouteTransition><Settings /></RouteTransition>} />
         <Route path="/ai-assistant" element={<RouteTransition><AIAssistant /></RouteTransition>} />
         <Route path="/preg-checking" element={<RouteTransition><PregChecking /></RouteTransition>} />
