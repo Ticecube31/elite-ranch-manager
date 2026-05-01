@@ -87,6 +87,14 @@ export default function PastureDetail() {
     },
   });
 
+  const deleteMutation = useMutation({
+    mutationFn: () => base44.entities.Pastures.delete(id),
+    onSuccess: () => {
+      toast.success('Pasture deleted');
+      navigate('/pastures');
+    },
+  });
+
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center" style={{ background: '#1e3a6e' }}>
@@ -262,6 +270,7 @@ export default function PastureDetail() {
         onOpenChange={setShowEdit}
         pasture={pasture}
         onSave={(data) => updateMutation.mutateAsync(data).then(() => { toast.success('Pasture updated'); setShowEdit(false); })}
+        onDelete={() => deleteMutation.mutateAsync()}
       />
       <MoveAnimalsSheet
         open={showMove}

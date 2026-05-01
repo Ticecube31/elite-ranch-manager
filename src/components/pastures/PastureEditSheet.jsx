@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Trash2 } from 'lucide-react';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -6,9 +7,10 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
-export default function PastureEditSheet({ open, onOpenChange, pasture, onSave }) {
+export default function PastureEditSheet({ open, onOpenChange, pasture, onSave, onDelete }) {
   const [form, setForm] = useState({});
   const [saving, setSaving] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     if (pasture) setForm({
@@ -30,6 +32,13 @@ export default function PastureEditSheet({ open, onOpenChange, pasture, onSave }
     setSaving(true);
     await onSave(form);
     setSaving(false);
+  };
+
+  const handleDelete = async () => {
+    if (!window.confirm(`Delete "${form.pasture_name}"? This cannot be undone.`)) return;
+    setDeleting(true);
+    await onDelete();
+    setDeleting(false);
   };
 
   return (
@@ -94,9 +103,21 @@ export default function PastureEditSheet({ open, onOpenChange, pasture, onSave }
             <Label className="text-sm font-semibold">Notes</Label>
             <Textarea value={form.notes || ''} onChange={e => set('notes', e.target.value)} className="mt-1" rows={4} placeholder="General notes about this pasture..." />
           </div>
-          <Button onClick={handleSave} disabled={saving || !form.pasture_name?.trim()} className="w-full h-14 text-base font-bold">
-            {saving ? 'Saving...' : 'Save Changes'}
-          </Button>
+          <div className="flex gap-3">
+            <Button onClick={handleSave} disabled={saving || !form.pasture_name?.trim()} className="flex-1 h-14 text-base font-bold">
+              {saving ? 'Saving...' : 'Save Changes'}
+            </Button>
+            {onDelete && (
+              <Button 
+                onClick={handleDelete} 
+                disabled={deleting || !pasture?.id} 
+                variant="destructive"
+                className="h-14 px-4 flex items-center gap-2"
+              >
+                <Trash2 className="w-4 h-4" />
+              </Button>
+            )}
+          </div>
         </div>
       </SheetContent>
     </Sheet>
