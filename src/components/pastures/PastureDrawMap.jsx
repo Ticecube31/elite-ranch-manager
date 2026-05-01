@@ -433,6 +433,12 @@ export default function PastureDrawMap({ pasture }) {
                 positions={pasture.geometry}
                 pathOptions={{ color: '#3b82f6', fillColor: '#3b82f6', fillOpacity: 0.3, weight: 2 }}
               />
+              {(pasture.water_sources || []).filter(ws => ws.lat != null && ws.lng != null).map((ws, i) => (
+                <Marker key={`ws-${i}`} position={[ws.lat, ws.lng]} icon={createSvgIcon(WATER_ICONS[ws.type] || '💧', 30)} />
+              ))}
+              {(pasture.gates || []).filter(g => g.lat != null && g.lng != null).map((g, i) => (
+                <Marker key={`gate-${i}`} position={[g.lat, g.lng]} icon={createSvgIcon('🚧', 30)} />
+              ))}
             </MapContainer>
           </div>
         )}
