@@ -15,6 +15,7 @@ export default function MoveCowsSheet({ open, onOpenChange, pastures }) {
   const [count, setCount] = useState('');
   const [notes, setNotes] = useState('');
   const [saving, setSaving] = useState(false);
+  const [countFocused, setCountFocused] = useState(false);
 
   const fromPasture = pastures.find(p => p.id === fromId);
   const toPasture = pastures.find(p => p.id === toId);
@@ -83,7 +84,10 @@ export default function MoveCowsSheet({ open, onOpenChange, pastures }) {
           <div>
             <Label className="text-sm font-semibold">Number of Head *</Label>
             {/* Display */}
-            <div className="mt-1 h-14 rounded-xl border-2 border-gray-200 bg-gray-50 flex items-center justify-between px-4">
+            <div 
+              className="mt-1 h-14 rounded-xl border-2 border-gray-200 bg-gray-50 flex items-center justify-between px-4 cursor-text"
+              onClick={() => setCountFocused(true)}
+            >
               <span className={`font-heading font-black text-2xl ${count ? 'text-gray-900' : 'text-gray-300'}`}>
                 {count || '0'}
               </span>
@@ -91,40 +95,42 @@ export default function MoveCowsSheet({ open, onOpenChange, pastures }) {
                 <span className="text-xs text-gray-400">{fromPasture.pasture_name}: {fromPasture.current_herd_count ?? 0} head</span>
               )}
             </div>
-            {/* Keypad */}
-            <div className="grid grid-cols-3 gap-2 mt-2">
-              {['1','2','3','4','5','6','7','8','9'].map(n => (
+            {/* Keypad — only visible when focused */}
+            {countFocused && (
+              <div className="grid grid-cols-3 gap-2 mt-2">
+                {['1','2','3','4','5','6','7','8','9'].map(n => (
+                  <button
+                    key={n}
+                    type="button"
+                    onClick={() => setCount(prev => prev === '0' ? n : (prev + n))}
+                    className="h-12 rounded-xl bg-gray-100 active:bg-gray-200 font-heading font-bold text-xl text-gray-800 transition-colors"
+                  >
+                    {n}
+                  </button>
+                ))}
                 <button
-                  key={n}
                   type="button"
-                  onClick={() => setCount(prev => prev === '0' ? n : (prev + n))}
+                  onClick={() => setCount('')}
+                  className="h-12 rounded-xl bg-gray-100 active:bg-gray-200 font-bold text-sm text-gray-500 transition-colors"
+                >
+                  C
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setCount(prev => prev === '0' ? '0' : (prev + '0'))}
                   className="h-12 rounded-xl bg-gray-100 active:bg-gray-200 font-heading font-bold text-xl text-gray-800 transition-colors"
                 >
-                  {n}
+                  0
                 </button>
-              ))}
-              <button
-                type="button"
-                onClick={() => setCount('')}
-                className="h-12 rounded-xl bg-gray-100 active:bg-gray-200 font-bold text-sm text-gray-500 transition-colors"
-              >
-                C
-              </button>
-              <button
-                type="button"
-                onClick={() => setCount(prev => prev === '0' ? '0' : (prev + '0'))}
-                className="h-12 rounded-xl bg-gray-100 active:bg-gray-200 font-heading font-bold text-xl text-gray-800 transition-colors"
-              >
-                0
-              </button>
-              <button
-                type="button"
-                onClick={() => setCount(prev => prev.slice(0, -1))}
-                className="h-12 rounded-xl bg-gray-100 active:bg-gray-200 flex items-center justify-center transition-colors"
-              >
-                <Delete className="w-5 h-5 text-gray-600" />
-              </button>
-            </div>
+                <button
+                  type="button"
+                  onClick={() => setCount(prev => prev.slice(0, -1))}
+                  className="h-12 rounded-xl bg-gray-100 active:bg-gray-200 flex items-center justify-center transition-colors"
+                >
+                  <Delete className="w-5 h-5 text-gray-600" />
+                </button>
+              </div>
+            )}
           </div>
 
           {/* From Pasture (optional) */}
