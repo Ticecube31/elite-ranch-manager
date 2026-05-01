@@ -193,7 +193,7 @@ function AddRowModal({ pastures, seasons, existingAnimals, onSave, onClose, curr
     animal_type: '',
     status: 'Alive',
     birth_year: new Date().getFullYear(),
-    date_of_birth: new Date().toISOString().split('T')[0]
+    date_of_birth: ''
   });
   const [advancedOpen, setAdvancedOpen] = useState(false);
   const birthYearOptions = useMemo(() => {
