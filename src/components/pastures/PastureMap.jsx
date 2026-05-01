@@ -74,6 +74,57 @@ function PinPlacementHandler({ placingPin, onPlacePin }) {
   return null;
 }
 
+// Address search bar
+function AddressSearch() {
+  const map = useMap();
+  const [query, setQuery] = useState('');
+  const [searching, setSearching] = useState(false);
+
+  const handleSearch = async (e) => {
+    e.preventDefault();
+    if (!query.trim()) return;
+    setSearching(true);
+    try {
+      const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=1`);
+      const data = await res.json();
+      if (data.length > 0) {
+        const { lat, lon } = data[0];
+        map.setView([parseFloat(lat), parseFloat(lon)], 15);
+        setQuery('');
+      } else {
+        alert('Location not found');
+      }
+    } finally {
+      setSearching(false);
+    }
+  };
+
+  return (
+    <form
+      onSubmit={handleSearch}
+      className="absolute top-3 left-1/2 -translate-x-1/2 z-[1001] flex gap-2 w-64"
+      style={{ pointerEvents: 'auto' }}
+    >
+      <input
+        type="text"
+        value={query}
+        onChange={e => setQuery(e.target.value)}
+        placeholder="Search address..."
+        className="flex-1 h-9 px-3 rounded-xl text-sm font-medium border border-gray-200 shadow-lg outline-none"
+        style={{ background: 'rgba(255,255,255,0.92)' }}
+      />
+      <button
+        type="submit"
+        disabled={searching}
+        className="h-9 px-3 rounded-xl text-xs font-bold text-white shadow-lg disabled:opacity-50"
+        style={{ background: '#1E5F8E' }}
+      >
+        {searching ? '...' : '→'}
+      </button>
+    </form>
+  );
+}
+
 // Auto-fit map to pastures that have geometry
 function AutoFit({ pastures }) {
   const map = useMap();
@@ -321,6 +372,7 @@ export default function PastureMap({ pastures }) {
         />
 
         {pastures.length > 0 && <AutoFit pastures={pastures} />}
+        <AddressSearch />
 
         <DrawingHandler drawing={mode === 'draw'} onAddPoint={handleAddPoint} />
         <PinPlacementHandler placingPin={mode === 'pin-place'} onPlacePin={handlePlacePin} />
