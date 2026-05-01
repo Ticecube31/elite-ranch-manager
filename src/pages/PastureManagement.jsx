@@ -114,7 +114,7 @@ export default function PastureManagement() {
       </div>
 
       {/* ── Add New Pasture Button ────────────────────────── */}
-      <div className="fixed bottom-0 left-0 right-0 px-6 pb-[calc(1.5rem+env(safe-area-inset-bottom,0px))] pt-3" style={{ background: 'linear-gradient(to top, #F5E6D8 70%, transparent)' }}>
+      <div className="fixed bottom-0 left-0 right-0 px-6 pb-[calc(5rem+env(safe-area-inset-bottom,0px))] pt-3" style={{ background: 'linear-gradient(to top, #F5E6D8 70%, transparent)' }}>
         <button
           className="w-full h-16 rounded-2xl flex items-center justify-center shadow-lg active:scale-[0.98] transition-transform"
           style={{ background: '#C8B8A8' }}
