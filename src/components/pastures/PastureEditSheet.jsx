@@ -59,7 +59,6 @@ export default function PastureEditSheet({ open, onOpenChange, pasture, onSave }
               <SelectTrigger className="h-12 mt-1"><SelectValue /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="Active">Active</SelectItem>
-                <SelectItem value="Resting">Resting</SelectItem>
                 <SelectItem value="Inactive">Inactive</SelectItem>
               </SelectContent>
             </Select>

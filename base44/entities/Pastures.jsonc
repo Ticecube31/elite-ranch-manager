@@ -54,21 +54,15 @@
       "type": "string",
       "enum": [
         "Active",
-        "Resting",
         "Inactive"
       ],
-      "default": "Active",
-      "description": "Active = currently grazed; Resting = recovery; Inactive = not in use"
+      "default": "Inactive",
+      "description": "Active = has at least one animal; Inactive = empty"
     },
     "last_grazed_date": {
       "type": "string",
       "format": "date",
       "description": "Most recent date animals were moved into this pasture"
-    },
-    "rest_start_date": {
-      "type": "string",
-      "format": "date",
-      "description": "Date rotation rest period started"
     },
     "notes": {
       "type": "string"

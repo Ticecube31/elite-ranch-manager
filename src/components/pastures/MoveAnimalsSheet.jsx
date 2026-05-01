@@ -65,12 +65,13 @@ export default function MoveAnimalsSheet({ open, onOpenChange, pasture, onDone }
     const newToCount = (targetPasture?.current_herd_count ?? 0) + animalsToMove.length;
     await base44.entities.Pastures.update(pasture.id, {
       current_herd_count: newFromCount,
-      rest_start_date: newFromCount === 0 ? moveDate : pasture.rest_start_date,
+      status: newFromCount === 0 ? 'Inactive' : 'Active',
     });
     if (targetPastureId) {
       await base44.entities.Pastures.update(targetPastureId, {
         current_herd_count: newToCount,
         last_grazed_date: moveDate,
+        status: newToCount > 0 ? 'Active' : 'Inactive',
       });
     }
 

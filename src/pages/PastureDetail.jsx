@@ -29,7 +29,6 @@ function getDaysLabel(pasture) {
 function StatusBadge({ status }) {
   const map = {
     Active: { bg: '#16a34a', text: 'Active' },
-    Resting: { bg: '#d97706', text: 'Resting' },
     Inactive: { bg: '#6b7280', text: 'Inactive' },
   };
   const s = map[status] || map.Inactive;
@@ -102,7 +101,8 @@ export default function PastureDetail() {
     );
   }
 
-  const { label: daysLabel, active: isActive } = getDaysLabel(pasture);
+  const isActive = (pasture.current_herd_count ?? 0) > 0;
+  const { label: daysLabel } = getDaysLabel(pasture);
   const sortedMovements = [...movements].sort((a, b) => new Date(b.move_date) - new Date(a.move_date));
 
   return (
