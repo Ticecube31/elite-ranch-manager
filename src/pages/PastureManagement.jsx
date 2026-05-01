@@ -51,11 +51,11 @@ export default function PastureManagement() {
   const sorted = [...active, ...inactive];
 
   return (
-    <div className="min-h-screen flex flex-col" style={{ background: '#0d1117' }}>
+    <div className="min-h-screen flex flex-col" style={{ background: '#1e3a6e' }}>
 
       {/* ── Tabs ─────────────────────────────────────────── */}
       <div className="px-4 pt-5 pb-3">
-        <div className="flex gap-1 p-1 rounded-2xl" style={{ background: '#1a2232' }}>
+        <div className="flex gap-1 p-1 rounded-2xl" style={{ background: 'rgba(255,255,255,0.15)' }}>
           {TABS.map(tab => (
             <button
               key={tab}
@@ -63,7 +63,7 @@ export default function PastureManagement() {
               className="flex-1 h-9 rounded-xl font-heading font-bold text-sm transition-all active:scale-95"
               style={{
                 background: activeTab === tab ? 'linear-gradient(135deg, #1565c0, #1976d2)' : 'transparent',
-                color: activeTab === tab ? '#fff' : 'rgba(255,255,255,0.5)',
+                color: activeTab === tab ? '#fff' : 'rgba(255,255,255,0.75)',
                 boxShadow: activeTab === tab ? '0 2px 12px rgba(21,101,192,0.5)' : 'none',
               }}
             >
@@ -113,7 +113,7 @@ export default function PastureManagement() {
 
       {/* ── Bottom Action Buttons (Overview only) ────────────────────────── */}
       {activeTab === 'Overview' && (
-        <div className="fixed bottom-0 left-0 right-0 px-4 pb-[calc(5rem+env(safe-area-inset-bottom,0px))] pt-3" style={{ background: 'linear-gradient(to top, #0d1117 70%, transparent)' }}>
+        <div className="fixed bottom-0 left-0 right-0 px-4 pb-[calc(5rem+env(safe-area-inset-bottom,0px))] pt-3" style={{ background: 'linear-gradient(to top, #1e3a6e 70%, transparent)' }}>
           <div className="flex gap-3">
             <button
               className="flex-1 h-14 rounded-2xl flex items-center justify-center gap-2 shadow-lg active:scale-[0.98] transition-transform font-heading font-bold text-white text-base"

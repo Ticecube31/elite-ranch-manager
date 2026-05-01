@@ -11,12 +11,12 @@ export default function PastureCard({ pasture, daysValue, isActive }) {
       className="w-full text-left rounded-2xl active:scale-[0.98] transition-transform"
       style={{
         background: isActive
-          ? 'linear-gradient(135deg, #1a2f50 0%, #1e3a6e 100%)'
-          : 'linear-gradient(135deg, #151e2d 0%, #1a2232 100%)',
-        border: isActive ? '1px solid rgba(25,118,210,0.5)' : '1px solid rgba(255,255,255,0.07)',
+          ? 'linear-gradient(135deg, #1e4d9a 0%, #2563b8 100%)'
+          : 'linear-gradient(135deg, #1e3a6e 0%, #243f7a 100%)',
+        border: isActive ? '1px solid rgba(100,160,255,0.5)' : '1px solid rgba(255,255,255,0.18)',
         boxShadow: isActive
-          ? '0 4px 20px rgba(21,101,192,0.25)'
-          : '0 2px 8px rgba(0,0,0,0.3)',
+          ? '0 4px 20px rgba(37,99,184,0.4)'
+          : '0 2px 8px rgba(0,0,0,0.2)',
       }}
     >
       <div className="flex items-center justify-between px-5 py-4">

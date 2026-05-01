@@ -43,10 +43,10 @@ function InfoRow({ icon: IconComp, label, value }) {
   if (!value && value !== 0) return null;
   return (
     <div className="flex items-center gap-3 py-3 last:border-0" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
-      <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style={{ background: 'rgba(255,255,255,0.06)' }}>
-        <IconComp className="w-4 h-4" style={{ color: 'rgba(255,255,255,0.4)' }} />
+      <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style={{ background: 'rgba(255,255,255,0.15)' }}>
+        <IconComp className="w-4 h-4" style={{ color: 'rgba(255,255,255,0.8)' }} />
       </div>
-      <span className="text-sm flex-1" style={{ color: 'rgba(255,255,255,0.5)' }}>{label}</span>
+      <span className="text-sm flex-1" style={{ color: 'rgba(255,255,255,0.8)' }}>{label}</span>
       <span className="text-sm font-semibold text-white">{value}</span>
     </div>
   );
@@ -86,7 +86,7 @@ export default function PastureDetail() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ background: '#0d1117' }}>
+      <div className="min-h-screen flex items-center justify-center" style={{ background: '#1e3a6e' }}>
         <div className="w-8 h-8 border-4 border-white/10 border-t-blue-500 rounded-full animate-spin" />
       </div>
     );
@@ -94,7 +94,7 @@ export default function PastureDetail() {
 
   if (!pasture) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center gap-4" style={{ background: '#0d1117' }}>
+      <div className="min-h-screen flex flex-col items-center justify-center gap-4" style={{ background: '#1e3a6e' }}>
         <p className="font-heading font-bold text-xl text-white">Pasture not found</p>
         <Button variant="outline" onClick={() => navigate('/pastures')}>Back to Pastures</Button>
       </div>
@@ -106,12 +106,12 @@ export default function PastureDetail() {
   const sortedMovements = [...movements].sort((a, b) => new Date(b.move_date) - new Date(a.move_date));
 
   return (
-    <div className="min-h-screen pb-32" style={{ background: '#0d1117' }}>
+    <div className="min-h-screen pb-32" style={{ background: '#1e3a6e' }}>
 
       {/* ── Header ─────────────────────────────────────────────── */}
       <div
         className="sticky top-0 z-20 px-4 h-14 flex items-center justify-between"
-        style={{ background: '#0d1117', borderBottom: '1px solid rgba(255,255,255,0.08)' }}
+        style={{ background: '#1e3a6e', borderBottom: '1px solid rgba(255,255,255,0.2)' }}
       >
         <button onClick={() => navigate('/pastures')} className="text-white/80 hover:text-white p-2 -ml-2">
           <ArrowLeft className="w-6 h-6" />
@@ -127,7 +127,7 @@ export default function PastureDetail() {
         {/* ── Current Status ─────────────────────────────────────── */}
         <div
           className="rounded-2xl p-5 text-white"
-          style={{ background: isActive ? 'linear-gradient(135deg,#1a2f50,#1e3a6e)' : 'linear-gradient(135deg,#151e2d,#1a2232)', border: isActive ? '1px solid rgba(25,118,210,0.5)' : '1px solid rgba(255,255,255,0.07)' }}
+          style={{ background: isActive ? 'linear-gradient(135deg,#1e4d9a,#2563b8)' : 'linear-gradient(135deg,#1e3a6e,#243f7a)', border: isActive ? '1px solid rgba(100,160,255,0.5)' : '1px solid rgba(255,255,255,0.2)' }}
         >
           <div className="flex items-center justify-between mb-3">
             <StatusBadge status={pasture.status} />
@@ -154,7 +154,7 @@ export default function PastureDetail() {
         </div>
 
         {/* ── Pasture Information ────────────────────────────────── */}
-        <div className="rounded-2xl p-4" style={{ background: '#151e2d', border: '1px solid rgba(255,255,255,0.07)' }}>
+        <div className="rounded-2xl p-4" style={{ background: 'rgba(255,255,255,0.12)', border: '1px solid rgba(255,255,255,0.25)' }}>
           <h2 className="font-heading font-bold text-base text-white mb-1">Pasture Information</h2>
           <InfoRow icon={MapPin} label="Acreage" value={pasture.acreage ? `${pasture.acreage} acres` : null} />
           <InfoRow icon={Leaf} label="Grass Condition" value={pasture.grass_condition} />
@@ -168,7 +168,7 @@ export default function PastureDetail() {
 
         {/* ── Notes ─────────────────────────────────────────────── */}
         {pasture.notes && (
-          <div className="rounded-2xl p-4" style={{ background: '#151e2d', border: '1px solid rgba(255,255,255,0.07)' }}>
+          <div className="rounded-2xl p-4" style={{ background: 'rgba(255,255,255,0.12)', border: '1px solid rgba(255,255,255,0.25)' }}>
             <div className="flex items-center gap-2 mb-2">
               <FileText className="w-4 h-4" style={{ color: 'rgba(255,255,255,0.4)' }} />
               <h2 className="font-heading font-bold text-base text-white">Notes</h2>
@@ -178,7 +178,7 @@ export default function PastureDetail() {
         )}
 
         {/* ── Pasture History ────────────────────────────────────── */}
-        <div className="rounded-2xl p-4" style={{ background: '#151e2d', border: '1px solid rgba(255,255,255,0.07)' }}>
+        <div className="rounded-2xl p-4" style={{ background: 'rgba(255,255,255,0.12)', border: '1px solid rgba(255,255,255,0.25)' }}>
           <h2 className="font-heading font-bold text-base text-white mb-3">Movement History</h2>
           {sortedMovements.length === 0 ? (
             <p className="text-sm text-center py-4" style={{ color: 'rgba(255,255,255,0.4)' }}>No movement history yet</p>
@@ -201,7 +201,7 @@ export default function PastureDetail() {
         </div>
 
         {/* ── Map Placeholder ────────────────────────────────────── */}
-        <div className="rounded-2xl p-6 flex flex-col items-center gap-2" style={{ background: '#151e2d', border: '1px solid rgba(255,255,255,0.07)' }}>
+        <div className="rounded-2xl p-6 flex flex-col items-center gap-2" style={{ background: 'rgba(255,255,255,0.12)', border: '1px solid rgba(255,255,255,0.25)' }}>
           <span className="text-4xl">🗺️</span>
           <p className="font-heading font-bold text-white">Pasture Map</p>
           <p className="text-sm text-center" style={{ color: 'rgba(255,255,255,0.45)' }}>GPS boundary mapping coming soon</p>
@@ -212,7 +212,7 @@ export default function PastureDetail() {
       {/* ── Action Buttons ─────────────────────────────────────────── */}
       <div
         className="fixed bottom-0 left-0 right-0 px-4 pb-[calc(5rem+env(safe-area-inset-bottom,0px))] pt-3 flex gap-3"
-        style={{ background: 'linear-gradient(to top, #0d1117 70%, transparent)' }}
+        style={{ background: 'linear-gradient(to top, #1e3a6e 70%, transparent)' }}
       >
         <button
           onClick={() => setShowMove(true)}
@@ -224,7 +224,7 @@ export default function PastureDetail() {
         <button
           onClick={() => setShowNote(true)}
           className="h-14 w-14 rounded-2xl flex items-center justify-center shadow-lg active:scale-95 transition-transform"
-          style={{ background: '#151e2d', border: '1px solid rgba(255,255,255,0.15)' }}
+          style={{ background: 'rgba(255,255,255,0.12)', border: '1px solid rgba(255,255,255,0.25)' }}
         >
           <Plus className="w-6 h-6 text-white" />
         </button>
