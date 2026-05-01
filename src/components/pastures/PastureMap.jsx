@@ -292,8 +292,8 @@ export default function PastureMap({ pastures }) {
   const [filters, setFilters] = useState({
     waterTypes: new Set(['Water Tank', 'Pond', 'Dam', 'Lake']),
     showGates: true,
-    showPastureNames: false,
-    showCowCounts: false,
+    showPastureNames: true,
+    showCowCounts: true,
     pastures: new Set(pastures.map(p => p.id)),
   });
   const [mode, setMode] = useState('view'); // 'view' | 'draw' | 'pin-select' | 'pin-place'
@@ -433,14 +433,26 @@ export default function PastureMap({ pastures }) {
                   className="pasture-label-tooltip"
                   offset={[0, 0]}
                 >
-                  <div style={{ textAlign: 'center', lineHeight: 1.3 }}>
+                  <div style={{ textAlign: 'center', lineHeight: 1.4 }}>
                     {filters.showPastureNames && (
-                      <div style={{ fontWeight: 800, fontSize: '13px', color: '#1a1a1a', fontFamily: 'Outfit, sans-serif', textShadow: '0 1px 3px rgba(255,255,255,0.9)' }}>
+                      <div style={{
+                        fontWeight: 900,
+                        fontSize: '14px',
+                        color: '#fff',
+                        fontFamily: 'Outfit, sans-serif',
+                        textShadow: '0 0 4px rgba(0,0,0,0.9), 0 1px 6px rgba(0,0,0,0.8), -1px -1px 0 rgba(0,0,0,0.7), 1px 1px 0 rgba(0,0,0,0.7)',
+                        letterSpacing: '0.01em',
+                      }}>
                         {p.pasture_name}
                       </div>
                     )}
                     {filters.showCowCounts && (
-                      <div style={{ fontWeight: 700, fontSize: '12px', color: '#1E5F8E' }}>
+                      <div style={{
+                        fontWeight: 900,
+                        fontSize: '13px',
+                        color: '#fff',
+                        textShadow: '0 0 4px rgba(0,0,0,0.9), 0 1px 6px rgba(0,0,0,0.8), -1px -1px 0 rgba(0,0,0,0.7), 1px 1px 0 rgba(0,0,0,0.7)',
+                      }}>
                         🐄 {p.current_herd_count ?? 0}
                       </div>
                     )}
