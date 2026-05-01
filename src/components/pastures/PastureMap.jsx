@@ -304,7 +304,7 @@ export default function PastureMap({ pastures }) {
   const outlineTile = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
 
   return (
-    <div className="relative w-full" style={{ height: 'calc(100vh - 160px)' }}>
+    <div className="relative w-full" style={{ height: 'calc(100vh - 160px - 5rem - env(safe-area-inset-bottom, 0px))' }}>
 
       {/* Map */}
       <MapContainer
