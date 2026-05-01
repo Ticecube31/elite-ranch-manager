@@ -8,6 +8,7 @@ import { base44 } from '@/api/base44Client';
 import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import MapFilterPanel from './MapFilterPanel';
+import MarkerPopup from './MarkerPopup';
 
 // Fix default Leaflet icon paths
 delete L.Icon.Default.prototype._getIconUrl;
@@ -305,6 +306,7 @@ export default function PastureMap({ pastures }) {
   const [pinType, setPinType] = useState(null);
   const [activePinPasture, setActivePinPasture] = useState(null);
   const [fullscreen, setFullscreen] = useState(false);
+  const [selectedMarker, setSelectedMarker] = useState(null); // { pasture, itemType: 'water'|'gate', index }
 
   // Assign colors to pastures
   const pastureColors = {};
@@ -493,13 +495,23 @@ export default function PastureMap({ pastures }) {
         {pastures.flatMap(p => (p.water_sources || [])
           .filter(ws => ws.lat != null && ws.lng != null && filters.waterTypes.has(ws.type))
           .map((ws, i) => (
-            <Marker key={`ws-${p.id}-${i}`} position={[ws.lat, ws.lng]} icon={createSvgIcon(WATER_ICONS[ws.type] || '💧', 30)} />
+            <Marker
+              key={`ws-${p.id}-${i}`}
+              position={[ws.lat, ws.lng]}
+              icon={createSvgIcon(WATER_ICONS[ws.type] || '💧', 30)}
+              eventHandlers={{ click: () => { if (mode !== 'pin-place') setSelectedMarker({ pasture: p, itemType: 'water', index: i }); } }}
+            />
           ))
         )}
 
         {/* Gate markers */}
         {filters.showGates && pastures.flatMap(p => (p.gates || []).map((g, i) => (
-          <Marker key={`gate-${p.id}-${i}`} position={[g.lat, g.lng]} icon={createSvgIcon('🚧', 30)} />
+          <Marker
+            key={`gate-${p.id}-${i}`}
+            position={[g.lat, g.lng]}
+            icon={createSvgIcon('🚧', 30)}
+            eventHandlers={{ click: () => { if (mode !== 'pin-place') setSelectedMarker({ pasture: p, itemType: 'gate', index: i }); } }}
+          />
         )))}
 
       </MapContainer>
@@ -619,6 +631,44 @@ export default function PastureMap({ pastures }) {
           onCancel={() => setMode('view')}
         />
       )}
+
+      {/* ── Marker Popup ──────────────────────────── */}
+      {selectedMarker && mode !== 'pin-place' && (() => {
+        const { pasture: p, itemType, index } = selectedMarker;
+        const item = itemType === 'water' ? (p.water_sources || [])[index] : (p.gates || [])[index];
+        if (!item) return null;
+        const handleSave = async (newName) => {
+          if (itemType === 'water') {
+            const updated = (p.water_sources || []).map((ws, i) => i === index ? { ...ws, name: newName || null } : ws);
+            await base44.entities.Pastures.update(p.id, { water_sources: updated });
+          } else {
+            const updated = (p.gates || []).map((g, i) => i === index ? { ...g, name: newName || null } : g);
+            await base44.entities.Pastures.update(p.id, { gates: updated });
+          }
+          queryClient.invalidateQueries({ queryKey: ['pastures'] });
+          setSelectedMarker(null);
+        };
+        const handleDelete = async () => {
+          if (itemType === 'water') {
+            const updated = (p.water_sources || []).filter((_, i) => i !== index);
+            await base44.entities.Pastures.update(p.id, { water_sources: updated });
+          } else {
+            const updated = (p.gates || []).filter((_, i) => i !== index);
+            await base44.entities.Pastures.update(p.id, { gates: updated });
+          }
+          queryClient.invalidateQueries({ queryKey: ['pastures'] });
+          setSelectedMarker(null);
+        };
+        return (
+          <MarkerPopup
+            item={item}
+            itemType={itemType}
+            onClose={() => setSelectedMarker(null)}
+            onSave={handleSave}
+            onDelete={handleDelete}
+          />
+        );
+      })()}
     </div>
   );
 }
