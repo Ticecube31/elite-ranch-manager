@@ -317,12 +317,12 @@ function FullscreenDrawMap({ pasture, onSave, onCancel }) {
         ))}
 
         {/* Water source markers */}
-        {waterSources.map((ws, i) => (
+        {waterSources.filter(ws => ws.lat != null && ws.lng != null).map((ws, i) => (
           <Marker key={`ws-${i}`} position={[ws.lat, ws.lng]} icon={createSvgIcon(WATER_ICONS[ws.type] || '💧', 30)} />
         ))}
 
         {/* Gate markers */}
-        {gates.map((g, i) => (
+        {gates.filter(g => g.lat != null && g.lng != null).map((g, i) => (
           <Marker key={`gate-${i}`} position={[g.lat, g.lng]} icon={createSvgIcon('🚧', 30)} />
         ))}
       </MapContainer>
