@@ -130,6 +130,7 @@ function FullscreenDrawMap({ pasture, onSave, onCancel, initialMode = 'draw' }) 
   const [drawPoints, setDrawPoints] = useState([]);
   const [pinType, setPinType] = useState(null);
   const [saving, setSaving] = useState(false);
+  const isPinOnlySession = initialMode === 'pin-select';
 
   // Local copies of water sources & gates so they save immediately
   const [waterSources, setWaterSources] = useState(pasture.water_sources || []);
@@ -152,8 +153,9 @@ function FullscreenDrawMap({ pasture, onSave, onCancel, initialMode = 'draw' }) 
       await base44.entities.Pastures.update(pasture.id, { water_sources: updated });
     }
     queryClient.invalidateQueries({ queryKey: ['pastures'] });
+    toast.success(`${pinType} placed!`);
     setPinType(null);
-    setMode('draw');
+    setMode('pin-select');
   };
 
   const handleSave = async () => {
@@ -265,12 +267,23 @@ function FullscreenDrawMap({ pasture, onSave, onCancel, initialMode = 'draw' }) 
                 </button>
               ))}
             </div>
-            <button
-              onClick={() => setMode('draw')}
-              className="w-full h-10 rounded-xl border-2 border-gray-200 font-bold text-sm text-gray-600"
-            >
-              Cancel
-            </button>
+            <div className="flex gap-2">
+              {isPinOnlySession && (
+                <button
+                  onClick={onCancel}
+                  className="flex-1 h-10 rounded-xl font-bold text-sm text-white"
+                  style={{ background: 'linear-gradient(135deg,#16a34a,#15803d)' }}
+                >
+                  ✓ Done
+                </button>
+              )}
+              <button
+                onClick={() => isPinOnlySession ? onCancel() : setMode('draw')}
+                className="flex-1 h-10 rounded-xl border-2 border-gray-200 font-bold text-sm text-gray-600"
+              >
+                {isPinOnlySession ? 'Close' : 'Cancel'}
+              </button>
+            </div>
           </div>
         </div>
       )}
