@@ -158,7 +158,7 @@ function exportAnimalCSV(animal, tagHistory, calves, sortEvents, pastures) {
 }
 
 // ── Main Component ────────────────────────────────────────────────────────────
-export default function AnimalDetailView({ animalId, onNavigateToAnimal, currentUser }) {
+export default function AnimalDetailView({ animalId, onNavigateToAnimal }) {
   const navigate = useNavigate();
   const [editMode, setEditMode] = useState(false);
   const [showArchiveConfirm, setShowArchiveConfirm] = useState(false);
@@ -200,17 +200,17 @@ export default function AnimalDetailView({ animalId, onNavigateToAnimal, current
   const handleSave = async (formData) => {
     const { id, created_date, updated_date, created_by, ...data } = formData;
     if (data.tag_number && data.tag_number !== animal.tag_number) {
-      logTagHistory({ animalId: animal.id, oldTagNumber: animal.tag_number, newTagNumber: data.tag_number, reason: 'Edit in Animal Detail View', user: currentUser });
+      logTagHistory({ animalId: animal.id, oldTagNumber: animal.tag_number, newTagNumber: data.tag_number, reason: 'Edit in Animal Detail View' });
       queryClient.invalidateQueries({ queryKey: ['tag-history', animalId] });
     }
-    logAudit({ action: 'Updated', entityType: 'Animal', entityId: animal.id, entityLabel: `Animal #${data.tag_number}`, changeSummary: 'Record updated via Detail View', newValue: data, user: currentUser });
+    logAudit({ action: 'Updated', entityType: 'Animal', entityId: animal.id, entityLabel: `Animal #${data.tag_number}`, changeSummary: 'Record updated via Detail View', newValue: data });
     await updateMutation.mutateAsync({ id: animal.id, data });
   };
 
   const handleArchive = async (status) => {
     try {
       await updateMutation.mutateAsync({ id: animal.id, data: { status, is_archived: true } });
-      logAudit({ action: 'Archived', entityType: 'Animal', entityId: animal.id, entityLabel: `Animal #${animal.tag_number}`, changeSummary: `Status changed to ${status}`, user: currentUser });
+      logAudit({ action: 'Archived', entityType: 'Animal', entityId: animal.id, entityLabel: `Animal #${animal.tag_number}`, changeSummary: `Status changed to ${status}` });
       setShowArchiveConfirm(false);
       toast.success(`#${animal.tag_number} archived as ${status}`);
     } catch (error) {

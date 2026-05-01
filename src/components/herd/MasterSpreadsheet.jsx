@@ -186,7 +186,7 @@ function BulkBar({ count, pastures, onChangeStatus, onChangeLocation, onExport, 
 
 // ── Add Row Modal ─────────────────────────────────────────────────────────────
 
-function AddRowModal({ pastures, seasons, existingAnimals, onSave, onClose, currentUser }) {
+function AddRowModal({ pastures, seasons, existingAnimals, onSave, onClose }) {
   const [form, setForm] = useState({
     tag_number: '',
     sex: '',
@@ -393,7 +393,7 @@ function AddRowModal({ pastures, seasons, existingAnimals, onSave, onClose, curr
 
 // ── Main Component ────────────────────────────────────────────────────────────
 
-export default function MasterSpreadsheet({ onBack, currentUser }) {
+export default function MasterSpreadsheet({ onBack }) {
   const [activeTab, setActiveTab] = useState('animals'); // 'animals' | 'seasons'
   const [search, setSearch] = useState('');
   const [filterChip, setFilterChip] = useState('All');
@@ -479,7 +479,7 @@ export default function MasterSpreadsheet({ onBack, currentUser }) {
     }
     // Log tag change
     if (field === 'tag_number' && newValue !== animal.tag_number) {
-      logTagHistory({ animalId: animal.id, oldTagNumber: animal.tag_number, newTagNumber: newValue, reason: 'Edit in Master Spreadsheet', user: currentUser });
+      logTagHistory({ animalId: animal.id, oldTagNumber: animal.tag_number, newTagNumber: newValue, reason: 'Edit in Master Spreadsheet' });
       queryClient.invalidateQueries({ queryKey: ['tag-history'] });
     }
     try {
@@ -677,7 +677,6 @@ export default function MasterSpreadsheet({ onBack, currentUser }) {
         animalId={detailAnimalId}
         onBack={() => setDetailAnimalId(null)}
         onNavigateToAnimal={(id) => setDetailAnimalId(id)}
-        currentUser={currentUser}
       />
     );
   }
@@ -1114,7 +1113,6 @@ export default function MasterSpreadsheet({ onBack, currentUser }) {
           pastures={pastures}
           seasons={seasons}
           existingAnimals={animals}
-          currentUser={currentUser}
           onSave={async (data) => { await createMutation.mutateAsync(data); setShowAddModal(false); }}
           onClose={() => setShowAddModal(false)}
           />
