@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { MapContainer, TileLayer, Polygon, Marker, useMapEvents, useMap } from 'react-leaflet';
+import { MapContainer, TileLayer, Polygon, Marker, Tooltip, useMapEvents, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { differenceInDays } from 'date-fns';
@@ -292,6 +292,8 @@ export default function PastureMap({ pastures }) {
   const [filters, setFilters] = useState({
     waterTypes: new Set(['Water Tank', 'Pond', 'Dam', 'Lake']),
     showGates: true,
+    showPastureNames: false,
+    showCowCounts: false,
     pastures: new Set(pastures.map(p => p.id)),
   });
   const [mode, setMode] = useState('view'); // 'view' | 'draw' | 'pin-select' | 'pin-place'
@@ -406,19 +408,48 @@ export default function PastureMap({ pastures }) {
         <PinPlacementHandler placingPin={mode === 'pin-place'} onPlacePin={handlePlacePin} />
 
         {/* Saved pasture polygons */}
-        {pastures.filter(p => p.geometry?.length > 2 && filters.pastures.has(p.id)).map(p => (
-          <Polygon
-            key={p.id}
-            positions={p.geometry}
-            pathOptions={{
-              color: pastureColors[p.id],
-              fillColor: pastureColors[p.id],
-              fillOpacity: (selectedPasture?.id === p.id) ? 0.45 : 0.25,
-              weight: (selectedPasture?.id === p.id) ? 3 : 2,
-            }}
-            eventHandlers={{ click: () => handlePastureClick(p) }}
-          />
-        ))}
+        {pastures.filter(p => p.geometry?.length > 2 && filters.pastures.has(p.id)).map(p => {
+          const showLabel = filters.showPastureNames || filters.showCowCounts;
+          const labelParts = [];
+          if (filters.showPastureNames) labelParts.push(p.pasture_name);
+          if (filters.showCowCounts) labelParts.push(`🐄 ${p.current_herd_count ?? 0}`);
+
+          return (
+            <Polygon
+              key={p.id}
+              positions={p.geometry}
+              pathOptions={{
+                color: pastureColors[p.id],
+                fillColor: pastureColors[p.id],
+                fillOpacity: (selectedPasture?.id === p.id) ? 0.45 : 0.25,
+                weight: (selectedPasture?.id === p.id) ? 3 : 2,
+              }}
+              eventHandlers={{ click: () => handlePastureClick(p) }}
+            >
+              {showLabel && (
+                <Tooltip
+                  permanent
+                  direction="center"
+                  className="pasture-label-tooltip"
+                  offset={[0, 0]}
+                >
+                  <div style={{ textAlign: 'center', lineHeight: 1.3 }}>
+                    {filters.showPastureNames && (
+                      <div style={{ fontWeight: 800, fontSize: '13px', color: '#1a1a1a', fontFamily: 'Outfit, sans-serif', textShadow: '0 1px 3px rgba(255,255,255,0.9)' }}>
+                        {p.pasture_name}
+                      </div>
+                    )}
+                    {filters.showCowCounts && (
+                      <div style={{ fontWeight: 700, fontSize: '12px', color: '#1E5F8E' }}>
+                        🐄 {p.current_herd_count ?? 0}
+                      </div>
+                    )}
+                  </div>
+                </Tooltip>
+              )}
+            </Polygon>
+          );
+        })}
 
         {/* Drawing preview polygon */}
         {drawPoints.length > 1 && (

@@ -27,6 +27,8 @@ export default function MapFilterPanel({ viewMode, setViewMode, filters, setFilt
     if (viewMode !== 'satellite') count++;
     WATER_TYPES.forEach(t => { if (!filters.waterTypes.has(t)) count++; });
     if (!filters.showGates) count++;
+    if (filters.showPastureNames) count++;
+    if (filters.showCowCounts) count++;
     pastures.forEach(p => { if (!filters.pastures.has(p.id)) count++; });
     return count;
   };
@@ -70,6 +72,20 @@ export default function MapFilterPanel({ viewMode, setViewMode, filters, setFilt
                 </button>
               ))}
             </div>
+          </Section>
+
+          {/* Labels */}
+          <Section title="Labels">
+            <Toggle
+              label="🏷 Pasture Names"
+              checked={filters.showPastureNames}
+              onChange={() => setFilters(f => ({ ...f, showPastureNames: !f.showPastureNames }))}
+            />
+            <Toggle
+              label="🐄 Cow Count"
+              checked={filters.showCowCounts}
+              onChange={() => setFilters(f => ({ ...f, showCowCounts: !f.showCowCounts }))}
+            />
           </Section>
 
           {/* Gates */}
