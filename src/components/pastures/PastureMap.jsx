@@ -294,6 +294,7 @@ export default function PastureMap({ pastures }) {
   const [selectedPasture, setSelectedPasture] = useState(null);
   const [pinType, setPinType] = useState(null);
   const [activePinPasture, setActivePinPasture] = useState(null);
+  const [fullscreen, setFullscreen] = useState(false);
 
   // Assign colors to pastures
   const pastureColors = {};
@@ -370,7 +371,13 @@ export default function PastureMap({ pastures }) {
   const outlineTile = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
 
   return (
-    <div className="relative w-full" style={{ height: 'calc(100vh - 160px - 5rem - env(safe-area-inset-bottom, 0px))' }}>
+    <div
+      className="relative w-full"
+      style={fullscreen
+        ? { position: 'fixed', inset: 0, zIndex: 9000, height: '100dvh' }
+        : { height: 'calc(100vh - 160px - 5rem - env(safe-area-inset-bottom, 0px))' }
+      }
+    >
 
       {/* Map */}
       <MapContainer
@@ -515,6 +522,15 @@ export default function PastureMap({ pastures }) {
           </div>
         )}
       </div>
+
+      {/* ── Fullscreen Button (bottom-left) ──────── */}
+      <button
+        onClick={() => setFullscreen(f => !f)}
+        className="absolute bottom-4 left-3 z-[1001] w-10 h-10 rounded-xl flex items-center justify-center shadow-lg text-white text-base font-bold"
+        style={{ background: '#1E5F8E' }}
+      >
+        {fullscreen ? '⊠' : '⛶'}
+      </button>
 
       {/* ── Draw instruction ─────────────────────── */}
       {mode === 'draw' && (
