@@ -188,7 +188,7 @@ export default function AppLayout() {
       </main>
 
       {/* ── Bottom Tab Bar ───────────────────────────────────── */}
-      <nav className="fixed bottom-0 left-0 right-0 z-50 bg-card/98 backdrop-blur-md border-t border-border safe-bottom md:hidden">
+      <nav className="fixed bottom-0 left-0 right-0 z-50 bg-card border-t-2 border-border safe-bottom md:hidden shadow-[0_-4px_16px_rgba(0,0,0,0.12)]">
         <div className="flex items-stretch justify-around h-[60px] max-w-lg mx-auto px-0.5">
           {bottomNavItems.map(({ path, icon: Icon, label, activeColor, activeBg }) => {
             const isActive = path === '/'
@@ -204,7 +204,7 @@ export default function AppLayout() {
                 }}
                 className={cn(
                   'flex flex-col items-center justify-center gap-[2px] flex-1 rounded-lg my-1 transition-all',
-                  isActive ? `${activeColor} ${activeBg}` : 'text-muted-foreground'
+                  isActive ? `${activeColor} ${activeBg}` : 'text-foreground/50'
                 )}
               >
                 <Icon className={cn('w-[22px] h-[22px]', isActive && 'stroke-[2.5px]')} />
