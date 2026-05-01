@@ -87,6 +87,8 @@ export default function MoveCowsSheet({ open, onOpenChange, pastures }) {
             <div 
               className="mt-1 h-14 rounded-xl border-2 border-gray-200 bg-gray-50 flex items-center justify-between px-4 cursor-text"
               onClick={() => setCountFocused(true)}
+              onBlur={() => setCountFocused(false)}
+              tabIndex={0}
             >
               <span className={`font-heading font-black text-2xl ${count ? 'text-gray-900' : 'text-gray-300'}`}>
                 {count || '0'}
