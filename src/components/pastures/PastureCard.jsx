@@ -11,8 +11,8 @@ export default function PastureCard({ pasture, daysValue, isActive }) {
       className="w-full text-left rounded-2xl active:scale-[0.98] transition-transform"
       style={{
         background: isActive
-          ? 'linear-gradient(135deg, #1e4d9a 0%, #2563b8 100%)'
-          : 'linear-gradient(135deg, #1e3a6e 0%, #243f7a 100%)',
+          ? 'linear-gradient(135deg, #2563b8 0%, #3b82f6 100%)'
+          : 'linear-gradient(135deg, #2d6aad 0%, #3a7bc8 100%)',
         border: isActive ? '1px solid rgba(100,160,255,0.5)' : '1px solid rgba(255,255,255,0.18)',
         boxShadow: isActive
           ? '0 4px 20px rgba(37,99,184,0.4)'

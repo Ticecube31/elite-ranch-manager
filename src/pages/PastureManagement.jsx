@@ -51,7 +51,7 @@ export default function PastureManagement() {
   const sorted = [...active, ...inactive];
 
   return (
-    <div className="min-h-screen flex flex-col" style={{ background: '#1e3a6e' }}>
+    <div className="min-h-screen flex flex-col" style={{ background: '#2d6aad' }}>
 
       {/* ── Tabs ─────────────────────────────────────────── */}
       <div className="px-4 pt-5 pb-3">
@@ -113,7 +113,7 @@ export default function PastureManagement() {
 
       {/* ── Bottom Action Buttons (Overview only) ────────────────────────── */}
       {activeTab === 'Overview' && (
-        <div className="fixed bottom-0 left-0 right-0 px-4 pb-[calc(5rem+env(safe-area-inset-bottom,0px))] pt-3" style={{ background: 'linear-gradient(to top, #1e3a6e 70%, transparent)' }}>
+        <div className="fixed bottom-0 left-0 right-0 px-4 pb-[calc(5rem+env(safe-area-inset-bottom,0px))] pt-3" style={{ background: 'linear-gradient(to top, #2d6aad 70%, transparent)' }}>
           <div className="flex gap-3">
             <button
               className="flex-1 h-14 rounded-2xl flex items-center justify-center gap-2 shadow-lg active:scale-[0.98] transition-transform font-heading font-bold text-white text-base"

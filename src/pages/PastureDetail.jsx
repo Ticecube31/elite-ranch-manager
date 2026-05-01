@@ -87,7 +87,7 @@ export default function PastureDetail() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ background: '#1e3a6e' }}>
+      <div className="min-h-screen flex items-center justify-center" style={{ background: '#2d6aad' }}>
         <div className="w-8 h-8 border-4 border-white/10 border-t-blue-500 rounded-full animate-spin" />
       </div>
     );
@@ -95,7 +95,7 @@ export default function PastureDetail() {
 
   if (!pasture) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center gap-4" style={{ background: '#1e3a6e' }}>
+      <div className="min-h-screen flex flex-col items-center justify-center gap-4" style={{ background: '#2d6aad' }}>
         <p className="font-heading font-bold text-xl text-white">Pasture not found</p>
         <Button variant="outline" onClick={() => navigate('/pastures')}>Back to Pastures</Button>
       </div>
@@ -107,7 +107,7 @@ export default function PastureDetail() {
   const sortedMovements = [...movements].sort((a, b) => new Date(b.move_date) - new Date(a.move_date));
 
   return (
-    <div className="min-h-screen pb-32" style={{ background: '#1e3a6e' }}>
+    <div className="min-h-screen pb-32" style={{ background: '#2d6aad' }}>
 
       {/* ── Header ─────────────────────────────────────────────── */}
       <div
@@ -128,7 +128,7 @@ export default function PastureDetail() {
         {/* ── Current Status ─────────────────────────────────────── */}
         <div
           className="rounded-2xl p-5 text-white"
-          style={{ background: isActive ? 'linear-gradient(135deg,#1e4d9a,#2563b8)' : 'linear-gradient(135deg,#1e3a6e,#243f7a)', border: isActive ? '1px solid rgba(100,160,255,0.5)' : '1px solid rgba(255,255,255,0.2)' }}
+          style={{ background: isActive ? 'linear-gradient(135deg,#2563b8,#3b82f6)' : 'linear-gradient(135deg,#2d6aad,#3a7bc8)', border: isActive ? '1px solid rgba(100,160,255,0.5)' : '1px solid rgba(255,255,255,0.2)' }}
         >
           <div className="flex items-center justify-between mb-3">
             <StatusBadge status={pasture.status} />
@@ -209,7 +209,7 @@ export default function PastureDetail() {
       {/* ── Action Buttons ─────────────────────────────────────────── */}
       <div
         className="fixed bottom-0 left-0 right-0 px-4 pb-[calc(5rem+env(safe-area-inset-bottom,0px))] pt-3 flex gap-3"
-        style={{ background: 'linear-gradient(to top, #1e3a6e 70%, transparent)' }}
+        style={{ background: 'linear-gradient(to top, #2d6aad 70%, transparent)' }}
       >
         <button
           onClick={() => setShowMove(true)}
