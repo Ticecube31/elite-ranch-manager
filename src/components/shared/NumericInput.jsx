@@ -1,8 +1,10 @@
 import React, { useState, useRef } from 'react';
-import { Keyboard } from 'lucide-react';
+import { Keyboard, X } from 'lucide-react';
 import NumericKeypad from '@/components/sorting/NumericKeypad';
+import { useNavigate } from 'react-router-dom';
 
-export default function NumericInput({ value, onChange, placeholder, className, label }) {
+export default function NumericInput({ value, onChange, placeholder, className, label, onClose }) {
+  const navigate = useNavigate();
   const [showKeypad, setShowKeypad] = useState(false);
   const [showQwerty, setShowQwerty] = useState(false);
   const inputRef = useRef(null);
@@ -18,6 +20,16 @@ export default function NumericInput({ value, onChange, placeholder, className, 
   const handleKeypadSubmit = () => {
     setShowKeypad(false);
     if (inputRef.current) inputRef.current.blur();
+  };
+
+  const handleClose = () => {
+    setShowKeypad(false);
+    if (inputRef.current) inputRef.current.blur();
+    if (onClose) {
+      onClose();
+    } else {
+      navigate('/calving');
+    }
   };
 
   return (
@@ -37,8 +49,18 @@ export default function NumericInput({ value, onChange, placeholder, className, 
 
       {/* Numeric Keypad Modal */}
       {showKeypad && (
-        <div className="fixed inset-0 z-50 flex flex-col items-center justify-end bg-black/40">
-          <div className="w-full bg-white rounded-t-3xl shadow-2xl p-4 pb-[calc(1rem+env(safe-area-inset-bottom,0px)+60px)] space-y-3 max-h-[80vh] overflow-y-auto">
+        <div className="fixed inset-0 z-50 flex flex-col items-center justify-end bg-black/40" onClick={handleClose}>
+          <div className="w-full bg-white rounded-t-3xl shadow-2xl p-4 pb-[calc(1rem+env(safe-area-inset-bottom,0px)+60px)] space-y-3 max-h-[80vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+            {/* Close button */}
+            <div className="flex justify-end">
+              <button
+                type="button"
+                onClick={handleClose}
+                className="w-9 h-9 rounded-full bg-gray-100 flex items-center justify-center text-gray-500 hover:bg-gray-200 transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
             {/* Input display */}
             <div className="text-center bg-gray-50 rounded-2xl p-4 border border-gray-200">
               <p className="text-xs text-gray-500 font-semibold mb-1">Tag Number</p>
