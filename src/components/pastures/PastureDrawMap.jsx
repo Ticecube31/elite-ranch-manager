@@ -104,17 +104,57 @@ function AddressSearch() {
   );
 }
 
+const WATER_ICONS = { 'Water Tank': '🪣', 'Pond': '💧', 'Dam': '🏗️', 'Lake': '🌊' };
+const PIN_TYPES = [
+  { label: 'Water Tank', icon: '🪣' },
+  { label: 'Pond', icon: '💧' },
+  { label: 'Dam', icon: '🏗️' },
+  { label: 'Lake', icon: '🌊' },
+  { label: 'Gate', icon: '🚧' },
+];
+
+function PinPlacementHandler({ placing, onPlace }) {
+  useMapEvents({
+    click(e) {
+      if (placing) onPlace([e.latlng.lat, e.latlng.lng]);
+    },
+  });
+  return null;
+}
+
 // ── Fullscreen drawing overlay ──────────────────────────────────────────────
 function FullscreenDrawMap({ pasture, onSave, onCancel }) {
+  const queryClient = useQueryClient();
   const [viewMode, setViewMode] = useState('satellite');
+  const [mode, setMode] = useState('draw'); // 'draw' | 'pin-select' | 'pin-place'
   const [drawPoints, setDrawPoints] = useState([]);
+  const [pinType, setPinType] = useState(null);
   const [saving, setSaving] = useState(false);
 
+  // Local copies of water sources & gates so they save immediately
+  const [waterSources, setWaterSources] = useState(pasture.water_sources || []);
+  const [gates, setGates] = useState(pasture.gates || []);
+
   const handleAddPoint = useCallback((latlng) => {
-    setDrawPoints(prev => [...prev, latlng]);
-  }, []);
+    if (mode === 'draw') setDrawPoints(prev => [...prev, latlng]);
+  }, [mode]);
 
   const handleUndo = () => setDrawPoints(prev => prev.slice(0, -1));
+
+  const handlePlacePin = async (latlng) => {
+    if (pinType === 'Gate') {
+      const updated = [...gates, { lat: latlng[0], lng: latlng[1] }];
+      setGates(updated);
+      await base44.entities.Pastures.update(pasture.id, { gates: updated });
+    } else {
+      const updated = [...waterSources, { type: pinType, lat: latlng[0], lng: latlng[1] }];
+      setWaterSources(updated);
+      await base44.entities.Pastures.update(pasture.id, { water_sources: updated });
+    }
+    queryClient.invalidateQueries({ queryKey: ['pastures'] });
+    setPinType(null);
+    setMode('draw');
+  };
 
   const handleSave = async () => {
     if (drawPoints.length < 3) { toast.error('Draw at least 3 points'); return; }
@@ -123,28 +163,22 @@ function FullscreenDrawMap({ pasture, onSave, onCancel }) {
     setSaving(false);
   };
 
-  const defaultCenter = pasture.geometry?.length > 2
-    ? pasture.geometry[0]
-    : [39.5, -105.0];
-
+  const defaultCenter = pasture.geometry?.length > 2 ? pasture.geometry[0] : [39.5, -105.0];
   const satelliteTile = 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}';
   const outlineTile = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
 
   return (
-    <div className="fixed inset-0 z-[9000] flex flex-col" style={{ background: '#000' }}>
+    <div className="fixed inset-0 z-[9000]" style={{ background: '#000' }}>
       {/* Top bar */}
-      <div className="absolute top-0 left-0 right-0 z-[9100] flex items-center gap-2 p-3">
+      <div className="absolute top-0 left-0 right-0 z-[9100] flex items-center gap-2 p-3 safe-top">
         {/* View toggle */}
         <div className="flex rounded-xl overflow-hidden border border-white/20 shadow-lg">
           {['satellite', 'outlines'].map(v => (
             <button
               key={v}
               onClick={() => setViewMode(v)}
-              className="h-9 px-3 text-xs font-bold transition-all"
-              style={{
-                background: viewMode === v ? '#1E5F8E' : 'rgba(0,0,0,0.6)',
-                color: '#fff',
-              }}
+              className="h-9 px-3 text-xs font-bold"
+              style={{ background: viewMode === v ? '#1E5F8E' : 'rgba(0,0,0,0.6)', color: '#fff' }}
             >
               {v === 'satellite' ? '🛰 Sat' : '🗺 Map'}
             </button>
@@ -152,40 +186,94 @@ function FullscreenDrawMap({ pasture, onSave, onCancel }) {
         </div>
 
         <div className="ml-auto flex gap-2">
-          <button
-            onClick={handleUndo}
-            disabled={drawPoints.length === 0}
-            className="h-9 px-3 rounded-xl text-xs font-bold text-white shadow-lg disabled:opacity-40"
-            style={{ background: 'rgba(0,0,0,0.6)', border: '1px solid rgba(255,255,255,0.2)' }}
-          >
-            ↩ Undo
-          </button>
-          <button
-            onClick={handleSave}
-            disabled={drawPoints.length < 3 || saving}
-            className="h-9 px-3 rounded-xl text-xs font-bold text-white shadow-lg disabled:opacity-40"
-            style={{ background: 'linear-gradient(135deg,#16a34a,#15803d)' }}
-          >
-            {saving ? 'Saving...' : '✓ Save'}
-          </button>
-          <button
-            onClick={onCancel}
-            className="h-9 px-3 rounded-xl text-xs font-bold text-white shadow-lg"
-            style={{ background: 'rgba(0,0,0,0.6)', border: '1px solid rgba(255,255,255,0.2)' }}
-          >
-            ✕ Cancel
-          </button>
+          {mode === 'draw' && (
+            <>
+              <button
+                onClick={() => setMode('pin-select')}
+                className="h-9 px-3 rounded-xl text-xs font-bold text-white shadow-lg"
+                style={{ background: '#1E5F8E' }}
+              >
+                📍 Pin
+              </button>
+              <button
+                onClick={handleUndo}
+                disabled={drawPoints.length === 0}
+                className="h-9 px-3 rounded-xl text-xs font-bold text-white shadow-lg disabled:opacity-40"
+                style={{ background: 'rgba(0,0,0,0.6)', border: '1px solid rgba(255,255,255,0.2)' }}
+              >
+                ↩ Undo
+              </button>
+              <button
+                onClick={handleSave}
+                disabled={drawPoints.length < 3 || saving}
+                className="h-9 px-3 rounded-xl text-xs font-bold text-white shadow-lg disabled:opacity-40"
+                style={{ background: 'linear-gradient(135deg,#16a34a,#15803d)' }}
+              >
+                {saving ? '...' : '✓ Save'}
+              </button>
+              <button
+                onClick={onCancel}
+                className="h-9 px-3 rounded-xl text-xs font-bold text-white shadow-lg"
+                style={{ background: 'rgba(0,0,0,0.6)', border: '1px solid rgba(255,255,255,0.2)' }}
+              >
+                ✕
+              </button>
+            </>
+          )}
+          {mode === 'pin-place' && (
+            <>
+              <span className="bg-white/90 text-gray-800 text-xs font-bold px-3 py-2 rounded-xl shadow">
+                Tap to place {pinType}
+              </span>
+              <button
+                onClick={() => { setPinType(null); setMode('draw'); }}
+                className="h-9 px-3 rounded-xl text-xs font-bold text-white shadow-lg"
+                style={{ background: 'rgba(0,0,0,0.6)', border: '1px solid rgba(255,255,255,0.2)' }}
+              >
+                ✕
+              </button>
+            </>
+          )}
         </div>
       </div>
 
       {/* Instruction banner */}
-      <div className="absolute top-16 left-1/2 -translate-x-1/2 z-[9100]">
-        <div className="bg-black/70 text-white text-xs font-bold px-4 py-2 rounded-full whitespace-nowrap">
-          {drawPoints.length === 0
-            ? 'Tap the map to start drawing the boundary'
-            : `${drawPoints.length} points — tap Save when finished`}
+      {mode === 'draw' && (
+        <div className="absolute top-16 left-1/2 -translate-x-1/2 z-[9100]">
+          <div className="bg-black/70 text-white text-xs font-bold px-4 py-2 rounded-full whitespace-nowrap">
+            {drawPoints.length === 0
+              ? 'Tap the map to start drawing the boundary'
+              : `${drawPoints.length} points — tap ✓ Save when finished`}
+          </div>
         </div>
-      </div>
+      )}
+
+      {/* Pin type selector (bottom sheet) */}
+      {mode === 'pin-select' && (
+        <div className="absolute bottom-6 left-4 right-4 z-[9100]">
+          <div className="bg-white rounded-3xl shadow-2xl p-5">
+            <h3 className="font-heading font-bold text-base text-gray-900 mb-3">What are you pinning?</h3>
+            <div className="grid grid-cols-3 gap-2 mb-3">
+              {PIN_TYPES.map(t => (
+                <button
+                  key={t.label}
+                  onClick={() => { setPinType(t.label); setMode('pin-place'); }}
+                  className="flex flex-col items-center gap-1 py-3 rounded-2xl border-2 border-gray-100 bg-gray-50 active:scale-95 transition-transform"
+                >
+                  <span className="text-2xl">{t.icon}</span>
+                  <span className="text-xs font-bold text-gray-700">{t.label}</span>
+                </button>
+              ))}
+            </div>
+            <button
+              onClick={() => setMode('draw')}
+              className="w-full h-10 rounded-xl border-2 border-gray-200 font-bold text-sm text-gray-600"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Map */}
       <MapContainer
@@ -203,11 +291,12 @@ function FullscreenDrawMap({ pasture, onSave, onCancel }) {
 
         {pasture.geometry?.length > 2 && <AutoFit geometry={pasture.geometry} />}
 
-        <DrawingHandler drawing={true} onAddPoint={handleAddPoint} />
+        <DrawingHandler drawing={mode === 'draw'} onAddPoint={handleAddPoint} />
+        <PinPlacementHandler placing={mode === 'pin-place'} onPlace={handlePlacePin} />
         <AddressSearch />
 
-        {/* Existing boundary (faded) */}
-        {pasture.geometry?.length > 2 && (
+        {/* Existing boundary (faded) when redrawing */}
+        {pasture.geometry?.length > 2 && drawPoints.length === 0 && (
           <Polygon
             positions={pasture.geometry}
             pathOptions={{ color: '#3b82f6', fillColor: '#3b82f6', fillOpacity: 0.15, dashArray: '6 4', weight: 1.5 }}
@@ -222,9 +311,19 @@ function FullscreenDrawMap({ pasture, onSave, onCancel }) {
           />
         )}
 
-        {/* Point markers */}
+        {/* Boundary point markers */}
         {drawPoints.map((pt, i) => (
           <Marker key={i} position={pt} icon={createSvgIcon('📍', 24)} />
+        ))}
+
+        {/* Water source markers */}
+        {waterSources.map((ws, i) => (
+          <Marker key={`ws-${i}`} position={[ws.lat, ws.lng]} icon={createSvgIcon(WATER_ICONS[ws.type] || '💧', 30)} />
+        ))}
+
+        {/* Gate markers */}
+        {gates.map((g, i) => (
+          <Marker key={`gate-${i}`} position={[g.lat, g.lng]} icon={createSvgIcon('🚧', 30)} />
         ))}
       </MapContainer>
     </div>
