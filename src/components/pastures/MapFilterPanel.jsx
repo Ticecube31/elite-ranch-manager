@@ -50,8 +50,8 @@ export default function MapFilterPanel({ viewMode, setViewMode, filters, setFilt
 
       {open && (
         <div
-          className="absolute top-11 right-0 z-[2000] bg-white rounded-2xl shadow-2xl border border-gray-100 p-4 w-64"
-          style={{ maxHeight: '70vh', overflowY: 'auto' }}
+          className="absolute top-11 left-0 z-[2000] bg-white rounded-2xl shadow-2xl border border-gray-100 p-4 w-64"
+          style={{ maxHeight: '60vh', overflowY: 'auto' }}
         >
           {/* Map View */}
           <Section title="Map View">
