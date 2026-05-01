@@ -412,6 +412,7 @@ export default function MasterSpreadsheet({ onBack }) {
   const [colOrder, setColOrder] = useState(['tag_number', 'sex', 'animal_type', 'mother_animal_number', 'date_of_birth', 'birth_year', 'status', 'pasture_id', 'born_pasture_id', 'twin', 'children', 'notes', 'photo_url', 'is_archived', 'created_date']);
   const [draggedCol, setDraggedCol] = useState(null);
   const [columnFilters, setColumnFilters] = useState({});
+  const [editMode, setEditMode] = useState(false);
   const importRef = useRef();
   const colMenuRef = useRef();
 
@@ -883,6 +884,13 @@ export default function MasterSpreadsheet({ onBack }) {
               </div>
             )}
           </div>
+          <button
+            onClick={() => setEditMode(!editMode)}
+            className={`h-9 px-4 rounded-xl text-sm font-bold shadow-md flex items-center gap-1.5 ${editMode ? 'text-white' : 'bg-white text-gray-700 border border-gray-200'}`}
+            style={editMode ? { background: `linear-gradient(135deg, ${PURPLE}, ${PURPLE_DARK})` } : {}}
+          >
+            ✏️ {editMode ? 'Done Editing' : 'Edit'}
+          </button>
           <button onClick={() => setShowAddModal(true)}
             className="flex items-center gap-1.5 h-9 px-4 rounded-xl text-white text-sm font-bold shadow-md"
             style={{ background: `linear-gradient(135deg, ${PURPLE}, ${PURPLE_DARK})` }}>
