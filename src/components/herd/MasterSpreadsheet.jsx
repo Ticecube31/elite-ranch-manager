@@ -413,6 +413,20 @@ export default function MasterSpreadsheet({ onBack }) {
   const [draggedCol, setDraggedCol] = useState(null);
   const [columnFilters, setColumnFilters] = useState({});
   const importRef = useRef();
+  const colMenuRef = useRef();
+
+  // Close all menus on outside click
+  useEffect(() => {
+    function handleClickOutside(e) {
+      if (colMenuRef.current && !colMenuRef.current.contains(e.target)) {
+        setShowColMenu(false);
+      }
+    }
+    if (showColMenu) {
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => document.removeEventListener('mousedown', handleClickOutside);
+    }
+  }, [showColMenu]);
 
   // Load saved layout on mount
   useEffect(() => {
@@ -845,7 +859,7 @@ export default function MasterSpreadsheet({ onBack }) {
           >
             <Save className="w-4 h-4" /> Save Layout
           </button>
-          <div className="relative">
+          <div className="relative" ref={colMenuRef}>
             <button
               onClick={() => setShowColMenu(!showColMenu)}
               className="h-9 w-9 rounded-xl flex items-center justify-center text-sm font-bold hover:bg-gray-100 border border-gray-200"
