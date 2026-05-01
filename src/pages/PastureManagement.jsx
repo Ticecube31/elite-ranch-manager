@@ -58,7 +58,7 @@ export default function PastureManagement() {
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className="flex-1 h-12 rounded-xl font-heading font-bold text-sm transition-all active:scale-95"
+              className="flex-1 h-8 rounded-xl font-heading font-bold text-sm transition-all active:scale-95"
               style={{
                 background: activeTab === tab ? '#1E5F8E' : '#2778B0',
                 color: '#fff',
