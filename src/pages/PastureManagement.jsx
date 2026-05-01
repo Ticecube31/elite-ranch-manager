@@ -145,7 +145,7 @@ export default function PastureManagement() {
               style={{ background: 'linear-gradient(135deg, #C0592A, #A0421E)', boxShadow: '0 4px 20px rgba(192,89,42,0.6)' }}
               onClick={() => setShowMoveCows(true)}
             >
-              🐄 Move Cows
+              ⇄ Move Cows
             </button>
             <button
               className="w-14 h-14 rounded-2xl flex items-center justify-center shadow-lg active:scale-[0.98] transition-transform"
