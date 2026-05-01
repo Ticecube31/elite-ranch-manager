@@ -17,9 +17,6 @@ export default function PastureEditSheet({ open, onOpenChange, pasture, onSave, 
       pasture_name: pasture.pasture_name || '',
       acreage: pasture.acreage || '',
       max_capacity: pasture.max_capacity || '',
-      grass_condition: pasture.grass_condition || '',
-      water_status: pasture.water_status || 'Good',
-      fence_status: pasture.fence_status || 'Good',
       status: pasture.status || 'Active',
       notes: pasture.notes || '',
     });
@@ -69,33 +66,6 @@ export default function PastureEditSheet({ open, onOpenChange, pasture, onSave, 
               <SelectContent>
                 <SelectItem value="Active">Active</SelectItem>
                 <SelectItem value="Inactive">Inactive</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          <div>
-            <Label className="text-sm font-semibold">Grass Condition</Label>
-            <Select value={form.grass_condition} onValueChange={v => set('grass_condition', v)}>
-              <SelectTrigger className="h-12 mt-1"><SelectValue placeholder="Select..." /></SelectTrigger>
-              <SelectContent>
-                {['Excellent', 'Good', 'Fair', 'Poor', 'Depleted'].map(v => <SelectItem key={v} value={v}>{v}</SelectItem>)}
-              </SelectContent>
-            </Select>
-          </div>
-          <div>
-            <Label className="text-sm font-semibold">Water Status</Label>
-            <Select value={form.water_status} onValueChange={v => set('water_status', v)}>
-              <SelectTrigger className="h-12 mt-1"><SelectValue /></SelectTrigger>
-              <SelectContent>
-                {['Good', 'Low', 'Dry', 'Unknown'].map(v => <SelectItem key={v} value={v}>{v}</SelectItem>)}
-              </SelectContent>
-            </Select>
-          </div>
-          <div>
-            <Label className="text-sm font-semibold">Fence Status</Label>
-            <Select value={form.fence_status} onValueChange={v => set('fence_status', v)}>
-              <SelectTrigger className="h-12 mt-1"><SelectValue /></SelectTrigger>
-              <SelectContent>
-                {['Good', 'Needs Repair', 'Broken'].map(v => <SelectItem key={v} value={v}>{v}</SelectItem>)}
               </SelectContent>
             </Select>
           </div>

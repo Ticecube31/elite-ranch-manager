@@ -168,7 +168,6 @@ export default function PastureDetail() {
         <div className="rounded-2xl p-4" style={{ background: 'rgba(255,255,255,0.12)', border: '1px solid rgba(255,255,255,0.25)' }}>
           <h2 className="font-heading font-bold text-base text-white mb-1">Pasture Information</h2>
           <InfoRow icon={MapPin} label="Acreage" value={pasture.acreage ? `${pasture.acreage} acres` : null} />
-          <InfoRow icon={Leaf} label="Grass Condition" value={pasture.grass_condition} />
           {/* Water Sources row — tappable */}
           <button
             onClick={() => setShowWater(true)}
@@ -197,7 +196,6 @@ export default function PastureDetail() {
               })()}
             </div>
           </button>
-          <InfoRow icon={Fence} label="Fence Status" value={pasture.fence_status} />
           <InfoRow icon={MapPin} label="Max Capacity" value={pasture.max_capacity ? `${pasture.max_capacity} head` : null} />
           {pasture.last_grazed_date && (
             <InfoRow icon={Leaf} label="Last Grazed" value={format(new Date(pasture.last_grazed_date), 'MMM d, yyyy')} />

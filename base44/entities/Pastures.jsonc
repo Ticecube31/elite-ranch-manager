@@ -10,37 +10,6 @@
       "type": "number",
       "description": "Size of the pasture in acres"
     },
-    "grass_condition": {
-      "type": "string",
-      "enum": [
-        "Excellent",
-        "Good",
-        "Fair",
-        "Poor",
-        "Depleted"
-      ],
-      "description": "Current forage / grass condition"
-    },
-    "water_status": {
-      "type": "string",
-      "enum": [
-        "Good",
-        "Low",
-        "Dry",
-        "Unknown"
-      ],
-      "default": "Good",
-      "description": "Water availability in this pasture"
-    },
-    "fence_status": {
-      "type": "string",
-      "enum": [
-        "Good",
-        "Needs Repair",
-        "Broken"
-      ],
-      "default": "Good"
-    },
     "current_herd_count": {
       "type": "number",
       "default": 0,
