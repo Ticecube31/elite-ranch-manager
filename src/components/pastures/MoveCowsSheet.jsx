@@ -99,7 +99,7 @@ export default function MoveCowsSheet({ open, onOpenChange, pastures }) {
             </div>
             {/* Keypad — only visible when focused */}
             {countFocused && (
-              <div className="grid grid-cols-3 gap-2 mt-2">
+              <div className="grid grid-cols-3 gap-2 mt-2 pointer-events-auto" onMouseDown={e => e.preventDefault()}>
                 {['1','2','3','4','5','6','7','8','9'].map(n => (
                   <button
                     key={n}
