@@ -8,7 +8,7 @@ import PastureMap from '@/components/pastures/PastureMap';
 import MoveCowsSheet from '@/components/pastures/MoveCowsSheet';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
-const TABS = ['Map', 'Overview', 'Table'];
+const TABS = ['Map', 'Overview'];
 const TODAY = new Date();
 
 function getDaysValue(pasture, isActive) {
@@ -125,13 +125,6 @@ export default function PastureManagement() {
         {activeTab === 'Map' && (
           <div className="pt-2">
             <PastureMap pastures={pastures} />
-          </div>
-        )}
-
-        {activeTab === 'Table' && (
-          <div className="flex flex-col items-center justify-center py-24 gap-3">
-            <span className="text-5xl">📋</span>
-            <p className="font-heading font-bold text-xl text-white">Table Coming Soon</p>
           </div>
         )}
       </div>
