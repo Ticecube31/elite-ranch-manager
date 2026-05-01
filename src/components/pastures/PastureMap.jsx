@@ -491,7 +491,7 @@ export default function PastureMap({ pastures }) {
 
         {/* Water source markers */}
         {pastures.flatMap(p => (p.water_sources || [])
-          .filter(ws => filters.waterTypes.has(ws.type))
+          .filter(ws => ws.lat != null && ws.lng != null && filters.waterTypes.has(ws.type))
           .map((ws, i) => (
             <Marker key={`ws-${p.id}-${i}`} position={[ws.lat, ws.lng]} icon={createSvgIcon(WATER_ICONS[ws.type] || '💧', 30)} />
           ))
