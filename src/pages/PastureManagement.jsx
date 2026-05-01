@@ -142,7 +142,7 @@ export default function PastureManagement() {
           <div className="flex gap-3">
             <button
               className="flex-1 h-14 rounded-2xl flex items-center justify-center gap-2 shadow-lg active:scale-[0.98] transition-transform font-heading font-bold text-white text-base"
-              style={{ background: 'linear-gradient(135deg, #1565c0, #1976d2)', boxShadow: '0 4px 20px rgba(21,101,192,0.5)' }}
+              style={{ background: 'linear-gradient(135deg, #C0592A, #A0421E)', boxShadow: '0 4px 20px rgba(192,89,42,0.6)' }}
               onClick={() => setShowMoveCows(true)}
             >
               🐄 Move Cows
