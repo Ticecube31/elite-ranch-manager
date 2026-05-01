@@ -278,7 +278,7 @@ function AddRowModal({ pastures, seasons, existingAnimals, onSave, onClose }) {
           <label className="text-xs font-semibold text-gray-500">Animal Type *</label>
           <div className="grid grid-cols-3 gap-2 mt-1">
             {(form.sex ? ANIMAL_TYPES.filter(t => SEX_FOR_TYPE[t] === form.sex) : ANIMAL_TYPES).map(t => (
-              <button key={t} type="button" onClick={() => upd('animal_type', t)}
+              <button key={t} type="button" onClick={() => { upd('animal_type', t); if (SEX_FOR_TYPE[t]) upd('sex', SEX_FOR_TYPE[t]); }}
                 className={`h-10 rounded-xl border-2 font-semibold text-xs transition-all ${form.animal_type === t ? 'border-purple-600 bg-purple-50 text-purple-700' : 'border-gray-200 text-gray-400'}`}>
                 {t}
               </button>
