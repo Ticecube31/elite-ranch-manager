@@ -74,11 +74,17 @@ function PinPlacementHandler({ placingPin, onPlacePin }) {
   return null;
 }
 
-// Address search bar
+// Address search bar (collapsible, bottom-right)
 function AddressSearch() {
   const map = useMap();
+  const [open, setOpen] = useState(false);
   const [query, setQuery] = useState('');
   const [searching, setSearching] = useState(false);
+  const inputRef = useRef(null);
+
+  useEffect(() => {
+    if (open) inputRef.current?.focus();
+  }, [open]);
 
   const handleSearch = async (e) => {
     e.preventDefault();
@@ -91,6 +97,7 @@ function AddressSearch() {
         const { lat, lon } = data[0];
         map.setView([parseFloat(lat), parseFloat(lon)], 15);
         setQuery('');
+        setOpen(false);
       } else {
         alert('Location not found');
       }
@@ -100,28 +107,36 @@ function AddressSearch() {
   };
 
   return (
-    <form
-      onSubmit={handleSearch}
-      className="absolute top-3 left-1/2 -translate-x-1/2 z-[1001] flex gap-2 w-64"
-      style={{ pointerEvents: 'auto' }}
-    >
-      <input
-        type="text"
-        value={query}
-        onChange={e => setQuery(e.target.value)}
-        placeholder="Search address..."
-        className="flex-1 h-9 px-3 rounded-xl text-sm font-medium border border-gray-200 shadow-lg outline-none"
-        style={{ background: 'rgba(255,255,255,0.92)' }}
-      />
+    <div className="absolute bottom-4 right-3 z-[1001] flex flex-col items-end gap-2">
+      {open && (
+        <form onSubmit={handleSearch} className="flex gap-2">
+          <input
+            ref={inputRef}
+            type="text"
+            value={query}
+            onChange={e => setQuery(e.target.value)}
+            placeholder="Search address..."
+            className="h-9 px-3 rounded-xl text-sm font-medium border border-gray-200 shadow-lg outline-none w-52"
+            style={{ background: 'rgba(255,255,255,0.95)' }}
+          />
+          <button
+            type="submit"
+            disabled={searching}
+            className="h-9 px-3 rounded-xl text-xs font-bold text-white shadow-lg disabled:opacity-50"
+            style={{ background: '#1E5F8E' }}
+          >
+            {searching ? '...' : '→'}
+          </button>
+        </form>
+      )}
       <button
-        type="submit"
-        disabled={searching}
-        className="h-9 px-3 rounded-xl text-xs font-bold text-white shadow-lg disabled:opacity-50"
+        onClick={() => setOpen(o => !o)}
+        className="w-10 h-10 rounded-xl flex items-center justify-center shadow-lg text-white text-lg"
         style={{ background: '#1E5F8E' }}
       >
-        {searching ? '...' : '→'}
+        🔍
       </button>
-    </form>
+    </div>
   );
 }
 
