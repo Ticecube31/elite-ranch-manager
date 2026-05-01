@@ -365,13 +365,24 @@ export default function PastureDrawMap({ pasture }) {
             <span className="text-lg">🗺️</span>
             <p className="font-heading font-bold text-white text-sm">Pasture Boundary</p>
           </div>
-          <button
-            onClick={() => setDrawing(true)}
-            className="h-8 px-3 rounded-xl text-xs font-bold text-white"
-            style={{ background: hasGeometry ? 'rgba(255,255,255,0.15)' : 'linear-gradient(135deg,#1565c0,#1976d2)' }}
-          >
-            {hasGeometry ? '✏️ Redraw' : '✏️ Draw Boundary'}
-          </button>
+          <div className="flex gap-2">
+            {hasGeometry && (pasture.water_sources || []).some(ws => ws.lat == null || ws.lng == null) && (
+              <button
+                onClick={() => setDrawing(true)}
+                className="h-8 px-3 rounded-xl text-xs font-bold text-white"
+                style={{ background: 'rgba(234,179,8,0.3)', border: '1px solid rgba(234,179,8,0.6)', color: '#fcd34d' }}
+              >
+                📍 Add Pins
+              </button>
+            )}
+            <button
+              onClick={() => setDrawing(true)}
+              className="h-8 px-3 rounded-xl text-xs font-bold text-white"
+              style={{ background: hasGeometry ? 'rgba(255,255,255,0.15)' : 'linear-gradient(135deg,#1565c0,#1976d2)' }}
+            >
+              {hasGeometry ? '✏️ Redraw' : '✏️ Draw Boundary'}
+            </button>
+          </div>
         </div>
 
         {/* No boundary yet */}
