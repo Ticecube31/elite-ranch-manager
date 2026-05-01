@@ -3,7 +3,7 @@ import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   ArrowLeft, Plus, Download, Upload, Search, X, ChevronUp, ChevronDown,
-  Trash2, CheckSquare, Square, Camera, AlertTriangle, ExternalLink, Save
+  Trash2, CheckSquare, Square, Camera, AlertTriangle, ExternalLink, Save, GripHorizontal
 } from 'lucide-react';
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 import AnimalDetailView from '@/components/herd/AnimalDetailView';
@@ -780,13 +780,16 @@ export default function MasterSpreadsheet({ onBack, currentUser }) {
                 return (
                   <div
                     key={col.key}
-                    style={{ width, minWidth: width, maxWidth: width, borderRight: '1px solid #ccc', opacity: draggedCol === col.key ? 0.5 : 1 }}
-                    className="relative shrink-0 group flex items-center cursor-move select-none bg-gray-50 hover:bg-gray-100 transition-colors"
+                    style={{ width, minWidth: width, maxWidth: width, borderRight: '1px solid #ccc', opacity: draggedCol === col.key ? 0.5 : 1, background: draggedCol === col.key ? '#f3e8f0' : 'rgb(249, 240, 245)' }}
+                    className="relative shrink-0 group flex items-center select-none bg-gray-50 hover:bg-gray-100 transition-all"
                     draggable
                     onDragStart={(e) => handleColDragStart(e, col.key)}
                     onDragOver={handleColDragOver}
                     onDrop={(e) => handleColDrop(e, col.key)}
                   >
+                    <div className="p-1 cursor-move text-gray-400 group-hover:text-gray-600 transition-colors" title="Drag to reorder">
+                      <GripHorizontal className="w-4 h-4" />
+                    </div>
                     <ColumnHeaderMenu
                       colKey={col.key}
                       label={col.label}
