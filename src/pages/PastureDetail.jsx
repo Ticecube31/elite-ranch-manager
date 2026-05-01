@@ -3,13 +3,14 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { differenceInDays, format } from 'date-fns';
-import { ArrowLeft, Edit2, ArrowRightLeft, Plus, MapPin, Droplets, Fence, Leaf, FileText } from 'lucide-react';
+import { ArrowLeft, Edit2, ArrowRightLeft, Plus, MapPin, Droplets, Fence, Leaf, FileText, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import PastureEditSheet from '@/components/pastures/PastureEditSheet';
 import MoveAnimalsSheet from '@/components/pastures/MoveAnimalsSheet';
 import AddNoteSheet from '@/components/pastures/AddNoteSheet';
 import PastureDrawMap from '@/components/pastures/PastureDrawMap';
+import WaterSourcesSheet from '@/components/pastures/WaterSourcesSheet';
 
 const TODAY = new Date();
 
@@ -61,6 +62,7 @@ export default function PastureDetail() {
   const [showEdit, setShowEdit] = useState(false);
   const [showMove, setShowMove] = useState(false);
   const [showNote, setShowNote] = useState(false);
+  const [showWater, setShowWater] = useState(false);
 
   const { data: pasture, isLoading } = useQuery({
     queryKey: ['pasture', id],
@@ -159,7 +161,34 @@ export default function PastureDetail() {
           <h2 className="font-heading font-bold text-base text-white mb-1">Pasture Information</h2>
           <InfoRow icon={MapPin} label="Acreage" value={pasture.acreage ? `${pasture.acreage} acres` : null} />
           <InfoRow icon={Leaf} label="Grass Condition" value={pasture.grass_condition} />
-          <InfoRow icon={Droplets} label="Water Status" value={pasture.water_status} />
+          {/* Water Sources row — tappable */}
+          <button
+            onClick={() => setShowWater(true)}
+            className="w-full flex items-center gap-3 py-3 last:border-0 text-left"
+            style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}
+          >
+            <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style={{ background: 'rgba(255,255,255,0.15)' }}>
+              <Droplets className="w-4 h-4" style={{ color: 'rgba(255,255,255,0.8)' }} />
+            </div>
+            <span className="text-sm flex-1" style={{ color: 'rgba(255,255,255,0.8)' }}>Water Sources</span>
+            <div className="flex items-center gap-1">
+              {(() => {
+                const sources = pasture.water_sources || [];
+                const unpinned = sources.filter(ws => ws.lat == null || ws.lng == null).length;
+                return (
+                  <>
+                    <span className="text-sm font-semibold text-white">{sources.length}</span>
+                    {unpinned > 0 && (
+                      <span className="text-xs font-bold px-1.5 py-0.5 rounded-full ml-1" style={{ background: 'rgba(234,179,8,0.25)', color: '#fcd34d' }}>
+                        {unpinned} unpinned
+                      </span>
+                    )}
+                    <ChevronRight className="w-4 h-4 ml-1" style={{ color: 'rgba(255,255,255,0.4)' }} />
+                  </>
+                );
+              })()}
+            </div>
+          </button>
           <InfoRow icon={Fence} label="Fence Status" value={pasture.fence_status} />
           <InfoRow icon={MapPin} label="Max Capacity" value={pasture.max_capacity ? `${pasture.max_capacity} head` : null} />
           {pasture.last_grazed_date && (
@@ -253,6 +282,11 @@ export default function PastureDetail() {
           return updateMutation.mutateAsync({ notes: `${existing}[${format(new Date(), 'MMM d, yyyy')}] ${note}` })
             .then(() => { toast.success('Note added'); setShowNote(false); });
         }}
+      />
+      <WaterSourcesSheet
+        open={showWater}
+        onOpenChange={setShowWater}
+        pasture={pasture}
       />
     </div>
   );
