@@ -12,8 +12,8 @@ export default function PastureCard({ pasture, daysValue, isActive }) {
       style={{
         background: isActive
           ? 'linear-gradient(160deg, #5ba3ff 0%, #2979ff 40%, #1a56d6 100%)'
-          : 'linear-gradient(135deg, #1e3a6e 0%, #243f7a 100%)',
-        border: isActive ? '2px solid rgba(200,225,255,0.8)' : '1px solid rgba(255,255,255,0.18)',
+          : 'linear-gradient(135deg, #6b7280 0%, #4b5563 60%, #374151 100%)',
+        border: isActive ? '2px solid rgba(200,225,255,0.8)' : '1px solid rgba(255,255,255,0.15)',
         boxShadow: isActive
           ? '0 12px 40px rgba(41,121,255,0.7), 0 3px 0 rgba(255,255,255,0.25) inset, 0 -4px 0 rgba(0,0,0,0.35) inset, 0 0 60px rgba(41,121,255,0.3)'
           : '0 2px 8px rgba(0,0,0,0.2)',
