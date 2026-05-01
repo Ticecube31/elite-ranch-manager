@@ -387,7 +387,7 @@ export default function PastureDrawMap({ pasture }) {
 
         {/* Saved boundary preview */}
         {hasGeometry && (
-          <div style={{ height: 260 }}>
+          <div style={{ height: 260, zIndex: 0, position: 'relative' }}>
             <MapContainer
               center={defaultCenter}
               zoom={14}
