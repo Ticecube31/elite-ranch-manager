@@ -148,12 +148,25 @@ function FullscreenDrawMap({ pasture, onSave, onCancel, initialMode = 'draw' }) 
       setGates(updated);
       await base44.entities.Pastures.update(pasture.id, { gates: updated });
     } else {
-      const updated = [...waterSources, { type: pinType, lat: latlng[0], lng: latlng[1] }];
+      // Check if there's an existing unpinned water source of this type to associate
+      const unpinnedIndex = waterSources.findIndex(ws => ws.type === pinType && (ws.lat == null || ws.lng == null));
+      let updated;
+      if (unpinnedIndex >= 0) {
+        // Associate pin with the existing unpinned entry
+        updated = waterSources.map((ws, i) =>
+          i === unpinnedIndex ? { ...ws, lat: latlng[0], lng: latlng[1] } : ws
+        );
+        toast.success(`${pinType} pinned on map!`);
+      } else {
+        // No unpinned entry of this type — create a new one
+        updated = [...waterSources, { type: pinType, lat: latlng[0], lng: latlng[1] }];
+        toast.success(`${pinType} placed!`);
+      }
       setWaterSources(updated);
       await base44.entities.Pastures.update(pasture.id, { water_sources: updated });
     }
     queryClient.invalidateQueries({ queryKey: ['pastures'] });
-    toast.success(`${pinType} placed!`);
+    queryClient.invalidateQueries({ queryKey: ['pasture', pasture.id] });
     setPinType(null);
     setMode('pin-select');
   };
