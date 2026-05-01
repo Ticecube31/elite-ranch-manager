@@ -29,6 +29,8 @@ export default function MapFilterPanel({ viewMode, setViewMode, filters, setFilt
     if (!filters.showGates) count++;
     if (!filters.showPastureNames) count++;
     if (!filters.showCowCounts) count++;
+    if (!filters.showActive) count++;
+    if (!filters.showInactive) count++;
     pastures.forEach(p => { if (!filters.pastures.has(p.id)) count++; });
     return count;
   };
@@ -72,6 +74,20 @@ export default function MapFilterPanel({ viewMode, setViewMode, filters, setFilt
                 </button>
               ))}
             </div>
+          </Section>
+
+          {/* Status Filter */}
+          <Section title="Pasture Status">
+            <Toggle
+              label="🟢 Active (has cattle)"
+              checked={filters.showActive}
+              onChange={() => setFilters(f => ({ ...f, showActive: !f.showActive }))}
+            />
+            <Toggle
+              label="⚫ Inactive (empty)"
+              checked={filters.showInactive}
+              onChange={() => setFilters(f => ({ ...f, showInactive: !f.showInactive }))}
+            />
           </Section>
 
           {/* Labels */}

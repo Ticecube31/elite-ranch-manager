@@ -294,6 +294,8 @@ export default function PastureMap({ pastures }) {
     showGates: true,
     showPastureNames: true,
     showCowCounts: true,
+    showActive: true,
+    showInactive: true,
     pastures: new Set(pastures.map(p => p.id)),
   });
   const [mode, setMode] = useState('view'); // 'view' | 'draw' | 'pin-select' | 'pin-place'
@@ -408,7 +410,14 @@ export default function PastureMap({ pastures }) {
         <PinPlacementHandler placingPin={mode === 'pin-place'} onPlacePin={handlePlacePin} />
 
         {/* Saved pasture polygons */}
-        {pastures.filter(p => p.geometry?.length > 2 && filters.pastures.has(p.id)).map(p => {
+        {pastures.filter(p => {
+          if (!(p.geometry?.length > 2)) return false;
+          if (!filters.pastures.has(p.id)) return false;
+          const isActive = (p.current_herd_count ?? 0) > 0;
+          if (isActive && !filters.showActive) return false;
+          if (!isActive && !filters.showInactive) return false;
+          return true;
+        }).map(p => {
           const showLabel = filters.showPastureNames || filters.showCowCounts;
           const labelParts = [];
           if (filters.showPastureNames) labelParts.push(p.pasture_name);
