@@ -74,7 +74,7 @@ export default function MoveCowsSheet({ open, onOpenChange, pastures }) {
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent side="bottom" className="h-auto rounded-t-3xl pb-10">
+      <SheetContent side="bottom" className="h-auto max-h-[90vh] overflow-y-auto rounded-t-3xl pb-10">
         <SheetHeader className="mb-5">
           <SheetTitle className="font-heading text-xl">Move Cows</SheetTitle>
         </SheetHeader>
