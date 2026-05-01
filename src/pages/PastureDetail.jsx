@@ -215,6 +215,9 @@ export default function PastureDetail() {
           </div>
         )}
 
+        {/* ── Pasture Map ────────────────────────────────────────── */}
+        <PastureDrawMap pasture={pasture} />
+
         {/* ── Pasture History ────────────────────────────────────── */}
         <div className="rounded-2xl p-4" style={{ background: 'rgba(255,255,255,0.12)', border: '1px solid rgba(255,255,255,0.25)' }}>
           <h2 className="font-heading font-bold text-base text-white mb-3">Movement History</h2>
@@ -237,9 +240,6 @@ export default function PastureDetail() {
             </div>
           )}
         </div>
-
-        {/* ── Pasture Map ────────────────────────────────────────── */}
-        <PastureDrawMap pasture={pasture} />
 
       </div>
 
