@@ -8,6 +8,7 @@ export default function ChildrenCell({ animalId, animals, onAddChild, onRemoveCh
   const [menuPos, setMenuPos] = useState({ top: 0, left: 0 });
   const [search, setSearch] = useState('');
   const buttonRef = useRef(null);
+  const menuRef = useRef(null);
   
   // Get current animal and check if female
   const currentAnimal = animals.find(a => a.id === animalId);
@@ -39,6 +40,18 @@ export default function ChildrenCell({ animalId, animals, onAddChild, onRemoveCh
         top: rect.bottom + window.scrollY,
         left: rect.left + window.scrollX
       });
+    }
+  }, [showMenu]);
+
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (menuRef.current && !menuRef.current.contains(event.target) && buttonRef.current && !buttonRef.current.contains(event.target)) {
+        setShowMenu(false);
+      }
+    }
+    if (showMenu) {
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => document.removeEventListener('mousedown', handleClickOutside);
     }
   }, [showMenu]);
 
@@ -87,7 +100,7 @@ export default function ChildrenCell({ animalId, animals, onAddChild, onRemoveCh
 
       {/* Dropdown menu */}
       {showMenu && (
-        <div className="fixed bg-white border border-gray-200 rounded-lg shadow-lg z-[9999] min-w-[240px]" style={{ top: `${menuPos.top}px`, left: `${menuPos.left}px` }}>
+        <div ref={menuRef} className="fixed bg-white border border-gray-200 rounded-lg shadow-lg z-[9999] min-w-[240px]" style={{ top: `${menuPos.top}px`, left: `${menuPos.left}px` }}>
           <input
             autoFocus
             type="text"
