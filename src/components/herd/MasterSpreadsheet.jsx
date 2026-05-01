@@ -397,6 +397,10 @@ export default function MasterSpreadsheet({ onBack, currentUser }) {
   const getPastureName = (pid) => pastures.find(p => p.id === pid)?.pasture_name || '';
 
   const handleCellUpdate = async (animal, field, newValue) => {
+    if (!animal?.id) {
+      toast.error('Animal record not found');
+      return;
+    }
     if (newValue === animal[field]) return;
     const data = { [field]: newValue };
     // Derive sex from animal_type
@@ -408,7 +412,18 @@ export default function MasterSpreadsheet({ onBack, currentUser }) {
       logTagHistory({ animalId: animal.id, oldTagNumber: animal.tag_number, newTagNumber: newValue, reason: 'Edit in Master Spreadsheet', user: currentUser });
       queryClient.invalidateQueries({ queryKey: ['tag-history'] });
     }
-    await updateMutation.mutateAsync({ id: animal.id, data });
+    try {
+      await updateMutation.mutateAsync({ id: animal.id, data });
+    } catch (error) {
+      if (error?.response?.status === 404 || error?.message?.includes('not found')) {
+        toast.error('Animal not found — it may have been deleted');
+      } else if (error?.message?.includes('Permission')) {
+        toast.error('You do not have permission to update this animal');
+      } else {
+        toast.error('Failed to update animal');
+      }
+      queryClient.invalidateQueries({ queryKey: ['animals'] });
+    }
   };
 
   const handleDelete = async () => {
@@ -418,19 +433,43 @@ export default function MasterSpreadsheet({ onBack, currentUser }) {
   };
 
   const handleBulkStatus = async (status) => {
+    let updated = 0;
     for (const id of selected) {
-      await updateMutation.mutateAsync({ id, data: { status, is_archived: ['Sold', 'Died'].includes(status) } });
+      try {
+        await updateMutation.mutateAsync({ id, data: { status, is_archived: ['Sold', 'Died'].includes(status) } });
+        updated++;
+      } catch (error) {
+        if (error?.message?.includes('not found')) {
+          // Skip deleted records silently
+        } else {
+          toast.error('Failed to update one or more animals');
+          break;
+        }
+      }
     }
-    toast.success(`${selected.size} animals updated to ${status}`);
+    if (updated > 0) toast.success(`${updated} animals updated to ${status}`);
     setSelected(new Set());
+    queryClient.invalidateQueries({ queryKey: ['animals'] });
   };
 
   const handleBulkLocation = async (pastureId) => {
+    let updated = 0;
     for (const id of selected) {
-      await updateMutation.mutateAsync({ id, data: { pasture_id: pastureId } });
+      try {
+        await updateMutation.mutateAsync({ id, data: { pasture_id: pastureId } });
+        updated++;
+      } catch (error) {
+        if (error?.message?.includes('not found')) {
+          // Skip deleted records silently
+        } else {
+          toast.error('Failed to move one or more animals');
+          break;
+        }
+      }
     }
-    toast.success(`${selected.size} animals moved`);
+    if (updated > 0) toast.success(`${updated} animals moved`);
     setSelected(new Set());
+    queryClient.invalidateQueries({ queryKey: ['animals'] });
   };
 
   const toggleSelect = (id) => setSelected(prev => { const n = new Set(prev); n.has(id) ? n.delete(id) : n.add(id); return n; });
