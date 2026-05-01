@@ -391,7 +391,11 @@ export default function MasterSpreadsheet({ onBack, currentUser }) {
   });
   const deleteMutation = useMutation({
     mutationFn: (id) => base44.entities.Animals.delete(id),
-    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['animals'] }); toast.success('Animal deleted'); },
+    onSuccess: (data, id) => {
+      queryClient.setQueryData(['animals'], (oldAnimals) => oldAnimals.filter(animal => animal.id !== id));
+      queryClient.invalidateQueries({ queryKey: ['animals'] });
+      toast.success('Animal deleted');
+    },
   });
 
   const getPastureName = (pid) => pastures.find(p => p.id === pid)?.pasture_name || '';
