@@ -50,7 +50,7 @@ export default function Home() {
     activeSessions: sessions.filter(s =>
       s.status === 'Active' && s.session_date === today
     ).length,
-    activePastures: pastures.filter(p => p.status === 'Active').length,
+    activePastures: pastures.filter(p => (p.current_herd_count ?? 0) > 0).length,
   };
 
   const greeting = () => {
