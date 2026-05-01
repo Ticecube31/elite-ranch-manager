@@ -7,12 +7,10 @@ import { Input } from '@/components/ui/input';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { toast } from 'sonner';
-import { format } from 'date-fns';
 
 export default function MoveAnimalsSheet({ open, onOpenChange, pasture, onDone }) {
-  const [direction, setDirection] = useState('out'); // 'in' or 'out'
   const [targetPastureId, setTargetPastureId] = useState('');
-  const [selectedAnimalIds, setSelectedAnimalIds] = useState([]);
+  const [headCount, setHeadCount] = useState('');
   const [moveDate, setMoveDate] = useState(new Date().toISOString().split('T')[0]);
   const [reason, setReason] = useState('Rotation');
   const [saving, setSaving] = useState(false);
@@ -23,67 +21,49 @@ export default function MoveAnimalsSheet({ open, onOpenChange, pasture, onDone }
     enabled: open,
   });
 
-  const { data: currentAnimals = [] } = useQuery({
-    queryKey: ['pasture-animals', pasture?.id],
-    queryFn: () => base44.entities.Animals.filter({ pasture_id: pasture.id }),
-    enabled: open && !!pasture?.id,
-  });
-
   const otherPastures = allPastures.filter(p => p.id !== pasture?.id);
-
-  const toggleAnimal = (id) => {
-    setSelectedAnimalIds(prev =>
-      prev.includes(id) ? prev.filter(a => a !== id) : [...prev, id]
-    );
-  };
+  const count = parseInt(headCount) || 0;
 
   const handleMove = async () => {
-    if (!targetPastureId && direction === 'out') { toast.error('Select a destination pasture'); return; }
-    if (direction === 'out' && selectedAnimalIds.length === 0) { toast.error('Select at least one animal'); return; }
+    if (!targetPastureId) { toast.error('Select a destination pasture'); return; }
+    if (count <= 0) { toast.error('Enter number of animals to move'); return; }
 
     setSaving(true);
     const targetPasture = allPastures.find(p => p.id === targetPastureId);
-    const animalsToMove = direction === 'out'
-      ? currentAnimals.filter(a => selectedAnimalIds.includes(a.id))
-      : [];
 
-    // Create movement records and update animals
-    for (const animal of animalsToMove) {
-      await base44.entities.AnimalMovements.create({
-        animal_number: animal.tag_number,
-        from_location: pasture.pasture_name,
-        to_location: targetPasture?.pasture_name || 'Unknown',
-        pasture_id: targetPastureId,
-        move_date: moveDate,
-        move_reason: reason,
-      });
-      await base44.entities.Animals.update(animal.id, { pasture_id: targetPastureId });
-    }
+    // Create a single movement record for the batch
+    await base44.entities.AnimalMovements.create({
+      animal_number: `${count} head`,
+      from_location: pasture.pasture_name,
+      to_location: targetPasture?.pasture_name || 'Unknown',
+      pasture_id: targetPastureId,
+      move_date: moveDate,
+      move_reason: reason,
+    });
 
     // Update herd counts
-    const newFromCount = Math.max(0, (pasture.current_herd_count ?? 0) - animalsToMove.length);
-    const newToCount = (targetPasture?.current_herd_count ?? 0) + animalsToMove.length;
+    const newFromCount = Math.max(0, (pasture.current_herd_count ?? 0) - count);
+    const newToCount = (targetPasture?.current_herd_count ?? 0) + count;
     await base44.entities.Pastures.update(pasture.id, {
       current_herd_count: newFromCount,
       status: newFromCount === 0 ? 'Inactive' : 'Active',
     });
-    if (targetPastureId) {
-      await base44.entities.Pastures.update(targetPastureId, {
-        current_herd_count: newToCount,
-        last_grazed_date: moveDate,
-        status: newToCount > 0 ? 'Active' : 'Inactive',
-      });
-    }
+    await base44.entities.Pastures.update(targetPastureId, {
+      current_herd_count: newToCount,
+      last_grazed_date: moveDate,
+      status: newToCount > 0 ? 'Active' : 'Inactive',
+    });
 
-    toast.success(`${animalsToMove.length} animal(s) moved`);
-    setSelectedAnimalIds([]);
+    toast.success(`${count} animal(s) moved to ${targetPasture?.pasture_name}`);
+    setHeadCount('');
+    setTargetPastureId('');
     setSaving(false);
     onDone();
   };
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent side="bottom" className="h-[85vh] rounded-t-3xl overflow-y-auto pb-10">
+      <SheetContent side="bottom" className="h-auto rounded-t-3xl overflow-y-auto pb-10">
         <SheetHeader className="mb-5">
           <SheetTitle className="font-heading text-xl">Move Animals — {pasture?.pasture_name}</SheetTitle>
         </SheetHeader>
@@ -115,37 +95,24 @@ export default function MoveAnimalsSheet({ open, onOpenChange, pasture, onDone }
           </div>
 
           <div>
-            <Label className="text-sm font-semibold mb-2 block">
-              Select Animals to Move ({selectedAnimalIds.length} selected)
-            </Label>
-            {currentAnimals.length === 0 ? (
-              <p className="text-sm text-muted-foreground text-center py-4">No animals currently in this pasture</p>
-            ) : (
-              <div className="space-y-2 max-h-52 overflow-y-auto">
-                {currentAnimals.map(a => (
-                  <button
-                    key={a.id}
-                    onClick={() => toggleAnimal(a.id)}
-                    className="w-full flex items-center justify-between px-4 py-3 rounded-xl border-2 transition-all"
-                    style={{
-                      borderColor: selectedAnimalIds.includes(a.id) ? 'hsl(var(--primary))' : 'hsl(var(--border))',
-                      background: selectedAnimalIds.includes(a.id) ? 'hsl(var(--primary)/0.08)' : 'hsl(var(--card))',
-                    }}
-                  >
-                    <span className="font-bold text-sm text-foreground">#{a.tag_number}</span>
-                    <span className="text-xs text-muted-foreground">{a.animal_type}</span>
-                  </button>
-                ))}
-              </div>
-            )}
+            <Label className="text-sm font-semibold">Number of Animals</Label>
+            <Input
+              type="number"
+              min="1"
+              max={pasture?.current_herd_count ?? 9999}
+              value={headCount}
+              onChange={e => setHeadCount(e.target.value)}
+              placeholder={`Enter head count (max ${pasture?.current_herd_count ?? '?'})`}
+              className="h-12 mt-1 text-lg font-bold"
+            />
           </div>
 
           <Button
             onClick={handleMove}
-            disabled={saving || !targetPastureId || selectedAnimalIds.length === 0}
+            disabled={saving || !targetPastureId || count <= 0}
             className="w-full h-14 text-base font-bold"
           >
-            {saving ? 'Moving...' : `Move ${selectedAnimalIds.length} Animal(s)`}
+            {saving ? 'Moving...' : `Move ${count > 0 ? count : ''} Animal${count !== 1 ? 's' : ''}`}
           </Button>
         </div>
       </SheetContent>
