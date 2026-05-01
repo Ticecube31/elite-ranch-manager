@@ -77,7 +77,7 @@ export default function PastureManagement() {
       </div>
 
       {/* ── Tab Content ──────────────────────────────────── */}
-      <div className="flex-1 overflow-y-auto px-4 pb-32">
+      <div className="flex-1 overflow-y-auto px-4 pb-[calc(8rem+env(safe-area-inset-bottom,0px))]">
 
         {activeTab === 'Overview' && (
           <div className="space-y-3 pt-2">
