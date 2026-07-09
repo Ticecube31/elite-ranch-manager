@@ -46,5 +46,43 @@
     "animal_number",
     "to_location",
     "move_date"
-  ]
+  ],
+  "rls": {
+    "create": {},
+    "read": {},
+    "update": {
+      "$or": [
+        {
+          "created_by": "{{user.email}}"
+        },
+        {
+          "user_condition": {
+            "role": "Owner"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "Manager"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "created_by": "{{user.email}}"
+        },
+        {
+          "user_condition": {
+            "role": "Owner"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "Manager"
+          }
+        }
+      ]
+    }
+  }
 }

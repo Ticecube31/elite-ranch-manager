@@ -387,7 +387,7 @@ export default function PastureMap({ pastures }) {
       className="relative w-full"
       style={fullscreen
         ? { position: 'fixed', inset: 0, zIndex: 9000, height: '100dvh' }
-        : { height: 'calc(100vh - 160px - 5rem - env(safe-area-inset-bottom, 0px))' }
+        : { height: 'calc(100vh - 80px - env(safe-area-inset-bottom, 0px))' }
       }
     >
 
